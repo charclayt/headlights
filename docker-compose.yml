@@ -37,6 +37,10 @@ services:
       DATABASE_PASSWORD: ${DATABASE_PASSWORD}
       DATABASE_HOST: ${DATABASE_HOST}
       DATABASE_PORT: ${DATABASE_PORT}
+      PYTHONPATH: /app
+    volumes:
+      - .:/app
+    command: python manage.py runserver
     env_file:
       - .env
 
