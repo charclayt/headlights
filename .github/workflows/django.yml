@@ -44,6 +44,6 @@ jobs:
         done
     - name: Run Tests
       env:
-        DATABASE_URL: mysql://user:password@localhost:3307/headlights
+        DATABASE_URL: mysql://user:password@127.0.0.1:3307/headlights
       run: |
         python manage.py test
