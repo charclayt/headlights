@@ -36,6 +36,7 @@ jobs:
     - name: Run Tests
       env:
         DATABASE_ENGINE: django.db.backends.mysql
+        DATABASE_USERNAME: root
         DATABASE_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
         DATABASE_HOST: ${{ secrets.DATABASE_HOST }}
         DATABASE_PORT: ${{ secrets.DATABASE_PORT }}
