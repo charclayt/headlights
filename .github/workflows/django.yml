@@ -35,9 +35,11 @@ jobs:
         pip install -r requirements.txt
     - name: Run Tests
       env:
-        DB: mysql
-        DB_HOST: ${{ secrets.DATABASE_HOST}}
-        DB_PORT: ${{ secrets.DATABASE_PORT}}
-        MYSQL_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
+        DATABASE_ENGINE: mysql
+        DATABASE_NAME: ${{ secrets.DATABASE_NAME }}
+        DATABASE_USERNAME: ${{ secrets.DATABASE_USERNAME }}
+        DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
+        DATABASE_HOST: ${{ secrets.DATABASE_HOST }}
+        DATABASE_PORT: ${{ secrets.DATABASE_PORT }}
       run: |
         python manage.py test
