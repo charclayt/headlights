@@ -25,6 +25,7 @@ jobs:
           MYSQL_DATABASE: ${{ secrets.DATABASE_NAME }}
           MYSQL_USER: ${{ secrets.DATABASE_USERNAME }}
           MYSQL_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
+          MYSQL_HOST: ${{ secrets.DATABASE_HOST}}
 
     steps:
     - uses: actions/checkout@v4
