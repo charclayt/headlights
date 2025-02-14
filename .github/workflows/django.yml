@@ -35,7 +35,7 @@ jobs:
         pip install -r requirements.txt
     - name: Run Tests
       env:
-        DATABASE_ENGINE: mysql
+        DATABASE_ENGINE: django.db.backends.mysql
         DATABASE_NAME: ${{ secrets.DATABASE_NAME }}
         DATABASE_USERNAME: ${{ secrets.DATABASE_USERNAME }}
         DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
