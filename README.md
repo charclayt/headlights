@@ -1,4 +1,7 @@
-## Setup instructions
-
+# Setup instructions
 - Populate valid .env file
-- run `docker compose up --build`
+- Run `docker compose up --build`
+
+# Test instructions
+- Start containers (see above)
+- Run `docker exec -it django-docker python manage.py test`
