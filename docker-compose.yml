@@ -44,5 +44,20 @@ services:
     env_file:
       - .env
 
+# ML service integration 
+  ml-service:
+    build: 
+      context: ./ml_service
+      dockerfile: Dockerfile
+    volumes:
+      - ./ml_service:/app
+      - ./models:/app/models
+    ports:
+      - "8001:8001"
+    depends_on:
+      - django-web
+    env_file:
+      - .env
+
 volumes:
   mysql_data:
