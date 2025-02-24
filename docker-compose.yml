@@ -8,6 +8,7 @@ services:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD} # Add a root password
     ports:
       - "3307:3306"
+    command: --pid-file=/var/run/mysql/mysqld.pid
     volumes:
       - mysql_data:/var/lib/mysql
     env_file:
