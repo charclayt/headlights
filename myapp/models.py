@@ -52,8 +52,8 @@ class Claim(models.Model):
     whiplash = models.IntegerField(db_column='Whiplash', blank=True, null=True)  # Field name made lowercase.
     vehicletype = models.CharField(db_column='VehicleType', max_length=255, blank=True, null=True)  # Field name made lowercase.
     weatherconditions = models.CharField(db_column='WeatherConditions', max_length=255, blank=True, null=True)  # Field name made lowercase.
-    accidentdate = models.DateField(db_column='AccidentDate', blank=True, null=True)  # Field name made lowercase.
-    claimdate = models.DateField(db_column='ClaimDate', blank=True, null=True)  # Field name made lowercase.
+    accidentdate = models.IntegerField(db_column='AccidentDate', blank=True, null=True)  # Field name made lowercase.
+    claimdate = models.IntegerField(db_column='ClaimDate', blank=True, null=True)  # Field name made lowercase.
     vehicleage = models.IntegerField(db_column='VehicleAge', blank=True, null=True)  # Field name made lowercase.
     driverage = models.IntegerField(db_column='DriverAge', blank=True, null=True)  # Field name made lowercase.
     numberofpassengers = models.IntegerField(db_column='NumberOfPassengers', blank=True, null=True)  # Field name made lowercase.
