@@ -85,7 +85,7 @@ class Log(models.Model):
     bodid = models.ForeignKey(Bod, models.PROTECT, db_column='BodID', blank=True, null=True)  # Field name made lowercase.
     affectedtableid = models.ForeignKey('Tablelookup', models.PROTECT, db_column='AffectedTableID', blank=True, null=True)  # Field name made lowercase.
     operationperformed = models.ForeignKey('Operationlookup', models.PROTECT, db_column='OperationPerformed', blank=True, null=True)  # Field name made lowercase.
-    successful = models.IntegerField(db_column='Successful', blank=True, null=True)  # Field name made lowercase.
+    successful = models.BooleanField(db_column='Successful', blank=True, null=True)  # Field name made lowercase.
     notes = models.CharField(db_column='Notes', max_length=255, blank=True, null=True)  # Field name made lowercase.
 
     class Meta:
