@@ -61,7 +61,7 @@ class Claim(models.Model):
     injurydescription = models.CharField(db_column='InjuryDescription', max_length=255, blank=True, null=True)  # Field name made lowercase.
     policereportfiled = models.IntegerField(db_column='PoliceReportFiled', blank=True, null=True)  # Field name made lowercase.
     witnesspresent = models.IntegerField(db_column='WitnessPresent', blank=True, null=True)  # Field name made lowercase.
-    ismale = models.IntegerField(db_column='IsMale', blank=True, null=True)  # Field name made lowercase.
+    gender = models.CharField(db_column='Gender', max_length=255, blank=True, null=True)  # Field name made lowercase.
 
     class Meta:
         #managed = False
