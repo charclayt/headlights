@@ -5,3 +5,6 @@
 myapp/migrations/*_initial.py
 
 .DS_Store
+
+**/models/
+
