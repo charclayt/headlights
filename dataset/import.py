@@ -7,7 +7,7 @@ import numpy as np
 load_dotenv()
 
 con = mysql.connector.connect(
-  host="localhost",
+  host=os.getenv("DATABASE_HOST"),
   port=os.getenv("DATABASE_PORT"),
   user="root",
   password=os.getenv("MYSQL_ROOT_PASSWORD"),
