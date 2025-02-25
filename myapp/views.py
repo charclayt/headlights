@@ -44,6 +44,14 @@ def models_list(request):
         response = requests.get(f"{ML_SERVICE_URL}/api/models")
         response_data = response.json()
         
+        # Check if the status is 'error' and the message indicates no models
+        error_message = response_data.get('message', '')
+        if response_data.get('status') == 'error' and ('no models provided' in error_message or 'Model table not found' in error_message):
+            return JsonResponse({
+                'status': 'success',
+                'message': 'no models found'
+            })
+        
         return JsonResponse(response_data)
     except requests.RequestException as e:
         logger.error(f"Error connecting to ML service: {str(e)}")

@@ -18,9 +18,15 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.views.generic import RedirectView
+from myapp import views as myapp_views  # Import myapp views directly
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path('', RedirectView.as_view(url='/app/')),
     path('app/', include('myapp.urls')),
+    
+    # Add direct API routes at the root level
+    path('api/models/', myapp_views.models_list, name="api_models_list"),
+    path('api/predict/', myapp_views.predict, name="api_predict"),
+    path('api/submit-claim/', myapp_views.submit_claim, name="api_submit_claim"),
 ]
