@@ -8,7 +8,7 @@ load_dotenv()
 
 con = mysql.connector.connect(
   host="localhost",
-  port="3307",
+  port=os.getenv("DATABASE_PORT"),
   user="root",
   password=os.getenv("MYSQL_ROOT_PASSWORD"),
   database=os.getenv("DATABASE_NAME")
