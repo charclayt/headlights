@@ -64,7 +64,7 @@ def get_models():
             FROM INFORMATION_SCHEMA.TABLES 
             WHERE TABLE_SCHEMA = %s 
             AND TABLE_NAME LIKE %s
-        """, (os.environ.get('DATABASE_NAME', 'dockerdjango'), '%model%'))
+        """, (os.environ.get('DATABASE_NAME', 'dockerdjango'), '%Model%'))
         
         tables = cursor.fetchall()
         logger.info(f"Found tables matching 'model': {tables}")

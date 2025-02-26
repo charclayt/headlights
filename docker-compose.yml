@@ -66,6 +66,11 @@ services:
       - ./ml_service:/app
     env_file:
       - .env
+    develop:
+      watch:
+        - action: rebuild
+          path: ./
+          target: ./
 
 volumes:
   mysql_data:
