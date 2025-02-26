@@ -11,18 +11,8 @@
 # Changes made to the database can turned into models using the following:
 #   python manage.py inspectdb > models.py
 
+from django.contrib.auth.models import User
 from django.db import models
-
-
-class Bod(models.Model):
-    bod_id = models.AutoField(db_column='BodID', primary_key=True)  # Field name made lowercase.
-    username = models.CharField(db_column='Username', max_length=255, blank=True, null=True)  # Field name made lowercase.
-    permission_id = models.ForeignKey('PermissionLevel', models.PROTECT, db_column='PermissionID', blank=True, null=True)  # Field name made lowercase.
-
-    class Meta:
-        #managed = False
-        db_table = 'Bod'
-
 
 class Claim(models.Model):
     claim_id = models.AutoField(db_column='ClaimID', primary_key=True)  # Field name made lowercase.
@@ -64,32 +54,32 @@ class Claim(models.Model):
     gender = models.CharField(db_column='Gender', max_length=255, blank=True, null=True)  # Field name made lowercase.
 
     class Meta:
-        #managed = False
+        managed = True
         db_table = 'Claim'
 
 
 class Feedback(models.Model):
     feedback_id = models.AutoField(db_column='FeedbackID', primary_key=True)  # Field name made lowercase.
-    bod_id = models.ForeignKey(Bod, models.PROTECT, db_column='BodID', blank=True, null=True)  # Field name made lowercase.
+    user_id = models.ForeignKey(User, models.PROTECT, db_column='UserID', blank=True, null=True)  # Field name made lowercase.
     rating = models.IntegerField(db_column='Rating', blank=True, null=True)  # Field name made lowercase.
     notes = models.CharField(db_column='Notes', max_length=255, blank=True, null=True)  # Field name made lowercase.
 
     class Meta:
-        #managed = False
+        managed = True
         db_table = 'Feedback'
 
 
 class Log(models.Model):
     log_id = models.AutoField(db_column='LogID', primary_key=True)  # Field name made lowercase.
     log_time = models.DateTimeField(db_column='LogTime', blank=True, null=True)  # Field name made lowercase.
-    bod_id = models.ForeignKey(Bod, models.PROTECT, db_column='BodID', blank=True, null=True)  # Field name made lowercase.
+    user_id = models.ForeignKey(User, models.PROTECT, db_column='UserID', blank=True, null=True)  # Field name made lowercase.
     affected_table_id = models.ForeignKey('TableLookup', models.PROTECT, db_column='AffectedTableID', blank=True, null=True)  # Field name made lowercase.
     operation_performed = models.ForeignKey('OperationLookup', models.PROTECT, db_column='OperationPerformed', blank=True, null=True)  # Field name made lowercase.
     successful = models.BooleanField(db_column='Successful', blank=True, null=True)  # Field name made lowercase.
     notes = models.CharField(db_column='Notes', max_length=255, blank=True, null=True)  # Field name made lowercase.
 
     class Meta:
-        #managed = False
+        managed = True
         db_table = 'Log'
 
 
@@ -100,7 +90,7 @@ class Model(models.Model): # I think we should rename this as model is reference
     filepath = models.CharField(db_column='FilePath', max_length=255, blank=True, null=True)  # Field name made lowercase.
 
     class Meta:
-        #managed = False
+        managed = True
         db_table = 'Model'
 
 
@@ -109,19 +99,8 @@ class OperationLookup(models.Model):
     operation_name = models.CharField(db_column='OperationName', max_length=255, blank=True, null=True)  # Field name made lowercase.
 
     class Meta:
-        #managed = False
+        managed = True
         db_table = 'OperationLookup'
-
-
-class PermissionLevel(models.Model):
-    permission_id = models.AutoField(db_column='PermissionID', primary_key=True)  # Field name made lowercase.
-    system_permission_level = models.IntegerField(db_column='SystemPermissionLevel', blank=True, null=True)  # Field name made lowercase.
-    ml_permission_level = models.IntegerField(db_column='MLPermissionLevel', blank=True, null=True)  # Field name made lowercase.
-    notes = models.CharField(db_column='Notes', max_length=255, blank=True, null=True)  # Field name made lowercase.
-
-    class Meta:
-        #managed = False
-        db_table = 'PermissionLevel'
 
 
 class TableLookup(models.Model):
@@ -129,7 +108,7 @@ class TableLookup(models.Model):
     table_name = models.CharField(db_column='TableName', max_length=255, blank=True, null=True)  # Field name made lowercase.
 
     class Meta:
-        #managed = False
+        managed = True
         db_table = 'TableLookup'
 
 
@@ -138,18 +117,18 @@ class TrainingDataset(models.Model):
     claim_id = models.ForeignKey(Claim, models.PROTECT, db_column='ClaimID', blank=True, null=True)  # Field name made lowercase.
 
     class Meta:
-        #managed = False
+        managed = True
         db_table = 'TrainingDataset'
 
 
 class UploadedRecord(models.Model):
     uploaded_record_id = models.AutoField(db_column='UploadedRecordID', primary_key=True)  # Field name made lowercase.
-    bod_id = models.ForeignKey(Bod, models.PROTECT, db_column='BodID', blank=True, null=True)  # Field name made lowercase.
+    user_id = models.ForeignKey(User, models.PROTECT, db_column='UserID', blank=True, null=True)  # Field name made lowercase.
     claim_id = models.ForeignKey(Claim, models.PROTECT, db_column='ClaimID', blank=True, null=True)  # Field name made lowercase.
     feedback_id = models.ForeignKey(Feedback, models.PROTECT, db_column='FeedbackID', blank=True, null=True)  # Field name made lowercase.
     model_id = models.ForeignKey(Model, models.PROTECT, db_column='ModelID', blank=True, null=True)  # Field name made lowercase.
     predicted_settlement = models.FloatField(db_column='PredictedSettlement', blank=True, null=True)  # Field name made lowercase.
 
     class Meta:
-        #managed = False
+        managed = True
         db_table = 'UploadedRecord'
