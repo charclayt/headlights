@@ -33,8 +33,6 @@ urlpatterns = [
     
     # Add direct API routes at the root level
     path('api/models/', myapp_views.models_list, name="api_models_list"),
-    path('api/predict/', myapp_views.predict, name="api_predict"),
-    path('api/submit-claim/', myapp_views.submit_claim, name="api_submit_claim"),
     path('api/upload-model/', myapp_views.upload_model, name="api_upload_model"),
 ]
 

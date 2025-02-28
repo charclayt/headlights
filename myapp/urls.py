@@ -9,8 +9,6 @@ urlpatterns = [
     
     # ML-related API endpoints
     path("api/models/", views.models_list, name="models_list"),
-    path("api/predict/", views.predict, name="predict"),
-    path("api/submit-claim/", views.submit_claim, name="submit_claim"),
     path("api/upload-model/", views.upload_model, name="upload_model"),
     # Additional endpoints could be added here as needed
     # For example:
