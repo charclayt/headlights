@@ -37,38 +37,6 @@ class DataProcessor:
     
     @staticmethod
     def preprocess_claim_data(claim_data):
-        """Prepare claim data for model input"""
-        # PLACEHOLDER: In a real implementation, you would:
-        # 1. Convert dictionary to DataFrame or appropriate format
-        # 2. Handle missing values
-        # 3. Encode categorical variables
-        # 4. Scale numerical features
-        # 5. Transform to model's expected format
-        
-        # Example preprocessing (not functional):
-        """
-        df = pd.DataFrame([claim_data])
-        
-        # Handle missing values
-        df = df.fillna(0)
-        
-        # Encode categorical variables
-        categorical_features = ['accident_type', 'dominant_injury', 'vehicle_type', 'weather_conditions']
-        for feature in categorical_features:
-            if feature in df.columns:
-                # Use one-hot encoding or other appropriate method
-                pass
-        
-        # Scale numerical features
-        numerical_features = ['injury_prognosis', 'special_health_expenses']
-        for feature in numerical_features:
-            if feature in df.columns:
-                # Apply scaling if needed
-                pass
-        
-        # Return processed data in expected format
-        return df
-        """
         
         # For now, just return the original data
         return claim_data
@@ -117,12 +85,7 @@ class ModelEvaluator:
     @staticmethod
     def evaluate_model(model_id):
         """Evaluate a model's performance on historical data"""
-        # PLACEHOLDER: In a real implementation, you would:
-        # 1. Load the model
-        # 2. Get historical data from the database
-        # 3. Make predictions
-        # 4. Compare predictions with actual settlement values
-        # 5. Calculate metrics (RMSE, MAE, R^2, etc.)
+        # PLACEHOLDER
         
         # Return placeholder metrics
         return {
