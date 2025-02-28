@@ -11,10 +11,17 @@ from .models import Model
 logger = logging.getLogger(__name__)
 
 def index(request):
-    """Simple index page view"""
+    """Index page view - the home page"""
+    # Count the number of claims for the template context
+
+    return render(request, 'index.html')
+
+# Add this function to myapp/views.py
+def ml_dashboard(request):
+    """Machine Learning dashboard view"""
     # Get all models to display on the page
     models = Model.objects.all()
-    return render(request, 'myapp/index.html', {'models': models})
+    return render(request, 'ml.html', {'models': models})
 
 @require_http_methods(["GET"])
 def models_list(request):
@@ -26,8 +33,8 @@ def models_list(request):
         # Convert models to a list of dictionaries
         models_list = [
             {
-                'id': model.modelid,
-                'name': model.modelname,
+                'id': model.model_id,
+                'name': model.model_name,
                 'notes': model.notes,
                 'filepath': model.filepath
             }
@@ -90,8 +97,9 @@ def upload_model(request):
                 destination.write(chunk)
         
         # Create a new model record in the database
+        # NOTE: Field names updated to match the model's field names
         model = Model.objects.create(
-            modelname=model_name,
+            model_name=model_name,  # Updated from modelname to model_name
             notes=notes,
             filepath=file_path
         )
@@ -99,7 +107,7 @@ def upload_model(request):
         return JsonResponse({
             'status': 'success',
             'message': 'Model uploaded successfully',
-            'model_id': model.modelid
+            'model_id': model.model_id  # Updated from modelid to model_id
         })
     except Exception as e:
         logger.error(f"Error uploading model: {str(e)}")
@@ -107,8 +115,6 @@ def upload_model(request):
             'status': 'error',
             'message': f"An unexpected error occurred: {str(e)}"
         }, status=500)
-        
-        
 
 def model_check_on_startup():
     """Check if any ML models are available on startup"""
