@@ -5,16 +5,21 @@ from django.views.decorators.http import require_http_methods
 import os
 import logging
 import pickle
-from .models import Model
+from .models import Model, Claim
 
 # Configure logging
 logger = logging.getLogger(__name__)
 
 def index(request):
-    """Index page view - the home page"""
-    # Count the number of claims for the template context
+    """ View function for site home page (placeholder)"""
 
-    return render(request, 'index.html')
+    num_claims = Claim.objects.all().count()
+
+    context = {
+        'num_claims': num_claims
+    }
+
+    return render(request, 'index.html', context=context)
 
 # Add this function to myapp/views.py
 def ml_dashboard(request):
