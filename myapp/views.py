@@ -134,4 +134,3 @@ class MLUtils:
         except Exception as e:
             logger.error(f"Error loading model: {str(e)}")
             return None
-    
