@@ -11,4 +11,5 @@ urlpatterns = [
     path("api/models/", views.models_list, name="models_list"),
     path("api/upload-model/", views.upload_model, name="upload_model"),
     # Additional endpoints could be added here as needed
+
 ]
