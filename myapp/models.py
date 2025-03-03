@@ -15,43 +15,43 @@ from django.contrib.auth.models import User
 from django.db import models
 
 class Claim(models.Model):
-    claim_id = models.AutoField(db_column='ClaimID', primary_key=True)  # Field name made lowercase.
-    settlement_value = models.FloatField(db_column='SettlementValue', blank=True, null=True)  # Field name made lowercase.
-    accident_type = models.CharField(db_column='AccidentType', max_length=255, blank=True, null=True)  # Field name made lowercase.
-    injury_prognosis = models.IntegerField(db_column='InjuryPrognosis', blank=True, null=True)  # Field name made lowercase.
-    special_health_expenses = models.FloatField(db_column='SpecialHealthExpenses', blank=True, null=True)  # Field name made lowercase.
-    special_reduction = models.FloatField(db_column='SpecialReduction', blank=True, null=True)  # Field name made lowercase.
-    special_overage = models.FloatField(db_column='SpecialOverage', blank=True, null=True)  # Field name made lowercase.
-    general_rest = models.FloatField(db_column='GeneralRest', blank=True, null=True)  # Field name made lowercase.
-    special_additional_injury = models.FloatField(db_column='SpecialAdditionalInjury', blank=True, null=True)  # Field name made lowercase.
-    special_earnings_loss = models.FloatField(db_column='SpecialEarningsLoss', blank=True, null=True)  # Field name made lowercase.
-    special_usage_loss = models.FloatField(db_column='SpecialUsageLoss', blank=True, null=True)  # Field name made lowercase.
-    special_medications = models.FloatField(db_column='SpecialMedications', blank=True, null=True)  # Field name made lowercase.
-    special_asset_damage = models.FloatField(db_column='SpecialAssetDamage', blank=True, null=True)  # Field name made lowercase.
-    special_rehabilitation = models.FloatField(db_column='SpecialRehabilitation', blank=True, null=True)  # Field name made lowercase.
-    special_fixes = models.FloatField(db_column='SpecialFixes', blank=True, null=True)  # Field name made lowercase.
-    general_fixed = models.FloatField(db_column='GeneralFixed', blank=True, null=True)  # Field name made lowercase.
-    general_uplift = models.FloatField(db_column='GeneralUplift', blank=True, null=True)  # Field name made lowercase.
-    special_loaner_vehicle = models.FloatField(db_column='SpecialLoanerVehicle', blank=True, null=True)  # Field name made lowercase.
-    special_trip_costs = models.FloatField(db_column='SpecialTripCosts', blank=True, null=True)  # Field name made lowercase.
-    special_journey_expenses = models.FloatField(db_column='SpecialJourneyExpenses', blank=True, null=True)  # Field name made lowercase.
-    special_therapy = models.FloatField(db_column='SpecialTherapy', blank=True, null=True)  # Field name made lowercase.
-    exceptional_circumstances = models.IntegerField(db_column='ExceptionalCircumstances', blank=True, null=True)  # Field name made lowercase.
-    minor_psychological_injury = models.IntegerField(db_column='MinorPsychologicalInjury', blank=True, null=True)  # Field name made lowercase.
-    dominant_injury = models.CharField(db_column='DominantInjury', max_length=255, blank=True, null=True)  # Field name made lowercase.
-    whiplash = models.IntegerField(db_column='Whiplash', blank=True, null=True)  # Field name made lowercase.
-    vehicle_type = models.CharField(db_column='VehicleType', max_length=255, blank=True, null=True)  # Field name made lowercase.
-    weather_conditions = models.CharField(db_column='WeatherConditions', max_length=255, blank=True, null=True)  # Field name made lowercase.
-    accident_date = models.IntegerField(db_column='AccidentDate', blank=True, null=True)  # Field name made lowercase.
-    claim_date = models.IntegerField(db_column='ClaimDate', blank=True, null=True)  # Field name made lowercase.
-    vehicle_age = models.IntegerField(db_column='VehicleAge', blank=True, null=True)  # Field name made lowercase.
-    driver_age = models.IntegerField(db_column='DriverAge', blank=True, null=True)  # Field name made lowercase.
-    number_of_passengers = models.IntegerField(db_column='NumberOfPassengers', blank=True, null=True)  # Field name made lowercase.
-    accident_description = models.CharField(db_column='AccidentDescription', max_length=255, blank=True, null=True)  # Field name made lowercase.
-    injury_description = models.CharField(db_column='InjuryDescription', max_length=255, blank=True, null=True)  # Field name made lowercase.
-    police_report_filed = models.IntegerField(db_column='PoliceReportFiled', blank=True, null=True)  # Field name made lowercase.
-    witness_present = models.IntegerField(db_column='WitnessPresent', blank=True, null=True)  # Field name made lowercase.
-    gender = models.CharField(db_column='Gender', max_length=255, blank=True, null=True)  # Field name made lowercase.
+    claim_id = models.AutoField(db_column='ClaimID', primary_key=True)  
+    settlement_value = models.FloatField(db_column='SettlementValue', blank=True, null=True)  
+    accident_type = models.CharField(db_column='AccidentType', max_length=255, blank=True, null=True)  
+    injury_prognosis = models.IntegerField(db_column='InjuryPrognosis', blank=True, null=True)  
+    special_health_expenses = models.FloatField(db_column='SpecialHealthExpenses', blank=True, null=True)  
+    special_reduction = models.FloatField(db_column='SpecialReduction', blank=True, null=True)  
+    special_overage = models.FloatField(db_column='SpecialOverage', blank=True, null=True)  
+    general_rest = models.FloatField(db_column='GeneralRest', blank=True, null=True)  
+    special_additional_injury = models.FloatField(db_column='SpecialAdditionalInjury', blank=True, null=True)  
+    special_earnings_loss = models.FloatField(db_column='SpecialEarningsLoss', blank=True, null=True)  
+    special_usage_loss = models.FloatField(db_column='SpecialUsageLoss', blank=True, null=True)  
+    special_medications = models.FloatField(db_column='SpecialMedications', blank=True, null=True)  
+    special_asset_damage = models.FloatField(db_column='SpecialAssetDamage', blank=True, null=True)  
+    special_rehabilitation = models.FloatField(db_column='SpecialRehabilitation', blank=True, null=True)  
+    special_fixes = models.FloatField(db_column='SpecialFixes', blank=True, null=True)  
+    general_fixed = models.FloatField(db_column='GeneralFixed', blank=True, null=True)  
+    general_uplift = models.FloatField(db_column='GeneralUplift', blank=True, null=True)  
+    special_loaner_vehicle = models.FloatField(db_column='SpecialLoanerVehicle', blank=True, null=True)  
+    special_trip_costs = models.FloatField(db_column='SpecialTripCosts', blank=True, null=True)  
+    special_journey_expenses = models.FloatField(db_column='SpecialJourneyExpenses', blank=True, null=True)  
+    special_therapy = models.FloatField(db_column='SpecialTherapy', blank=True, null=True)  
+    exceptional_circumstances = models.IntegerField(db_column='ExceptionalCircumstances', blank=True, null=True)  
+    minor_psychological_injury = models.IntegerField(db_column='MinorPsychologicalInjury', blank=True, null=True)  
+    dominant_injury = models.CharField(db_column='DominantInjury', max_length=255, blank=True, null=True)  
+    whiplash = models.IntegerField(db_column='Whiplash', blank=True, null=True)  
+    vehicle_type = models.CharField(db_column='VehicleType', max_length=255, blank=True, null=True)  
+    weather_conditions = models.CharField(db_column='WeatherConditions', max_length=255, blank=True, null=True)  
+    accident_date = models.IntegerField(db_column='AccidentDate', blank=True, null=True)  
+    claim_date = models.IntegerField(db_column='ClaimDate', blank=True, null=True)  
+    vehicle_age = models.IntegerField(db_column='VehicleAge', blank=True, null=True)  
+    driver_age = models.IntegerField(db_column='DriverAge', blank=True, null=True)  
+    number_of_passengers = models.IntegerField(db_column='NumberOfPassengers', blank=True, null=True)  
+    accident_description = models.CharField(db_column='AccidentDescription', max_length=255, blank=True, null=True)  
+    injury_description = models.CharField(db_column='InjuryDescription', max_length=255, blank=True, null=True)  
+    police_report_filed = models.IntegerField(db_column='PoliceReportFiled', blank=True, null=True)  
+    witness_present = models.IntegerField(db_column='WitnessPresent', blank=True, null=True)  
+    gender = models.CharField(db_column='Gender', max_length=255, blank=True, null=True)  
 
     class Meta:
         managed = True
@@ -141,8 +141,8 @@ class Model(models.Model): # I think we should rename this as model is reference
 
 
 class OperationLookup(models.Model):
-    operation_id = models.AutoField(db_column='OperationID', primary_key=True)  # Field name made lowercase.
-    operation_name = models.CharField(db_column='OperationName', max_length=255, blank=True, null=True)  # Field name made lowercase.
+    operation_id = models.AutoField(db_column='OperationID', primary_key=True)  
+    operation_name = models.CharField(db_column='OperationName', max_length=255, blank=True, null=True)  
 
     class Meta:
         managed = True
@@ -150,8 +150,8 @@ class OperationLookup(models.Model):
 
 
 class TableLookup(models.Model):
-    table_id = models.AutoField(db_column='TableID', primary_key=True)  # Field name made lowercase.
-    table_name = models.CharField(db_column='TableName', max_length=255, blank=True, null=True)  # Field name made lowercase.
+    table_id = models.AutoField(db_column='TableID', primary_key=True) 
+    table_name = models.CharField(db_column='TableName', max_length=255, blank=True, null=True)  
 
     class Meta:
         managed = True
@@ -159,8 +159,8 @@ class TableLookup(models.Model):
 
 
 class TrainingDataset(models.Model):
-    training_dataset_id = models.AutoField(db_column='TrainingDatasetID', primary_key=True)  # Field name made lowercase.
-    claim_id = models.ForeignKey(Claim, models.PROTECT, db_column='ClaimID', blank=True, null=True)  # Field name made lowercase.
+    training_dataset_id = models.AutoField(db_column='TrainingDatasetID', primary_key=True)  
+    claim_id = models.ForeignKey(Claim, models.PROTECT, db_column='ClaimID', blank=True, null=True)  
 
     class Meta:
         managed = True
