@@ -58,11 +58,56 @@ class Claim(models.Model):
         db_table = 'Claim'
 
 
+class ContactInfo(models.Model):
+    contact_info_id = models.AutoField(db_column='ContactInfoID', primary_key=True)
+    phone = models.CharField(db_column='Phone', max_length=255, blank=True, null=True)
+    email = models.CharField(db_column='Email', max_length=255, blank=True, null=True)
+    address = models.CharField(db_column='Address', max_length=255, blank=True, null=True)
+    
+    class Meta:
+        managed = True
+        db_table = 'ContactInfo'
+    
+
+class Company(models.Model):
+    company_id = models.AutoField(db_column='CompanyID', primary_key=True)
+    contact_info_id = models.ForeignKey(ContactInfo, models.PROTECT, db_column='ContactInfoID', blank=True, null=True)
+    name = models.CharField(db_column='Name', max_length=255, blank=True, null=True)
+    
+    class Meta:
+        managed = True
+        db_table = 'Company'
+    
+
+class UserProfile(models.Model):
+    user_profile_id = models.AutoField(db_column='UserProfileID', primary_key=True)
+    auth_id = models.ForeignKey(User, models.PROTECT, db_column='AuthID', blank=True, null=True)
+    contact_info_id = models.ForeignKey(ContactInfo, models.PROTECT, db_column='ContactInfoID', blank=True, null=True)
+    company_id = models.ForeignKey(Company, models.PROTECT, db_column='CompanyID', blank=True, null=True)
+    
+    class Meta:
+        managed = True
+        db_table = 'UserProfile'
+
+
+class FinanceReport(models.Model):
+    finance_report_id = models.AutoField(db_column='FinanceReportID', primary_key=True)
+    user_id = models.ForeignKey(UserProfile, models.PROTECT, db_column='UserID', blank=True, null=True) 
+    year = models.IntegerField(db_column='Year', blank=True, null=True)  
+    month = models.IntegerField(db_column='Month', blank=True, null=True)
+    cost_incurred = models.FloatField(db_column='CostIncurred', blank=True, null=True)
+    generated_invoice = models.CharField(db_column='GeneratedInvoice', max_length=255, blank=True, null=True)
+    
+    class Meta:
+        managed = True
+        db_table = 'FinanceReport'
+
+
 class Feedback(models.Model):
-    feedback_id = models.AutoField(db_column='FeedbackID', primary_key=True)  # Field name made lowercase.
-    user_id = models.ForeignKey(User, models.PROTECT, db_column='UserID', blank=True, null=True)  # Field name made lowercase.
-    rating = models.IntegerField(db_column='Rating', blank=True, null=True)  # Field name made lowercase.
-    notes = models.CharField(db_column='Notes', max_length=255, blank=True, null=True)  # Field name made lowercase.
+    feedback_id = models.AutoField(db_column='FeedbackID', primary_key=True)  
+    user_id = models.ForeignKey(UserProfile, models.PROTECT, db_column='UserID', blank=True, null=True)  
+    rating = models.IntegerField(db_column='Rating', blank=True, null=True)  
+    notes = models.CharField(db_column='Notes', max_length=255, blank=True, null=True)  
 
     class Meta:
         managed = True
@@ -84,10 +129,11 @@ class DatabaseLog(models.Model):
 
 
 class Model(models.Model): # I think we should rename this as model is referenced a lot throughout Django
-    model_id = models.AutoField(db_column='ModelID', primary_key=True)  # Field name made lowercase.
-    model_name = models.CharField(db_column='ModelName', max_length=255, blank=True, null=True)  # Field name made lowercase.
-    notes = models.CharField(db_column='Notes', max_length=255, blank=True, null=True)  # Field name made lowercase.
-    filepath = models.CharField(db_column='FilePath', max_length=255, blank=True, null=True)  # Field name made lowercase.
+    model_id = models.AutoField(db_column='ModelID', primary_key=True)  
+    model_name = models.CharField(db_column='ModelName', max_length=255, blank=True, null=True)  
+    notes = models.CharField(db_column='Notes', max_length=255, blank=True, null=True)  
+    filepath = models.CharField(db_column='FilePath', max_length=255, blank=True, null=True)  
+    price_per_prediction = models.FloatField(db_column='PricePerPrediction', blank=True, null=True)
 
     class Meta:
         managed = True
@@ -122,12 +168,13 @@ class TrainingDataset(models.Model):
 
 
 class UploadedRecord(models.Model):
-    uploaded_record_id = models.AutoField(db_column='UploadedRecordID', primary_key=True)  # Field name made lowercase.
-    user_id = models.ForeignKey(User, models.PROTECT, db_column='UserID', blank=True, null=True)  # Field name made lowercase.
-    claim_id = models.ForeignKey(Claim, models.PROTECT, db_column='ClaimID', blank=True, null=True)  # Field name made lowercase.
-    feedback_id = models.ForeignKey(Feedback, models.PROTECT, db_column='FeedbackID', blank=True, null=True)  # Field name made lowercase.
-    model_id = models.ForeignKey(Model, models.PROTECT, db_column='ModelID', blank=True, null=True)  # Field name made lowercase.
-    predicted_settlement = models.FloatField(db_column='PredictedSettlement', blank=True, null=True)  # Field name made lowercase.
+    uploaded_record_id = models.AutoField(db_column='UploadedRecordID', primary_key=True)  
+    user_id = models.ForeignKey(UserProfile, models.PROTECT, db_column='UserID', blank=True, null=True)  
+    claim_id = models.ForeignKey(Claim, models.PROTECT, db_column='ClaimID', blank=True, null=True)  
+    feedback_id = models.ForeignKey(Feedback, models.PROTECT, db_column='FeedbackID', blank=True, null=True)  
+    model_id = models.ForeignKey(Model, models.PROTECT, db_column='ModelID', blank=True, null=True)  
+    predicted_settlement = models.FloatField(db_column='PredictedSettlement', blank=True, null=True)  
+    upload_date = models.DateField(db_column='UploadDate', blank=True, null=True)
 
     class Meta:
         managed = True
