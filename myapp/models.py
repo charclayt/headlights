@@ -69,18 +69,18 @@ class Feedback(models.Model):
         db_table = 'Feedback'
 
 
-class Log(models.Model):
-    log_id = models.AutoField(db_column='LogID', primary_key=True)  # Field name made lowercase.
-    log_time = models.DateTimeField(db_column='LogTime', blank=True, null=True)  # Field name made lowercase.
-    user_id = models.ForeignKey(User, models.PROTECT, db_column='UserID', blank=True, null=True)  # Field name made lowercase.
-    affected_table_id = models.ForeignKey('TableLookup', models.PROTECT, db_column='AffectedTableID', blank=True, null=True)  # Field name made lowercase.
-    operation_performed = models.ForeignKey('OperationLookup', models.PROTECT, db_column='OperationPerformed', blank=True, null=True)  # Field name made lowercase.
-    successful = models.BooleanField(db_column='Successful', blank=True, null=True)  # Field name made lowercase.
-    notes = models.CharField(db_column='Notes', max_length=255, blank=True, null=True)  # Field name made lowercase.
+class DatabaseLog(models.Model):
+    database_log_id = models.AutoField(db_column='DatabaseLogID', primary_key=True)  
+    log_time = models.DateTimeField(db_column='LogTime', blank=True, null=True)  
+    user_id = models.ForeignKey(UserProfile, models.PROTECT, db_column='UserID', blank=True, null=True)  
+    affected_table_id = models.ForeignKey('TableLookup', models.PROTECT, db_column='AffectedTableID', blank=True, null=True)  
+    operation_performed = models.ForeignKey('OperationLookup', models.PROTECT, db_column='OperationPerformed', blank=True, null=True)  
+    successful = models.BooleanField(db_column='Successful', blank=True, null=True)  
+    notes = models.CharField(db_column='Notes', max_length=255, blank=True, null=True)  
 
     class Meta:
         managed = True
-        db_table = 'Log'
+        db_table = 'DatabaseLog'
 
 
 class Model(models.Model): # I think we should rename this as model is referenced a lot throughout Django
