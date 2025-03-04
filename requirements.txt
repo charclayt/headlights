@@ -7,6 +7,6 @@ mysqlclient==2.2.0
 numpy==2.2.3
 pandas==2.2.3
 psycopg2-binary==2.9.10
-requests==2.31.0
+requests==2.32.2
 ruff==0.9.8
 sqlparse==0.5.2
