@@ -15,13 +15,27 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.conf import settings
-from django.conf.urls.static import static
 from django.urls import path, include
 from django.views.generic import RedirectView
+from django.conf import settings
+from django.conf.urls.static import static
+from myapp import views as myapp_views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("myapp/", include("myapp.urls")),
-    path("", RedirectView.as_view(url="myapp/", permanent=True)),
-] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    
+    # Root redirects to app/
+    path('', RedirectView.as_view(url='/app/')),
+    
+    # Include myapp URLs under both /app/ and /myapp/ paths
+    path('app/', include('myapp.urls')),
+    path('myapp/', include('myapp.urls')),  # Added this line to handle /myapp/ URLs
+    
+    # Add direct API routes at the root level
+    path('api/models/', myapp_views.models_list, name="api_models_list"),
+    path('api/upload-model/', myapp_views.upload_model, name="api_upload_model"),
+]
+
+# Add media URL to serve uploaded files
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
