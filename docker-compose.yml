@@ -5,7 +5,7 @@ services:
       MYSQL_DATABASE: ${DATABASE_NAME}
       MYSQL_USER: ${DATABASE_USERNAME}
       MYSQL_PASSWORD: ${DATABASE_PASSWORD}
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD} # Add a root password
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     ports:
       - "3307:3306"
     volumes:
@@ -31,7 +31,7 @@ services:
       DEBUG: ${DEBUG}
       DJANGO_LOGLEVEL: ${DJANGO_LOGLEVEL}
       DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS}
-      DATABASE_ENGINE: "django.db.backends.mysql" # Update to MySQL backend
+      DATABASE_ENGINE: "django.db.backends.mysql"
       DATABASE_NAME: ${DATABASE_NAME}
       DATABASE_USERNAME: ${DATABASE_USERNAME}
       DATABASE_PASSWORD: ${DATABASE_PASSWORD}
@@ -40,6 +40,7 @@ services:
       PYTHONPATH: /app
     volumes:
       - .:/app
+      - ./media:/app/media
     command: python manage.py runserver 0.0.0.0:8000
     env_file:
       - .env
