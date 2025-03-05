@@ -3,7 +3,7 @@ name: Django CI
 on:
   push:
     branches: [ "main" ]
-  pull_request:
+  pull_request_target:
     branches: [ "main" ]
 
 jobs:
@@ -18,10 +18,10 @@ jobs:
     services:
       mysql:
         image: mysql:8.0
-        ports:
-          - 3306:3306
         env:
           MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
+        ports:
+          - 3306:3306
 
     steps:
     - uses: actions/checkout@v4
@@ -42,6 +42,7 @@ jobs:
         DATABASE_HOST: ${{ secrets.DATABASE_HOST }}
         DATABASE_PORT: ${{ secrets.DATABASE_PORT }}
       run: |
+        python manage.py migrate
         coverage run --rcfile ./config/test/.coveragerc manage.py test
     - name: Generate and output coverage report
       run: |
