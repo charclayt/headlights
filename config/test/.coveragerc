@@ -1,4 +1,3 @@
 [run]
-relative_files = False
 source = myapp
 omit = */migrations/*
