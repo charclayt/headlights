@@ -1,21 +1,15 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Insurance Claims ML System</title>
-    {% load static %}
-    <link rel="stylesheet" href="{% static 'css/ml.css' %}">
-</head>
-<body>
-    <h1>Insurance Claims ML System</h1>
+{% extends "base_generic.html" %}
+
+{% block content %}
     
+    <h1>Insurance Claims ML System</h1>
+
     <div class="container">
         <h2>Check Available Models</h2>
         <button id="checkModels">Check ML Models</button>
         <pre id="modelResult">Results will appear here...</pre>
     </div>
-    
+
     <div class="container">
         <h2>Upload New Model</h2>
         <form id="uploadModelForm" enctype="multipart/form-data">
@@ -37,7 +31,7 @@
         <div id="successMessage" class="success-message">Model uploaded successfully!</div>
         <div id="errorMessage" class="error-message">Error uploading model.</div>
     </div>
-    
+
     <script>
         // Function to check available models
         document.getElementById('checkModels').addEventListener('click', async () => {
@@ -98,5 +92,4 @@
             }
         });
     </script>
-</body>
-</html>
+{% endblock %}

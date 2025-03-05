@@ -1,10 +1,13 @@
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
-import os
+
 import logging
+import os
 import pickle
+
 from .models import Model, Claim
 
 # Configure logging
@@ -21,7 +24,7 @@ def index(request):
 
     return render(request, 'index.html', context=context)
 
-# Add this function to myapp/views.py
+@login_required
 def ml_dashboard(request):
     """Machine Learning dashboard view"""
     # Get all models to display on the page
