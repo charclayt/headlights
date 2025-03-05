@@ -47,7 +47,8 @@ jobs:
         DATABASE_PORT: ${{ secrets.DATABASE_PORT }}
       run: |
         coverage run --rcfile ./config/test/.coveragerc manage.py test
-    - name: Coverage Report
-      uses: py-cov-action/python-coverage-comment-action@v3
+        coverage xml
+    - name: Upload coverage reports to Codecov
+      uses: codecov/codecov-action@v5
       with:
-        GITHUB_TOKEN: ${{ github.token }}
+        token: ${{ secrets.CODECOV_TOKEN }}
