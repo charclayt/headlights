@@ -1,6 +1,5 @@
 from django.test import TestCase
 from django.db import connections
-from django.db.utils import OperationalError
 
 class DatabaseTest(TestCase):  
 
