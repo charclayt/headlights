@@ -1,5 +1,4 @@
 from django.test import TestCase
-from django.urls import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 from myapp.tests.BaseViewTest import BaseViewTest, USER_NAME, USER_PASSWORD

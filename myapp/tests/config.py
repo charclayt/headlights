@@ -1,7 +1,4 @@
 from datetime import datetime
-import os
-
-from desd.settings import BASE_DIR
 
 class ErrorCodes:
     OK = 200
