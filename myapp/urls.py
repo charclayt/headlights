@@ -2,14 +2,17 @@
 URL configuration for desd project.
 """
 from django.urls import path
-from . import views
+
+from myapp.views.IndexView import IndexView
+from myapp.views.MLDashboardView import MLDashboardView, ModelListView, UploadModelView
+
 
 urlpatterns = [
-    path("", views.index, name="index"),
-    path("ml/", views.ml_dashboard, name="ml_dashboard"),
+    path("", IndexView.as_view(), name="index"),
+    path("ml/", MLDashboardView.as_view() , name="ml_dashboard"),
     
     # ML-related API endpoints
-    path("api/models/", views.models_list, name="models_list"),
-    path("api/upload-model/", views.upload_model, name="upload_model"),
+    path("api/models/", ModelListView.as_view(), name="models_list"),
+    path("api/upload-model/", UploadModelView.as_view(), name="upload_model"),
     # Additional endpoints could be added here as needed
 ]
