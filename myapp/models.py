@@ -13,6 +13,11 @@
 
 from django.contrib.auth.models import User
 from django.db import models
+import logging
+import pandas as pd
+
+logger = logging.getLogger(__name__)
+
 
 class Claim(models.Model):
     claim_id = models.AutoField(db_column='ClaimID', primary_key=True)  
@@ -56,6 +61,37 @@ class Claim(models.Model):
     class Meta:
         managed = True
         db_table = 'Claim'
+        
+    @staticmethod
+    def validate_columns(df: pd.DataFrame) -> tuple[bool, list[str], list[str]]:
+        attributes = Claim._meta.get_fields()
+        db_column_names = []
+        for attr in attributes:
+            if hasattr(attr, 'db_column'):
+                db_column_names.append(attr.db_column)
+        db_column_names.pop(0) # Remove the primary key
+        
+        csv_columns = df.columns
+
+        excess_columns = []
+        for column in csv_columns:
+            if column in db_column_names:
+                db_column_names.remove(column)
+            else:
+                excess_columns.append(column)
+                
+        missing_columns = db_column_names[:]
+        
+        valid = True
+        if missing_columns.count() > 0:
+            valid = False
+            
+        return valid, missing_columns, excess_columns
+    
+    @staticmethod
+    def create_claims_from_dataframe(df: pd.DataFrame):
+        for datarow in df.iterrows():
+            pass
 
 
 class ContactInfo(models.Model):
