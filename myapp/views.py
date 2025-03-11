@@ -1,14 +1,16 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseRedirect
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
 import logging
 import os
 import pickle
+import pandas as pd
 
 from .models import Model, Claim
+from .forms import RecordUploadForm
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -17,13 +19,27 @@ def index(request):
     """ View function for site home page (placeholder)"""
 
     num_claims = Claim.objects.all().count()
+    upload_form = RecordUploadForm()
 
     context = {
-        'num_claims': num_claims
+        'num_claims': num_claims,
+        'upload_form': upload_form,
     }
 
     return render(request, 'index.html', context=context)
 
+@login_required
+@require_http_methods(["POST"])
+def record_upload(request):
+    form = RecordUploadForm(request.POST, request.FILES)
+    if form.is_valid():
+        file = request.FILES['file']
+        csv = pd.read_csv(file)
+        if Claim.validate_columns(csv):
+            Claim.create_claims_from_dataframe(csv)
+            
+    return HttpResponseRedirect("/")
+    
 @login_required
 def ml_dashboard(request):
     """Machine Learning dashboard view"""
