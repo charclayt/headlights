@@ -13,7 +13,7 @@ class MyappConfig(AppConfig):
         import os
         if os.environ.get('RUN_MAIN', None) != 'true':
             try:
-                from .views import model_check_on_startup
+                from myapp.views.MLDashboardView import model_check_on_startup
                 model_check_on_startup()
             except Exception as e:
                 logger.warning(f"Failed to run model check on startup: {e}")

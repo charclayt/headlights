@@ -19,7 +19,8 @@ from django.urls import path, include
 from django.views.generic import RedirectView
 from django.conf import settings
 from django.conf.urls.static import static
-from myapp import views as myapp_views
+
+from myapp.views.MLDashboardView import ModelListView, UploadModelView
 
 urlpatterns = [
     path("accounts/", include("django.contrib.auth.urls")),
@@ -33,8 +34,8 @@ urlpatterns = [
     path('myapp/', include('myapp.urls')),  # Added this line to handle /myapp/ URLs
     
     # Add direct API routes at the root level
-    path('api/models/', myapp_views.models_list, name="api_models_list"),
-    path('api/upload-model/', myapp_views.upload_model, name="api_upload_model"),
+    path('api/models/', ModelListView.as_view(), name="api_models_list"),
+    path('api/upload-model/', UploadModelView.as_view(), name="api_upload_model"),
 ]
 
 # Add media URL to serve uploaded files
