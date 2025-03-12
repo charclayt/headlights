@@ -17,8 +17,6 @@ from datetime import date
 from .utility.SimpleResults import SimpleResult, SimpleResultWithPayload
 import pandas as pd
 
-logger = logging.getLogger(__name__)
-
 
 class Claim(models.Model):
     claim_id = models.AutoField(db_column='ClaimID', primary_key=True)  
@@ -263,3 +261,29 @@ class UploadedRecord(models.Model):
     class Meta:
         managed = True
         db_table = 'UploadedRecord'
+
+    @staticmethod
+    def upload_claims_from_file(file, user: UserProfile) -> SimpleResult:
+        result = SimpleResult()
+        
+        csv = pd.read_csv(file)
+        claimValidationResult = Claim.validate_columns(csv)
+        if not claimValidationResult.success:
+            result.add_messages_from_result_and_mark_unsuccessful_if_error_found(claimValidationResult)
+            return result
+            
+        claims: list[Claim] = Claim.create_claims_from_dataframe(csv)
+        for claim in claims:
+            claim.save()
+            
+            uploadedRecord = UploadedRecord()
+            uploadedRecord.user_id = None if not user else user.user_profile_id # TODO: remove this when account creation is implemented
+            uploadedRecord.claim_id = claim.claim_id
+            uploadedRecord.feedback_id = None
+            uploadedRecord.model_id = None
+            uploadedRecord.predicted_settlement = None
+            uploadedRecord.upload_date = date.today()
+            
+            uploadedRecord.save()
+            
+        return result

@@ -9,7 +9,7 @@ import os
 import pickle
 import pandas as pd
 
-from .models import Model, Claim
+from .models import Model, Claim, UploadedRecord
 from .forms import RecordUploadForm
 
 # Configure logging
@@ -34,9 +34,7 @@ def record_upload(request):
     form = RecordUploadForm(request.POST, request.FILES)
     if form.is_valid():
         file = request.FILES['file']
-        csv = pd.read_csv(file)
-        if Claim.validate_columns(csv):
-            Claim.create_claims_from_dataframe(csv)
+        result = UploadedRecord.upload_claims_from_file(file, None)
             
     return HttpResponseRedirect("/")
     
