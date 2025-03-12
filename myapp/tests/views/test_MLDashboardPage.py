@@ -1,11 +1,11 @@
 from django.test import TestCase
 from django.core.files.uploadedfile import SimpleUploadedFile
 
-from myapp.tests.BaseViewTest import BaseViewTest, USER_NAME, USER_PASSWORD
+from myapp.tests.test_BaseView import BaseViewTest, USER_NAME, USER_PASSWORD
 from myapp.models import Model, UploadedRecord
 from myapp.tests.config import Views, Templates, TestData, ErrorCodes
 
-class TestMLDashboardPage(BaseViewTest, TestCase):
+class MLDashboardPageTest(BaseViewTest, TestCase):
 
     URL = Views.MACHINE_LEARNING
     TEMPLATE = Templates.MACHINE_LEARNING
