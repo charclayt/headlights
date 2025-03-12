@@ -41,6 +41,7 @@ jobs:
         DATABASE_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
         DATABASE_HOST: ${{ secrets.DATABASE_HOST }}
         DATABASE_PORT: ${{ secrets.DATABASE_PORT }}
+        DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
       run: |
         coverage run --rcfile ./config/test/.coveragerc manage.py test
     - name: Generate and output coverage report
