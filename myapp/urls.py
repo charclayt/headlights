@@ -9,7 +9,7 @@ urlpatterns = [
     path("ml/", views.ml_dashboard, name="ml_dashboard"),
     
     # Testing urls for dashboard features, to be replaced by more appropriate urls later
-    path("test/record-upload", views.record_upload, name="upload"),
+    path("user/record-upload", views.record_upload, name="upload"),
     
     # ML-related API endpoints
     path("api/models/", views.models_list, name="models_list"),

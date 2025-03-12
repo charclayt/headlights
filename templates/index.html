@@ -7,7 +7,7 @@
     <ul>
         <li><strong>Claims:</strong> {{ num_claims }}</li>
     </ul>
-    <form action="./test/record-upload" method="POST" enctype="multipart/form-data">
+    <form action="./user/record-upload" method="POST" enctype="multipart/form-data">
         {% csrf_token %}
         {{ upload_form }}
         <input type="submit">

@@ -13,7 +13,8 @@
 
 from django.contrib.auth.models import User
 from django.db import models
-import logging
+from datetime import date
+from .utility.SimpleResults import SimpleResult, SimpleResultWithPayload
 import pandas as pd
 
 logger = logging.getLogger(__name__)
@@ -63,7 +64,9 @@ class Claim(models.Model):
         db_table = 'Claim'
         
     @staticmethod
-    def validate_columns(df: pd.DataFrame) -> tuple[bool, list[str], list[str]]:
+    def validate_columns(df: pd.DataFrame) -> SimpleResult:
+        result = SimpleResult()
+        
         attributes = Claim._meta.get_fields()
         db_column_names = []
         for attr in attributes:
@@ -81,18 +84,14 @@ class Claim(models.Model):
                 excess_columns.append(column)
                 
         missing_columns = db_column_names[:]
-        
-        valid = True
-        if missing_columns.count() > 0:
-            valid = False
-            
-        return valid, missing_columns, excess_columns
-    
-    @staticmethod
-    def create_claims_from_dataframe(df: pd.DataFrame):
-        for datarow in df.iterrows():
-            pass
 
+        if len(missing_columns) > 0 :
+            result.add_error_message_and_mark_unsuccessful(f"Missing Columns: {', '.join(missing_columns)}")
+            
+        if len(excess_columns) > 0:
+            result.add_error_message_and_mark_unsuccessful(f"Excess Columns: {', '.join(missing_columns)}")
+            
+        return result
 
 class ContactInfo(models.Model):
     contact_info_id = models.AutoField(db_column='ContactInfoID', primary_key=True)
