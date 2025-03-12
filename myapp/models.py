@@ -60,6 +60,18 @@ class Claim(models.Model):
     class Meta:
         managed = True
         db_table = 'Claim'
+
+    def __str__(self) -> str:
+        """
+        This function returns a Claim in a neat string format.
+        """
+        return f"""{self.settlement_value} | {self.accident_type} | {self.injury_prognosis} | {self.special_health_expenses} |
+                 {self.special_reduction} | {self.special_overage} | {self.general_rest} | {self.special_additional_injury} |
+                 {self.special_earnings_loss} | {self.special_usage_loss} | {self.special_medications} | {self.special_asset_damage} |
+                 {self.special_rehabilitation} | {self.special_fixes} | {self.general_fixed} | {self.general_uplift} | {self.special_loaner_vehicle} |
+                 {self.special_trip_costs} | {self.special_journey_expenses} | {self.special_therapy} | {self.exceptional_circumstances} | {self.minor_psychological_injury} |
+                 {self.dominant_injury} | {self.whiplash} | {self.vehicle_type} | {self.weather_conditions} | {self.accident_date} | {self.claim_date} | {self.vehicle_age} |
+                 {self.driver_age} | {self.number_of_passengers} | {self.accident_description} | {self.injury_description} | {self.police_report_filed} | {self.witness_present} | {self.gender}"""
     
     def create_claim_from_series(datarow: pd.Series):
         claim = Claim()
@@ -149,6 +161,12 @@ class ContactInfo(models.Model):
     class Meta:
         managed = True
         db_table = 'ContactInfo'
+
+    def __str__(self) -> str:
+        """
+        This function returns ContactInfo in a neat string format.
+        """
+        return f"{self.email} | {self.phone} | {self.address}"
     
 
 class Company(models.Model):
@@ -159,6 +177,12 @@ class Company(models.Model):
     class Meta:
         managed = True
         db_table = 'Company'
+
+    def __str__(self) -> str:
+        """
+        This function returns a Company in a neat string format.
+        """
+        return f"{self.name} | {self.contact_info_id}"
     
 
 class UserProfile(models.Model):
@@ -170,6 +194,12 @@ class UserProfile(models.Model):
     class Meta:
         managed = True
         db_table = 'UserProfile'
+
+    def __str__(self) -> str:
+        """
+        This function returns a UserProfile in a neat string format.
+        """
+        return f"{self.auth_id} | {self.contact_info_id} | {self.company_id}"
 
 
 class FinanceReport(models.Model):
@@ -184,6 +214,12 @@ class FinanceReport(models.Model):
         managed = True
         db_table = 'FinanceReport'
 
+    def __str__(self) -> str:
+        """
+        This function returns a FinanceReport in a neat string format.
+        """
+        return f"{self.year} | {self.month} | {self.cost_incurred} | {self.generated_invoice}"
+
 
 class Feedback(models.Model):
     feedback_id = models.AutoField(db_column='FeedbackID', primary_key=True)  
@@ -194,6 +230,12 @@ class Feedback(models.Model):
     class Meta:
         managed = True
         db_table = 'Feedback'
+
+    def __str__(self) -> str:
+        """
+        This function returns Feedback in a neat string format.
+        """
+        return f"{self.rating} | {self.notes}"
 
 
 class DatabaseLog(models.Model):
@@ -209,6 +251,12 @@ class DatabaseLog(models.Model):
         managed = True
         db_table = 'DatabaseLog'
 
+    def __str__(self) -> str:
+        """
+        This function returns a DatabaseLog in a neat string format.
+        """
+        return f"{self.log_time} | {self.user_id} | {self.affected_table_id} | {self.operation_performed} | {self.successful} | {self.notes}"
+
 
 class Model(models.Model): # I think we should rename this as model is referenced a lot throughout Django
     model_id = models.AutoField(db_column='ModelID', primary_key=True)  
@@ -221,6 +269,12 @@ class Model(models.Model): # I think we should rename this as model is reference
         managed = True
         db_table = 'Model'
 
+    def __str__(self) -> str:
+        """
+        This function returns a Model in a neat string format.
+        """
+        return f"{self.model_name} | {self.notes} | {self.filepath} | {self.price_per_prediction}"
+
 
 class OperationLookup(models.Model):
     operation_id = models.AutoField(db_column='OperationID', primary_key=True)  
@@ -229,6 +283,12 @@ class OperationLookup(models.Model):
     class Meta:
         managed = True
         db_table = 'OperationLookup'
+
+    def __str__(self) -> str:
+        """
+        This function returns an OperationLookup in a neat string format.
+        """
+        return f"{self.operation_name}"
 
 
 class TableLookup(models.Model):
@@ -239,6 +299,12 @@ class TableLookup(models.Model):
         managed = True
         db_table = 'TableLookup'
 
+    def __str__(self) -> str:
+        """
+        This function returns a TableLookup in a neat string format.
+        """
+        return f"{self.table_name}"
+
 
 class TrainingDataset(models.Model):
     training_dataset_id = models.AutoField(db_column='TrainingDatasetID', primary_key=True)  
@@ -247,6 +313,12 @@ class TrainingDataset(models.Model):
     class Meta:
         managed = True
         db_table = 'TrainingDataset'
+
+    def __str__(self) -> str:
+        """
+        This function returns a TrainingDataset in a neat string format.
+        """
+        return f"{self.claim_id}"
 
 
 class UploadedRecord(models.Model):
@@ -261,6 +333,12 @@ class UploadedRecord(models.Model):
     class Meta:
         managed = True
         db_table = 'UploadedRecord'
+
+    def __str__(self) -> str:
+        """
+        This function returns an UploadedRecord in a neat string format.
+        """
+        return f"{self.user_id} | {self.claim_id} | {self.feedback_id} | {self.model_id} | {self.predicted_settlement} | {self.upload_date}"
 
     @staticmethod
     def upload_claims_from_file(file, user: UserProfile) -> SimpleResult:
