@@ -62,7 +62,56 @@ class Claim(models.Model):
     class Meta:
         managed = True
         db_table = 'Claim'
+    
+    def create_claim_from_series(datarow: pd.Series):
+        claim = Claim()
+        claim.settlement_value = datarow['SettlementValue']
+        claim.accident_type = datarow['AccidentType']
+        claim.injury_prognosis = datarow['InjuryPrognosis']
+        claim.special_health_expenses = datarow['SpecialHealthExpenses']
+        claim.special_reduction = datarow['SpecialReduction']
+        claim.special_overage = datarow['SpecialOverage']
+        claim.general_rest = datarow['GeneralRest']
+        claim.special_additional_injury = datarow['SpecialAdditionalInjury']
+        claim.special_earnings_loss = datarow['SpecialEarningsLoss']
+        claim.special_usage_loss = datarow['SpecialUsageLoss']
+        claim.special_medications = datarow['SpecialMedications']
+        claim.special_asset_damage = datarow['SpecialAssetDamage']
+        claim.special_rehabilitation = datarow['SpecialRehabilitation']
+        claim.special_fixes = datarow['SpecialFixes']
+        claim.general_fixed = datarow['GeneralFixed']
+        claim.general_uplift = datarow['GeneralUplift']
+        claim.special_loaner_vehicle = datarow['SpecialLoanerVehicle']
+        claim.special_trip_costs = datarow['SpecialTripCosts']
+        claim.special_journey_expenses = datarow['SpecialJourneyExpenses']
+        claim.special_therapy = datarow['SpecialTherapy']
+        claim.exceptional_circumstances = datarow['ExceptionalCircumstances']
+        claim.minor_psychological_injury = datarow['MinorPsychologicalInjury']
+        claim.dominant_injury = datarow['DominantInjury']
+        claim.whiplash = datarow['Whiplash']
+        claim.vehicle_type = datarow['VehicleType']
+        claim.weather_conditions = datarow['WeatherConditions']
+        claim.accident_date = datarow['AccidentDate']
+        claim.claim_date = datarow['ClaimDate']
+        claim.vehicle_age = datarow['VehicleAge']
+        claim.driver_age = datarow['DriverAge']
+        claim.number_of_passengers = datarow['NumberOfPassengers']
+        claim.accident_description = datarow['AccidentDescription']
+        claim.injury_description = datarow['InjuryDescription']
+        claim.police_report_filed = datarow['PoliceReportFiled']
+        claim.witness_present = datarow['WitnessPresent']
+        claim.gender = datarow['Gender']
         
+        return claim
+    
+    @staticmethod
+    def create_claims_from_dataframe(df: pd.DataFrame) -> list:
+        claims = []
+        for index, datarow in df.iterrows():
+            claims.append(Claim.create_claim_from_series(datarow))
+            
+        return claims
+    
     @staticmethod
     def validate_columns(df: pd.DataFrame) -> SimpleResult:
         result = SimpleResult()
