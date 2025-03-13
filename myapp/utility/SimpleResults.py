@@ -1,14 +1,13 @@
 class Message():
-    is_error: bool = False
-    text: str = ""
     
-    def __init__(self, is_error: bool, text: str):
+    def __init__(self, is_error: bool = False, text: str = ""):
         self.is_error = is_error
         self.text = text
 
 class SimpleResult():
-    success: bool = True
-    messages: list[Message] = []
+    def __init__(self):
+        self.success: bool = True
+        self.messages: list[Message] = []
     
     def add_info_message(self, text: str) -> None:
         self.messages.append(Message(False, text))
@@ -35,4 +34,6 @@ class SimpleResult():
         return [message for message in self.messages if message.is_error]
 
 class SimpleResultWithPayload(SimpleResult):
-    payload: any = None
+    def __init__(self):
+        super().__init__()
+        self.payload: any = None

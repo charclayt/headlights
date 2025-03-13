@@ -68,3 +68,4 @@ class TestSimpleResults(TestCase):
         simple_result_with_payload.payload = "one"
         
         self.assertEqual(simple_result_with_payload.payload, "one")
+        
