@@ -3,7 +3,6 @@ from django.views import View
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
-from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 
 import logging
@@ -122,7 +121,7 @@ class UploadModelView(View):
                 }, status=400)
             
             # Create a directory to store models if it doesn't exist
-            upload_dir = os.path.join('media', 'models')
+            upload_dir = os.path.join('/shared/media', 'models')
             os.makedirs(upload_dir, exist_ok=True)
             
             # Save the file

@@ -80,9 +80,9 @@ services:
       PYTHONPATH: /app
     volumes:
       - ./ml_service:/app
-      - ./media:/app/media
-      - ./templates:/app/templates
-      - ./static:/app/static
+      - ./media:/shared/media
+      - ./templates:/shared/templates
+      - ./static:/shared/static
     restart: always
     command: python manage.py runserver 0.0.0.0:8001
     env_file:
