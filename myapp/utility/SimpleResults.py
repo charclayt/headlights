@@ -25,7 +25,7 @@ class SimpleResult():
     def add_messages_from_result_and_mark_unsuccessful_if_error_found(self, simple_result) -> None:
         self.messages += simple_result.messages
         if len([message for message in simple_result.messages if message.is_error]) > 0:
-            self.successful = False
+            self.success = False
     
     def get_info_messages(self) -> list[Message]:
         return [message for message in self.messages if not message.is_error]
