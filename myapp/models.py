@@ -12,7 +12,7 @@
 #   python manage.py inspectdb > models.py
 
 from django.contrib.auth.models import User
-from django.db import models
+from django.db import models, transaction
 from datetime import date
 from .utility.SimpleResults import SimpleResult, SimpleResultWithPayload
 import pandas as pd
@@ -411,17 +411,31 @@ class UploadedRecord(models.Model):
             return result
             
         claims: list[Claim] = Claim.create_claims_from_dataframe(csv)
-        for claim in claims:
-            claim.save()
-            
-            uploadedRecord = UploadedRecord()
-            uploadedRecord.user_id = None if not user else user.user_profile_id # TODO: remove this when account creation is implemented
-            uploadedRecord.claim_id = claim.claim_id
-            uploadedRecord.feedback_id = None
-            uploadedRecord.model_id = None
-            uploadedRecord.predicted_settlement = None
-            uploadedRecord.upload_date = date.today()
-            
-            uploadedRecord.save()
+        
+        with transaction.atomic():
+            for claim in claims:
+                claim.save()
+                
+                uploadedRecord = UploadedRecord()
+                uploadedRecord.user_id = None if not user else user # TODO: remove this check when account creation is implemented
+                uploadedRecord.claim_id = claim
+                uploadedRecord.feedback_id = None
+                uploadedRecord.model_id = None
+                uploadedRecord.predicted_settlement = None
+                uploadedRecord.upload_date = date.today()
+                
+                uploadedRecord.save()
+        
+        return result
+    
+    @staticmethod
+    def get_records_by_user(user: UserProfile) -> SimpleResultWithPayload:
+        result = SimpleResultWithPayload()
+        
+        if user:
+            result.payload = UploadedRecord.objects.filter(user_id = user.user_profile_id)
+        else:
+            result.add_info_message("User was null, returning records without a user")
+            result.payload = UploadedRecord.objects.filter(user_id = None)
             
         return result
