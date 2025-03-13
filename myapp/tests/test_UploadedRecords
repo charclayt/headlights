@@ -1,0 +1,54 @@
+from django.test import TestCase
+
+from myapp.tests.test_Models import TestModels
+from myapp.models import UploadedRecord, UserProfile
+from myapp.utility.SimpleResults import SimpleResultWithPayload
+
+import pandas as pd
+
+"""
+TODO
+set up:
+    see baseview test
+    run TestModels.SetUp to get models into the db
+
+test get_records_by_user
+test upload_claims_from_file
+"""
+
+class TestUploadedRecords(TestCase):
+    
+    def test_record_upload_from_file(self):
+        
+        # pandas is weird about reading from the same file twice so we have to open it twice
+        with open('myapp/tests/data/TestData.csv') as f:
+            df = pd.read_csv(f)
+        settlement_value = df['SettlementValue'][0]
+            
+        with open('myapp/tests/data/TestData.csv') as f:
+            result = UploadedRecord.upload_claims_from_file(f, None)
+            
+        self.assertTrue(result.success, "Data upload was unsuccessful")
+        
+        uploadedRecord: UploadedRecord = result.payload[0]
+        
+        self.assertEqual(uploadedRecord.claim_id.settlement_value, settlement_value)
+        
+    def test_get_records_by_user(self):
+        # create a dummy user
+        user = UserProfile()
+        user.save()
+        
+        # create a dummy record
+        record = UploadedRecord()
+        record.user_id = user
+        record.save()
+        
+        result: SimpleResultWithPayload = UploadedRecord.get_records_by_user(user)
+        
+        self.assertTrue(result.success, "Data read was unsuccessful")
+        
+        returnedRecords: list[UploadedRecord] = result.payload
+        
+        self.assertEqual(len(returnedRecords), 1)
+        self.assertEqual(returnedRecords[0].uploaded_record_id, record.uploaded_record_id)

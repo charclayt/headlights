@@ -341,8 +341,8 @@ class UploadedRecord(models.Model):
         return f"{self.user_id} | {self.claim_id} | {self.feedback_id} | {self.model_id} | {self.predicted_settlement} | {self.upload_date}"
 
     @staticmethod
-    def upload_claims_from_file(file, user: UserProfile) -> SimpleResult:
-        result = SimpleResult()
+    def upload_claims_from_file(file, user: UserProfile) -> SimpleResultWithPayload:
+        result = SimpleResultWithPayload()
         
         csv = pd.read_csv(file)
         claimValidationResult = Claim.validate_columns(csv)
@@ -351,7 +351,7 @@ class UploadedRecord(models.Model):
             return result
             
         claims: list[Claim] = Claim.create_claims_from_dataframe(csv)
-        
+        uploadedRecords = []
         with transaction.atomic():
             for claim in claims:
                 claim.save()
@@ -365,6 +365,9 @@ class UploadedRecord(models.Model):
                 uploadedRecord.upload_date = date.today()
                 
                 uploadedRecord.save()
+                uploadedRecords.append(uploadedRecord)
+                
+        result.payload = uploadedRecords
         
         return result
     
