@@ -1,12 +1,7 @@
 asgiref==3.8.1
-coverage==7.6.12
-Django==5.1.7
+Django==5.1.5
 django-widget-tweaks==1.5.0
-dotenv==0.9.9
-gunicorn==23.0.0
-mysql-connector-python==9.2.0
 mysqlclient==2.2.0
 numpy==2.2.3
 pandas==2.2.3
-requests==2.32.2
 sqlparse==0.5.2

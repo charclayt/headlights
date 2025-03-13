@@ -1,15 +1,14 @@
 """
-Django settings for ml_service
+Django settings for ml_service project.
 """
 
-import os
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 
-# SECURITY WARNING: keep the secret key used in production secret!
+# Quick-start development settings - unsuitable for production
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -25,7 +24,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "ml_app.apps.MlAppConfig",
+    "ml_app.apps.MLAppConfig",
     "widget_tweaks",
 ]
 
@@ -44,7 +43,7 @@ ROOT_URLCONF = "ml_service.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [os.path.join("/shared", "templates")], 
+        "DIRS": [os.path.join(BASE_DIR, "templates")], 
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -66,7 +65,7 @@ DATABASES = {
         'NAME': os.getenv('DATABASE_NAME', 'default_db_name'),
         'USER': os.getenv('DATABASE_USERNAME', 'default_user'),
         'PASSWORD': os.getenv('DATABASE_PASSWORD', 'default_password'),
-        'HOST': os.getenv('DATABASE_HOST', 'localhost'),
+        'HOST': os.getenv('DATABASE_HOST', 'db'),
         'PORT': os.getenv('DATABASE_PORT', '3306'),
     }
 }
@@ -95,17 +94,18 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = "static/"
-STATICFILES_DIRS = ["/shared/static"]
+STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Media files (uploaded files)
 MEDIA_URL = '/media/'
-MEDIA_ROOT = "/shared/media"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 # Login settings
 LOGIN_REDIRECT_URL = "/"
+LOGIN_URL = "/accounts/login/"
 
 # Temporary email redirect
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

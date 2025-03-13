@@ -7,10 +7,9 @@ from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 
 import logging
-import pickle
 import os
 
-from ml_app.models import Model
+from .models import Model
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -20,9 +19,7 @@ def model_check_on_startup() -> None:
     """
     This method checks if any ML models are available on startup.
     """
-
     logger.info("Checking for available ML models on startup...")
-
     try:
         # Get all models from the database
         models_count = Model.objects.count()
@@ -36,47 +33,26 @@ class MLDashboardView(View):
     """
     This class handles the rendering and processing of the machine learning dashboard page.
     """
-
     template_name = "ml/ml.html"
 
     def get(self, request: HttpRequest) -> HttpResponse:
         """
         Handles the GET request for the machine learning dashboard page.
-
-        Args:
-            request: the GET request object.
-
-        Returns:
-            render: the ml.html template.
         """
-
         # Get all models to display on the page
         models = Model.objects.all()
-
         logger.info(f"{request.user} accessed the machine learning dashboard page.")
         return render(request, self.template_name, {'models': models})
 
 
-@method_decorator(require_http_methods(["GET"]), name="dispatch")
 class ModelListView(View):
     """
     This class handles the listing of all available ML models directly from the Django database.
     """
-
     def get(self, request: HttpRequest) -> JsonResponse:
         """
         Handles the GET request for listing all available ML models.
-
-        Args:
-            request: the GET request object.
-
-        Raises:
-            Exception: if an error occurs while retrieving the models.
-
-        Returns:
-            JsonResponse: a JSON response containing the list of models or no models found.
         """
-
         try:
             # Get all models from the database
             models = Model.objects.all()
@@ -106,7 +82,6 @@ class ModelListView(View):
 
         except Exception as e:
             logger.error(f"Error getting models: {str(e)}")
-
             return JsonResponse({
                 'status': 'error',
                 'message': f"An unexpected error occurred: {str(e)}"
@@ -118,21 +93,10 @@ class UploadModelView(View):
     """
     This class handles the uploading of a new ML model.
     """
-
     def post(self, request: HttpRequest) -> JsonResponse:
         """
         Handles the POST request for uploading a new ML model.
-
-        Args:
-            request: the POST request object.
-
-        Raises:
-            Exception: if an error occurs while uploading the model.
-
-        Returns:
-            JsonResponse: a JSON response indicating success or failure of the upload.
         """
-
         try:
             # Get model name and notes from the request
             model_name = request.POST.get('model_name')
@@ -174,7 +138,7 @@ class UploadModelView(View):
                 filepath=file_path
             )
             
-            logger.info("Model uploaded successfully.")
+            logger.info(f"Model '{model_name}' uploaded successfully with ID {model.model_id}.")
             return JsonResponse({
                 'status': 'success',
                 'message': 'Model uploaded successfully',
@@ -189,22 +153,6 @@ class UploadModelView(View):
             }, status=500)
 
 
-class MLUtils:
-    """
-    Utility class for ML operations
-    """
-    
-    @staticmethod
-    def load_model(model_path):
-        """Load a machine learning model from file"""
-        try:
-            with open(model_path, 'rb') as f:
-                model = pickle.load(f)
-            return model
-        except Exception as e:
-            logger.error(f"Error loading model: {str(e)}")
-            return None
-        
 class HealthCheckView(View):
     """
     Simple health check endpoint to verify the service is running.

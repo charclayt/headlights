@@ -13,6 +13,6 @@ class Model(models.Model):
 
     def __str__(self) -> str:
         """
-        This function returns a Model in a neat-ish string format.
+        This function returns a Model in a neat string format.
         """
         return f"{self.model_name} | {self.notes} | {self.filepath} | {self.price_per_prediction}"

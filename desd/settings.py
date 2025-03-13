@@ -57,7 +57,7 @@ ROOT_URLCONF = "desd.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [os.path.join(BASE_DIR, "templates")],
+        "DIRS": [os.path.join("/app", "templates")],  # Changed from "/shared/templates"
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -69,6 +69,7 @@ TEMPLATES = [
         },
     },
 ]
+
 WSGI_APPLICATION = "desd.wsgi.application"
 
 
@@ -122,17 +123,19 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
+# Change these paths
 STATIC_URL = "static/"
-STATICFILES_DIRS = [BASE_DIR / 'static']
+STATICFILES_DIRS = ["/app/static"] 
+
+# Media files (uploaded files)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = "/app/media"  
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# Media files (uploaded files)
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 LOGIN_REDIRECT_URL = "/"
 
