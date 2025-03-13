@@ -275,12 +275,6 @@ class Model(models.Model): # I think we should rename this as model is reference
         """
         return f"{self.model_name} | {self.notes} | {self.filepath} | {self.price_per_prediction}"
 
-    def __str__(self) -> str:
-        """
-        This function returns a Model in a neat string format.
-        """
-        return f"{self.model_name} | {self.notes} | {self.filepath} | {self.price_per_prediction}"
-
 
 class OperationLookup(models.Model):
     operation_id = models.AutoField(db_column='OperationID', primary_key=True)  
