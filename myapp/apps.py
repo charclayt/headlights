@@ -13,7 +13,7 @@ class MyappConfig(AppConfig):
         import os
         if os.environ.get('RUN_MAIN', None) != 'true':
             try:
-                from myapp.views.MLDashboardView import model_check_on_startup
-                model_check_on_startup()
+                # Log application startup without trying to call model_check_on_startup
+                logger.info("Application starting up...")
             except Exception as e:
-                logger.warning(f"Failed to run model check on startup: {e}")
+                logger.warning(f"Failed during startup: {e}")

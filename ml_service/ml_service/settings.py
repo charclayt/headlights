@@ -126,7 +126,7 @@ LOGGING = {
     'loggers': {
         'django': {
             'handlers': ['console'],
-            'level': os.getenv('DJANGO_LOGLEVEL', 'INFO'),
+            'level': 'INFO',
             'propagate': False,
         },
         'ml_app': {
