@@ -167,12 +167,6 @@ class ContactInfo(models.Model):
         This function returns ContactInfo in a neat string format.
         """
         return f"{self.email} | {self.phone} | {self.address}"
-
-    def __str__(self) -> str:
-        """
-        This function returns ContactInfo in a neat string format.
-        """
-        return f"{self.email} | {self.phone} | {self.address}"
     
 
 class Company(models.Model):
@@ -183,12 +177,6 @@ class Company(models.Model):
     class Meta:
         managed = True
         db_table = 'Company'
-
-    def __str__(self) -> str:
-        """
-        This function returns a Company in a neat string format.
-        """
-        return f"{self.name} | {self.contact_info_id}"
 
     def __str__(self) -> str:
         """
@@ -206,12 +194,6 @@ class UserProfile(models.Model):
     class Meta:
         managed = True
         db_table = 'UserProfile'
-
-    def __str__(self) -> str:
-        """
-        This function returns a UserProfile in a neat string format.
-        """
-        return f"{self.auth_id} | {self.contact_info_id} | {self.company_id}"
 
     def __str__(self) -> str:
         """
@@ -238,12 +220,6 @@ class FinanceReport(models.Model):
         """
         return f"{self.year} | {self.month} | {self.cost_incurred} | {self.generated_invoice}"
 
-    def __str__(self) -> str:
-        """
-        This function returns a FinanceReport in a neat string format.
-        """
-        return f"{self.year} | {self.month} | {self.cost_incurred} | {self.generated_invoice}"
-
 
 class Feedback(models.Model):
     feedback_id = models.AutoField(db_column='FeedbackID', primary_key=True)  
@@ -254,12 +230,6 @@ class Feedback(models.Model):
     class Meta:
         managed = True
         db_table = 'Feedback'
-
-    def __str__(self) -> str:
-        """
-        This function returns Feedback in a neat string format.
-        """
-        return f"{self.rating} | {self.notes}"
 
     def __str__(self) -> str:
         """
@@ -280,12 +250,6 @@ class DatabaseLog(models.Model):
     class Meta:
         managed = True
         db_table = 'DatabaseLog'
-
-    def __str__(self) -> str:
-        """
-        This function returns a DatabaseLog in a neat string format.
-        """
-        return f"{self.log_time} | {self.user_id} | {self.affected_table_id} | {self.operation_performed} | {self.successful} | {self.notes}"
 
     def __str__(self) -> str:
         """
@@ -331,13 +295,7 @@ class OperationLookup(models.Model):
         This function returns an OperationLookup in a neat string format.
         """
         return f"{self.operation_name}"
-
-    def __str__(self) -> str:
-        """
-        This function returns an OperationLookup in a neat string format.
-        """
-        return f"{self.operation_name}"
-
+    
 
 class TableLookup(models.Model):
     table_id = models.AutoField(db_column='TableID', primary_key=True) 
@@ -353,12 +311,6 @@ class TableLookup(models.Model):
         """
         return f"{self.table_name}"
 
-    def __str__(self) -> str:
-        """
-        This function returns a TableLookup in a neat string format.
-        """
-        return f"{self.table_name}"
-
 
 class TrainingDataset(models.Model):
     training_dataset_id = models.AutoField(db_column='TrainingDatasetID', primary_key=True)  
@@ -367,12 +319,6 @@ class TrainingDataset(models.Model):
     class Meta:
         managed = True
         db_table = 'TrainingDataset'
-
-    def __str__(self) -> str:
-        """
-        This function returns a TrainingDataset in a neat string format.
-        """
-        return f"{self.claim_id}"
 
     def __str__(self) -> str:
         """

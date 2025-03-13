@@ -48,6 +48,6 @@ class IndexView(View):
         form = RecordUploadForm(request.POST, request.FILES)
         if form.is_valid():
             file = request.FILES['file']
-            result = UploadedRecord.upload_claims_from_file(file, None)
+            UploadedRecord.upload_claims_from_file(file, None)
                 
         return HttpResponseRedirect("/")
