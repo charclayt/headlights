@@ -1,6 +1,5 @@
 from django.test import TestCase
 
-from myapp.tests.test_Models import TestModels
 from myapp.models import UploadedRecord, UserProfile
 from myapp.utility.SimpleResults import SimpleResultWithPayload
 
