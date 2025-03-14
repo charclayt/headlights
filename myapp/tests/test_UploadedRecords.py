@@ -4,11 +4,7 @@ from myapp.tests.test_Models import TestModels
 from myapp.models import UploadedRecord, UserProfile
 from myapp.utility.SimpleResults import SimpleResultWithPayload
 
-import logging
-
 import pandas as pd
-
-logger = logging.getLogger(__name__)
 
 """
 TODO
@@ -31,8 +27,6 @@ class TestUploadedRecords(TestCase):
             
         with open('myapp/tests/data/TestData.csv') as f:
             result = UploadedRecord.upload_claims_from_file(f, None)
-
-        logger.warning(result.payload)
             
         self.assertNotEqual(result, None)
         self.assertTrue(result.success, "Data upload was unsuccessful")
