@@ -7,7 +7,6 @@ from django.views.decorators.http import require_http_methods
 import logging
 
 from myapp.models import Claim, UploadedRecord
-from myapp.forms import RecordUploadForm
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -41,13 +40,4 @@ class IndexView(View):
 
         logger.info(f"{request.user} accessed the index page.")
         return render(request, self.template_name, context=context)
-
-    @login_required
-    @require_http_methods(["POST"])
-    def record_upload(request):
-        form = RecordUploadForm(request.POST, request.FILES)
-        if form.is_valid():
-            file = request.FILES['file']
-            UploadedRecord.upload_claims_from_file(file, None)
-                
-        return HttpResponseRedirect("/")
+    

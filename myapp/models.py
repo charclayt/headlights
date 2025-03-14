@@ -148,7 +148,7 @@ class Claim(models.Model):
             result.add_error_message_and_mark_unsuccessful(f"Missing Columns: {', '.join(missing_columns)}")
             
         if len(excess_columns) > 0:
-            result.add_error_message_and_mark_unsuccessful(f"Excess Columns: {', '.join(missing_columns)}")
+            result.add_error_message_and_mark_unsuccessful(f"Excess Columns: {', '.join(excess_columns)}")
             
         return result
 

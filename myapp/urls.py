@@ -5,14 +5,15 @@ from django.urls import path
 
 from myapp.views.IndexView import IndexView
 from myapp.views.MLDashboardView import MLDashboardView, ModelListView, UploadModelView
+from myapp.views.CustomerDashBoardView import CustomerDashboardView, ClaimUploadView
 
 
 urlpatterns = [
     path("", IndexView.as_view(), name="index"),
     path("ml/", MLDashboardView.as_view() , name="ml_dashboard"),
     
-    # Testing urls for dashboard features, to be replaced by more appropriate urls later
-    path("user/record-upload", IndexView.record_upload, name="upload"),
+    path("customer/", CustomerDashboardView.as_view(), name="customer_dashboard"),  
+    path("customer/record-upload", ClaimUploadView.as_view(), name="upload_claims"),
     
     # ML-related API endpoints
     path("api/models/", ModelListView.as_view(), name="models_list"),
