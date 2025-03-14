@@ -32,12 +32,7 @@ class TestUploadedRecords(TestCase):
         self.assertEqual(result.payload[0].claim_id.settlement_value, settlement_value)
         
     def test_failed_record_upload_from_file(self):
-        
-        # pandas is weird about reading from the same file twice so we have to open it twice
-        with open('myapp/tests/data/InvalidTestClaimData.csv') as f:
-            df = pd.read_csv(f)
-        settlement_value = df['SettlementValue'][0]
-            
+                    
         with open('myapp/tests/data/InvalidTestClaimData.csv') as f:
             result = UploadedRecord.upload_claims_from_file(f, None)
             
