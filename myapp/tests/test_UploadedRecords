@@ -28,11 +28,10 @@ class TestUploadedRecords(TestCase):
         with open('myapp/tests/data/TestData.csv') as f:
             result = UploadedRecord.upload_claims_from_file(f, None)
             
+        self.assertNotEqual(result, None)
         self.assertTrue(result.success, "Data upload was unsuccessful")
         
-        uploadedRecord: UploadedRecord = result.payload[0]
-        
-        self.assertEqual(uploadedRecord.claim_id.settlement_value, settlement_value)
+        self.assertEqual(result.payload[0].claim_id.settlement_value, settlement_value)
         
     def test_get_records_by_user(self):
         # create a dummy user
@@ -46,9 +45,8 @@ class TestUploadedRecords(TestCase):
         
         result: SimpleResultWithPayload = UploadedRecord.get_records_by_user(user)
         
+        self.assertNotEqual(result, None)
         self.assertTrue(result.success, "Data read was unsuccessful")
         
-        returnedRecords: list[UploadedRecord] = result.payload
-        
-        self.assertEqual(len(returnedRecords), 1)
-        self.assertEqual(returnedRecords[0].uploaded_record_id, record.uploaded_record_id)
+        self.assertEqual(len(result.payload), 1)
+        self.assertEqual(result.payload[0].uploaded_record_id, record.uploaded_record_id)
