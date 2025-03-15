@@ -1,8 +1,9 @@
 from django.shortcuts import render
 from django.views import View
-from django.http import HttpRequest, HttpResponse, JsonResponse
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect,JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
+from django.shortcuts import redirect
 
 import logging
 
@@ -45,6 +46,8 @@ class ClaimUploadView(View):
     """
     This class handles the proccessing of uploaded claims data.
     """
+    def get(self, request: HttpRequest) -> HttpResponse:
+        return redirect("./")
     
     def post(self, request: HttpRequest) -> JsonResponse:
         file = request.FILES['claims_file']  
