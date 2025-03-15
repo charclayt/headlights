@@ -46,7 +46,7 @@ class ClaimUploadView(View):
     """
     This class handles the proccessing of uploaded claims data.
     """
-    def get(self, request: HttpRequest) -> HttpResponse:
+    def get(self, request: HttpRequest) -> HttpResponseRedirect:
         return redirect("./")
     
     def post(self, request: HttpRequest) -> JsonResponse:
