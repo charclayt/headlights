@@ -8,6 +8,7 @@ from django.shortcuts import redirect
 import logging
 
 from myapp.models import Claim, UploadedRecord
+from myapp.utility.SimpleResults import SimpleResult
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -50,8 +51,15 @@ class ClaimUploadView(View):
         return redirect("./")
     
     def post(self, request: HttpRequest) -> JsonResponse:
-        file = request.FILES['claims_file']  
-        result = UploadedRecord.upload_claims_from_file(file, None)  
+        result = SimpleResult()
+        file = request.FILES['claims_file']
+        
+        if not file.name.endswith(".csv"):
+            result.add_error_message_and_mark_unsuccessful("Invalid file type")
+        
+        if result.success:
+            uploadResult = UploadedRecord.upload_claims_from_file(file, None)  
+            result.add_messages_from_result_and_mark_unsuccessful_if_error_found(uploadResult)
         
         return JsonResponse({
                 'status': 'success' if result.success else "error",
