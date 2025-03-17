@@ -4,6 +4,10 @@ from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
+from .MLModelFactory import ModelFactory
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
 
 import logging
 import os
@@ -150,6 +154,18 @@ class UploadModelView(View):
                 'status': 'error',
                 'message': f"An unexpected error occurred: {str(e)}"
             }, status=500)
+            
+class ModelPredict(APIView):
+    
+    def get(self, request, format=None):
+        model_name = request.GET.get('model_name')
+        
+        if(not model_name):
+            return Response({'status': 'error', 'message': 'model name not supplied'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        factory = ModelFactory()
+        model = factory.build_model(model_name)
+        return Response(model_name)
 
 
 class HealthCheckView(View):
