@@ -2,8 +2,7 @@ from django.test import TestCase
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 from myapp.tests.test_BaseView import BaseViewTest, USER_NAME, USER_PASSWORD
-from myapp.models import Model, UploadedRecord
-from myapp.tests.config import Views, Templates, TestData, ErrorCodes
+from myapp.tests.config import Views, Templates
 
 class CustomerDashboardTest(BaseViewTest, TestCase):
 
