@@ -36,13 +36,20 @@ class ModelListView(View):
     """
     This class proxies requests for listing ML models to the ML service.
     """
-
+    
     def get(self, request: HttpRequest) -> JsonResponse:
         """
         Handles the GET request for listing all available ML models.
         Proxies the request to the ML service.
         """
+        if not request.user.is_authenticated:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Authentication required'
+            }, status=401)
+            
         try:
+            # sends authenticated request to ML service, it just
             ml_service_url = getattr(settings, 'ML_SERVICE_URL', 'http://ml-service:8001')
             response = requests.get(f"{ml_service_url}/api/models/")
             return JsonResponse(response.json())
@@ -65,9 +72,14 @@ class UploadModelView(View):
         Handles the POST request for uploading a new ML model.
         Proxies the request to the ML service.
         """
+        if not request.user.is_authenticated:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Authentication required'
+            }, status=401)
+            
         try:
             ml_service_url = getattr(settings, 'ML_SERVICE_URL', 'http://ml-service:8001')
-            
             # Forward files and data to the ML service
             model_file = request.FILES.get('model_file')
             

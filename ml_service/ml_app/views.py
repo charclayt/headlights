@@ -42,8 +42,7 @@ class MLDashboardView(View):
         models = Model.objects.all()
         logger.info(f"{request.user} accessed the machine learning dashboard page.")
         return render(request, self.template_name, {'models': models})
-
-@method_decorator(login_required, name="dispatch")
+    
 class ModelListView(View):
     """
     This class handles the listing of all available ML models directly from the Django database.
@@ -86,7 +85,6 @@ class ModelListView(View):
                 'message': f"An unexpected error occurred: {str(e)}"
             }, status=500)
 
-@method_decorator(login_required, name="dispatch")
 @method_decorator(csrf_exempt, name="dispatch")
 class UploadModelView(View):
     """
@@ -95,7 +93,7 @@ class UploadModelView(View):
     def post(self, request: HttpRequest) -> JsonResponse:
         """
         Handles the POST request for uploading a new ML model.
-        """
+        """            
         try:
             # Get model name and notes from the request
             model_name = request.POST.get('model_name')
