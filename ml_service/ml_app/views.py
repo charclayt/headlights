@@ -143,22 +143,29 @@ class ModelPredict(APIView):
         name = request.data.get('model_name')
         
         if(not name):
-            return Response({'status': 'error', 'message': 'Model name not supplied'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'message': 'Model name not supplied'}, status=status.HTTP_400_BAD_REQUEST)
         
         if (not Model.objects.filter(model_name=name)):
-            return Response({'status': 'error', 'message': 'Model supplied does not exist'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'message': 'Model supplied does not exist'}, status=status.HTTP_400_BAD_REQUEST)
         
         factory = ModelFactory()
 
         try:
             model = factory.build_model(name)
         except:
-            return Response({'status': 'error', 'message': 'Internal server error'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'message': 'Internal server error'}, status=status.HTTP_404_NOT_FOUND)
 
         data = request.data.get('data')
-        prediction = model.predict(name, data)
 
-        return Response(prediction)
+        if(not data):
+            return Response({'message': 'Model name not supplied'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            prediction = model.predict(name, data)
+        except Exception as e:
+            return Response({'message': str(e)}, status.HTTP_400_BAD_REQUEST)
+
+        return Response(prediction, status=status.HTTP_200_OK)
 
 
 class HealthCheckView(View):

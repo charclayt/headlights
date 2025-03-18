@@ -1,4 +1,4 @@
-from .MLModelService import DefaultClaimsModel
+from .MLModelService import DefaultClaimsModel, GenericModel
 
 class ModelFactory:
     
@@ -7,4 +7,4 @@ class ModelFactory:
         if name == 'default':
             return DefaultClaimsModel()
         else:
-            raise Exception("Invalid model name")
+            return GenericModel()
