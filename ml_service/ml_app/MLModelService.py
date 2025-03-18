@@ -3,10 +3,6 @@ import pandas as pd
 import pickle
 import numpy as np
 import os
-from sklearn.compose import ColumnTransformer
-from sklearn.impute import SimpleImputer
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 from .models import Model
 

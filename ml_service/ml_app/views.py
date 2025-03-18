@@ -1,8 +1,6 @@
-from django.shortcuts import render
 from django.views import View
-from django.http import HttpRequest, HttpResponse, JsonResponse
+from django.http import HttpRequest, JsonResponse
 from django.utils.decorators import method_decorator
-from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from .MLModelFactory import ModelFactory
 from rest_framework.views import APIView
@@ -152,7 +150,7 @@ class ModelPredict(APIView):
 
         try:
             model = factory.build_model(name)
-        except:
+        except Exception:
             return Response({'message': 'Internal server error'}, status=status.HTTP_404_NOT_FOUND)
 
         data = request.data.get('data')
