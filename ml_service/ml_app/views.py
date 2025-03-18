@@ -28,6 +28,22 @@ def model_check_on_startup() -> None:
     except Exception as e:
         logger.error(f"Unexpected error checking ML models on startup: {str(e)}")
 
+@method_decorator(login_required, name="dispatch")
+class MLDashboardView(View):
+    """
+    This class handles the rendering and processing of the machine learning dashboard page.
+    """
+    template_name = "ml/ml.html"
+
+    def get(self, request: HttpRequest) -> HttpResponse:
+        """
+        Handles the GET request for the machine learning dashboard page.
+        """
+        # Get all models to display on the page
+        models = Model.objects.all()
+        logger.info(f"{request.user} accessed the machine learning dashboard page.")
+        return render(request, self.template_name, {'models': models})
+
 class ModelListView(View):
     """
     This class handles the listing of all available ML models directly from the Django database.
@@ -70,7 +86,6 @@ class ModelListView(View):
                 'message': f"An unexpected error occurred: {str(e)}"
             }, status=500)
 
-
 @method_decorator(csrf_exempt, name="dispatch")
 class UploadModelView(View):
     """
@@ -79,7 +94,7 @@ class UploadModelView(View):
     def post(self, request: HttpRequest) -> JsonResponse:
         """
         Handles the POST request for uploading a new ML model.
-        """
+        """            
         try:
             # Get model name and notes from the request
             model_name = request.POST.get('model_name')
