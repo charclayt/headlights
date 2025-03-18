@@ -30,24 +30,6 @@ def model_check_on_startup() -> None:
     except Exception as e:
         logger.error(f"Unexpected error checking ML models on startup: {str(e)}")
 
-
-@method_decorator(login_required, name="dispatch")
-class MLDashboardView(View):
-    """
-    This class handles the rendering and processing of the machine learning dashboard page.
-    """
-    template_name = "ml/ml.html"
-
-    def get(self, request: HttpRequest) -> HttpResponse:
-        """
-        Handles the GET request for the machine learning dashboard page.
-        """
-        # Get all models to display on the page
-        models = Model.objects.all()
-        logger.info(f"{request.user} accessed the machine learning dashboard page.")
-        return render(request, self.template_name, {'models': models})
-
-
 class ModelListView(View):
     """
     This class handles the listing of all available ML models directly from the Django database.
@@ -157,15 +139,26 @@ class UploadModelView(View):
             
 class ModelPredict(APIView):
     
-    def get(self, request, format=None):
-        model_name = request.GET.get('model_name')
+    def post(self, request, format=None):
+        name = request.data.get('model_name')
         
-        if(not model_name):
-            return Response({'status': 'error', 'message': 'model name not supplied'}, status=status.HTTP_400_BAD_REQUEST)
+        if(not name):
+            return Response({'status': 'error', 'message': 'Model name not supplied'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if (not Model.objects.filter(model_name=name)):
+            return Response({'status': 'error', 'message': 'Model supplied does not exist'}, status=status.HTTP_400_BAD_REQUEST)
         
         factory = ModelFactory()
-        model = factory.build_model(model_name)
-        return Response(model_name)
+
+        try:
+            model = factory.build_model(name)
+        except:
+            return Response({'status': 'error', 'message': 'Internal server error'}, status=status.HTTP_404_NOT_FOUND)
+
+        data = request.data.get('data')
+        prediction = model.predict(name, data)
+
+        return Response(prediction)
 
 
 class HealthCheckView(View):
