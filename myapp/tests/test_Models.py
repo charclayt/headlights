@@ -4,7 +4,8 @@ from django.contrib.auth.models import User
 from myapp.tests.config import TestData
 from myapp.models import Claim, ContactInfo, Company, UserProfile, FinanceReport, \
                             Feedback, DatabaseLog, PredictionModel, OperationLookup, TableLookup, \
-                            TrainingDataset, UploadedRecord
+                            TrainingDataset, UploadedRecord, PreprocessingStep, \
+                            PreprocessingModelMap
 
 class TestModels(TestCase):
     @classmethod
@@ -111,6 +112,15 @@ class TestModels(TestCase):
                                       predicted_settlement = 0,
                                       upload_date = TestData.PAST_DATE)
         
+        PreprocessingStep.objects.create(preprocessing_step_id = 1,
+                                         preprocess_name = TestData.NAME)
+        
+        PreprocessingModelMap.objects.create(preprocessing_model_map_id = 1,
+                                             preprocessing_step_id = PreprocessingStep.objects.get(preprocessing_step_id = 1),
+                                             model_id = PredictionModel.objects.get(model_id = 1))
+        
+        
+        
     # Test the models, ensure they are created correctly and the first field is correct
 
     def test_model_claim(self):
@@ -172,3 +182,14 @@ class TestModels(TestCase):
         uploaded_record = UploadedRecord.objects.get(uploaded_record_id=1)
         self.assertTrue(uploaded_record.__str__().startswith(uploaded_record.user_id.auth_id.username))
         self.assertTrue(uploaded_record.user_id.auth_id.username, TestData.EMAIL)
+
+    def test_model_preprocessing_step(self):
+        preprocess_step = PreprocessingStep.objects.get(preprocessing_step_id=1)
+        self.assertTrue(preprocess_step.__str__().startswith(preprocess_step.preprocess_name))
+        self.assertEqual(preprocess_step.preprocess_name, TestData.NAME)
+        
+    def test_model_preprocessing_model_map(self):
+        preprocess_model_map = PreprocessingModelMap.objects.get(preprocessing_model_map_id=1)
+        self.assertTrue(preprocess_model_map.__str__().startswith(preprocess_model_map.preprocessing_step_id.preprocess_name))
+        self.assertEqual(preprocess_model_map.preprocessing_step_id.preprocess_name, TestData.NAME)
+        

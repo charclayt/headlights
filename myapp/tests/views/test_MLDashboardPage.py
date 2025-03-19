@@ -2,7 +2,7 @@ from django.test import TestCase
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 from myapp.tests.test_BaseView import BaseViewTest, USER_NAME, USER_PASSWORD
-from myapp.models import PredictionModel, UploadedRecord
+from myapp.models import PredictionModel, UploadedRecord, PreprocessingStep, PreprocessingModelMap
 from myapp.tests.config import Views, Templates, TestData, ErrorCodes
 
 class MLDashboardPageTest(BaseViewTest, TestCase):
@@ -33,6 +33,8 @@ class MLDashboardPageTest(BaseViewTest, TestCase):
         # Remove existing objects, and dependent objects
         UploadedRecord.objects.all().delete()
         PredictionModel.objects.all().delete()
+        PreprocessingModelMap.objects.all().delete()
+        PreprocessingStep.objects.all().delete()
 
         # Test getting the model list returns a JSON response with no models
         BaseViewTest._test_get_json_response(self, status=ErrorCodes.OK, response={'status': 'success', 'message': 'no models found'})

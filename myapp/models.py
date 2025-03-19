@@ -258,3 +258,34 @@ class UploadedRecord(models.Model):
         This function returns an UploadedRecord in a neat string format.
         """
         return f"{self.user_id} | {self.claim_id} | {self.feedback_id} | {self.model_id} | {self.predicted_settlement} | {self.upload_date}"
+
+
+class PreprocessingStep(models.Model):
+    preprocessing_step_id = models.AutoField(db_column='PreprocessingStepID', primary_key=True)
+    preprocess_name = models.CharField(db_column='PreprocessName', max_length=255, blank=True, null=True)
+    
+    class Meta:
+        managed = True
+        db_table = 'PreprocessingStep'
+    
+    def __str__(self) -> str:
+        """
+        This function returns an PreprocessingStep in a neat string format.
+        """
+        return f"{self.preprocess_name}"
+
+
+class PreprocessingModelMap(models.Model):
+    preprocessing_model_map_id = models.AutoField(db_column='PreprocessingModelMapID', primary_key=True)
+    preprocessing_step_id = models.ForeignKey(PreprocessingStep, models.PROTECT, db_column='PreprocessingStepID', blank=True, null=True)
+    model_id = models.ForeignKey(Model, models.PROTECT, db_column='ModelID', blank=True, null=True)
+    
+    def __str__(self) -> str:
+        """
+        This function returns an PreprocessingStep in a neat string format.
+        """
+        return f"{self.preprocessing_step_id} | {self.model_id}"
+    
+    class Meta:
+        managed = True
+        db_table = 'PreprocessingModelMap'
