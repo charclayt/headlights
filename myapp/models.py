@@ -15,6 +15,7 @@ from django.contrib.auth.models import User
 from django.db import models, transaction
 from datetime import date
 from .utility.SimpleResults import SimpleResult, SimpleResultWithPayload
+from .utility import CaseConversion
 import pandas as pd
 
 
@@ -329,21 +330,36 @@ class UploadedRecord(models.Model):
             
         claims: list[Claim] = Claim.create_claims_from_dataframe(csv)
         uploadedRecords = []
-        with transaction.atomic():
-            for claim in claims:
-                claim.save()
+        
+        try:
+            with transaction.atomic():
+                index = 0
+                for claim in claims:
+                    index += 1
+                    try:
+                        claim.save()
+                    except ValueError as error:
+                        result.add_error_message_and_mark_unsuccessful(f"Row {index} | {error.__str__()}")
+                        continue
+                    
+                    uploadedRecord = UploadedRecord()
+                    uploadedRecord.user_id = None if not user else user # TODO: remove this check when account creation is implemented
+                    uploadedRecord.claim_id = claim
+                    uploadedRecord.feedback_id = None
+                    uploadedRecord.model_id = None
+                    uploadedRecord.predicted_settlement = None
+                    uploadedRecord.upload_date = date.today()
+                    
+                    uploadedRecord.save()
+                    uploadedRecords.append(uploadedRecord)
                 
-                uploadedRecord = UploadedRecord()
-                uploadedRecord.user_id = None if not user else user # TODO: remove this check when account creation is implemented
-                uploadedRecord.claim_id = claim
-                uploadedRecord.feedback_id = None
-                uploadedRecord.model_id = None
-                uploadedRecord.predicted_settlement = None
-                uploadedRecord.upload_date = date.today()
+                if not result.success:
+                    #raise an error so that django rolls back the transaction
+                    raise AssertionError("Result was not successful")
                 
-                uploadedRecord.save()
-                uploadedRecords.append(uploadedRecord)
-                
+        except AssertionError:
+            return result
+        
         result.payload = uploadedRecords
         
         return result
@@ -359,3 +375,4 @@ class UploadedRecord(models.Model):
             result.payload = UploadedRecord.objects.filter(user_id = None)
             
         return result
+    
