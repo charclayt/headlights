@@ -74,43 +74,11 @@ class Claim(models.Model):
                  {self.driver_age} | {self.number_of_passengers} | {self.accident_description} | {self.injury_description} | {self.police_report_filed} | {self.witness_present} | {self.gender}"""
     
     def create_claim_from_series(datarow: pd.Series):
-        claim = Claim()
-        claim.settlement_value = datarow['SettlementValue']
-        claim.accident_type = datarow['AccidentType']
-        claim.injury_prognosis = datarow['InjuryPrognosis']
-        claim.special_health_expenses = datarow['SpecialHealthExpenses']
-        claim.special_reduction = datarow['SpecialReduction']
-        claim.special_overage = datarow['SpecialOverage']
-        claim.general_rest = datarow['GeneralRest']
-        claim.special_additional_injury = datarow['SpecialAdditionalInjury']
-        claim.special_earnings_loss = datarow['SpecialEarningsLoss']
-        claim.special_usage_loss = datarow['SpecialUsageLoss']
-        claim.special_medications = datarow['SpecialMedications']
-        claim.special_asset_damage = datarow['SpecialAssetDamage']
-        claim.special_rehabilitation = datarow['SpecialRehabilitation']
-        claim.special_fixes = datarow['SpecialFixes']
-        claim.general_fixed = datarow['GeneralFixed']
-        claim.general_uplift = datarow['GeneralUplift']
-        claim.special_loaner_vehicle = datarow['SpecialLoanerVehicle']
-        claim.special_trip_costs = datarow['SpecialTripCosts']
-        claim.special_journey_expenses = datarow['SpecialJourneyExpenses']
-        claim.special_therapy = datarow['SpecialTherapy']
-        claim.exceptional_circumstances = datarow['ExceptionalCircumstances']
-        claim.minor_psychological_injury = datarow['MinorPsychologicalInjury']
-        claim.dominant_injury = datarow['DominantInjury']
-        claim.whiplash = datarow['Whiplash']
-        claim.vehicle_type = datarow['VehicleType']
-        claim.weather_conditions = datarow['WeatherConditions']
-        claim.accident_date = datarow['AccidentDate']
-        claim.claim_date = datarow['ClaimDate']
-        claim.vehicle_age = datarow['VehicleAge']
-        claim.driver_age = datarow['DriverAge']
-        claim.number_of_passengers = datarow['NumberOfPassengers']
-        claim.accident_description = datarow['AccidentDescription']
-        claim.injury_description = datarow['InjuryDescription']
-        claim.police_report_filed = datarow['PoliceReportFiled']
-        claim.witness_present = datarow['WitnessPresent']
-        claim.gender = datarow['Gender']
+        claim = Claim()  
+        for key, value in datarow.items():  
+            snake_key = CaseConversion.to_snake(key)
+            if hasattr(claim, snake_key):  
+                setattr(claim, snake_key, value)  
         
         return claim
     
@@ -137,20 +105,25 @@ class Claim(models.Model):
 
         excess_columns = []
         for column in csv_columns:
-            if column in db_column_names:
-                db_column_names.remove(column)
+            pascal_column = CaseConversion.to_pascal(column)
+            if pascal_column in db_column_names:
+                db_column_names.remove(pascal_column)
             else:
                 excess_columns.append(column)
                 
         missing_columns = db_column_names[:]
 
         if len(missing_columns) > 0 :
-            result.add_error_message_and_mark_unsuccessful(f"Missing Columns: {', '.join(missing_columns)}")
+            result.add_error_message_and_mark_unsuccessful(f"The following columns could not be found in the uploaded file: {', '.join(missing_columns)}")
             
         if len(excess_columns) > 0:
-            result.add_error_message_and_mark_unsuccessful(f"Excess Columns: {', '.join(excess_columns)}")
+            result.add_error_message_and_mark_unsuccessful(f"The following columns are either missnamed or invalid: {', '.join(excess_columns)}")
+            
+        if len(missing_columns) > 0 or len(excess_columns) > 0:
+            result.add_error_message("Column Name Error")
             
         return result
+
 
 class ContactInfo(models.Model):
     contact_info_id = models.AutoField(db_column='ContactInfoID', primary_key=True)
@@ -290,7 +263,7 @@ class OperationLookup(models.Model):
         """
         return f"{self.operation_name}"
     
-
+    
 class TableLookup(models.Model):
     table_id = models.AutoField(db_column='TableID', primary_key=True) 
     table_name = models.CharField(db_column='TableName', max_length=255, blank=True, null=True)  
