@@ -4,7 +4,9 @@ from django.utils.decorators import method_decorator
 from django.shortcuts import render
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
+import pandas as pd
 from .MLModelFactory import PredictionModelFactory
+import numpy as np
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -155,37 +157,36 @@ class UploadModelView(View):
 class ModelPredict(APIView):
     
     def post(self, request, format=None):
-        id = request.data.get('model_id')
+        model_id = request.data.get('model_id')
         
-        if(not id):
+        if(not model_id):
             return Response({'message': 'PredictionModel ID not supplied'}, status=status.HTTP_400_BAD_REQUEST)
-
-        logger.warning(PredictionModel.objects.all())
         
-        if (not PredictionModel.objects.filter(model_id=id)):
+        if (not PredictionModel.objects.filter(model_id=model_id)):
             return Response({'message': 'PredictionModel supplied does not exist'}, status=status.HTTP_400_BAD_REQUEST)
         
-        model = PredictionModel.objects.filter(model_id=id)
+        model = PredictionModel.objects.filter(model_id=model_id).first()
         
-        factory = PredictionModelFactory()
+        predicted_model_factory = PredictionModelFactory()
 
         try:
-            model = factory.build_model(model=model)
-        except Exception:
+            model = predicted_model_factory.build_model(model=model)
+        except Exception as e:
+            logger.error(f"Error building model: {e}")
             return Response({'message': 'Internal server error'}, status=status.HTTP_404_NOT_FOUND)
 
-        data = request.data.get('data')
+        data_df = pd.DataFrame([request.data.get('data')])
 
-        if(not data):
+        if(data_df.empty):
             return Response({'message': 'PredictionModel name not supplied'}, status=status.HTTP_400_BAD_REQUEST)
         
         try:
-            prediction = model.predict(data)
+            prediction = model.predict(data_df)
+            logger.warning(prediction)
         except Exception as e:
             return Response({'message': str(e)}, status.HTTP_400_BAD_REQUEST)
 
         return Response(prediction, status=status.HTTP_200_OK)
-
 
 class HealthCheckView(View):
     """

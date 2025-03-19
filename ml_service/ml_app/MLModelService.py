@@ -8,6 +8,12 @@ from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
+from .models import PreprocessingModelMap, PreprocessingStep
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 """
     Abstract base class for concrete ML classes to inherit from
 """
@@ -38,21 +44,27 @@ class DefaultClaimsModel(MLModel):
         super().__init__(model=model)
 
     def preprocess_data(self, claims_data):
-        preprocessor = PreProcessing(model_id=self.model_id, data=claims_data)
+        preprocessor = PreProcessing(model_id=self.model_row.model_id, data=claims_data)
         return preprocessor.apply_preprocessing()
 
     def predict(self, data):
         # TODO: discuss whether we need both of these models
-        data = pd.DataFrame(data, index=[0])
         data = self.preprocess_data(data)
 
-        model_dir = os.path.join('/shared/', self.model_row['filepath'])
+        model_dir = os.path.join('/shared/', self.model_row.filepath)
 
         pipeline = self.load_model(model_dir)
+
+        # TODO: work out why pipeline needs 37 columns...
+        data = data[0].copy()
+
+        logger.warning(data)
+
+        prediction = pipeline.predict(data)
+
+        logger.warning(prediction)
         
-        prediction = np.expm1(pipeline.predict(data))
-        
-        return prediction
+        return prediction,
     
 """
     Fallback generic model.
@@ -84,22 +96,31 @@ class PreProcessing():
     def __init__(self, model_id, data):
         self.model_id = model_id
         self.data = data
+        self.steps = []
+
+        # TODO: handle errors
         self.errors = []
 
-    def get_preprocessing_steps(self):
-        # this will get the steps from the database
-        # Use models to get all of the preprocessing steps for the supplied model.
-
-        # use mapping table to convert IDs into calls to functions
-        pass
-
     def apply_preprocessing(self):
-        steps = self.get_preprocessing_steps()
+        # Get all of the preprocessing mappings for the supplied model.
+        preprocessing_model_maps = PreprocessingModelMap.objects.filter(model_id=self.model_id).select_related('preprocessing_step_id')
 
-        for step in steps:
-            step()
+        # Use mapping table to access preprocessing IDs, then add those processes to the queue (could be an actual q instead of list)
+        for model_map in preprocessing_model_maps:
+            preprocessing_step = model_map.preprocessing_step_id
+            logger.warning(preprocessing_step)
+            self.steps.append(preprocessing_step.preprocess_name)
 
-        return self.data
+        for step_str in self.steps:
+            method = getattr(self, step_str, None)
+
+            if method and callable(method):
+                method()
+            else:
+                self.errors.append(f"Unknown or non-callable preprocessing step: {step_str}")
+
+        logger.warning('preprocessing applied')
+        return self.data, self.errors
 
     def create_days_between_col(self):
         # Determine difference between AccidentDate and ClaimDate and create new column.
@@ -109,31 +130,31 @@ class PreProcessing():
         else:
             self.errors.append("create_days_between_col: 'AccidentDate' and 'ClaimDate' are not present in this data.")
         
-    def one_hot_encode(self):
-        try:
-            # Identify categorical and numerical columns
-            categorical_cols = self.data.select_dtypes(include=['object', 'string']).columns.tolist()
-            numerical_cols = self.data.select_dtypes(include=['int64', 'float64']).columns.tolist()
+    # def one_hot_encode(self):
+    #     try:
+    #         # Identify categorical and numerical columns
+    #         categorical_cols = self.data.select_dtypes(include=['object', 'string']).columns.tolist()
+    #         numerical_cols = self.data.select_dtypes(include=['int64', 'float64']).columns.tolist()
 
-            # Define numerical and categorical transformer pipelines
-            numerical_transformer = Pipeline(steps=[
-                ('imputer', SimpleImputer(strategy='median')),
-                ('scaler', StandardScaler())
-            ])
+    #         # Define numerical and categorical transformer pipelines
+    #         numerical_transformer = Pipeline(steps=[
+    #             ('imputer', SimpleImputer(strategy='median')),
+    #             ('scaler', StandardScaler())
+    #         ])
 
-            categorical_transformer = Pipeline(steps=[
-                ('imputer', SimpleImputer(strategy='most_frequent')),
-                ('onehot', OneHotEncoder(handle_unknown='ignore', sparse_output=False))
-            ])
+    #         categorical_transformer = Pipeline(steps=[
+    #             ('imputer', SimpleImputer(strategy='most_frequent')),
+    #             ('onehot', OneHotEncoder(handle_unknown='ignore', sparse_output=False))
+    #         ])
 
-            # Combine transformers into one pipeline
-            preprocessor = ColumnTransformer(
-                transformers=[
-                    ('num', numerical_transformer, numerical_cols),
-                    ('cat', categorical_transformer, categorical_cols)
-            ])
+    #         # Combine transformers into one pipeline
+    #         preprocessor = ColumnTransformer(
+    #             transformers=[
+    #                 ('num', numerical_transformer, numerical_cols),
+    #                 ('cat', categorical_transformer, categorical_cols)
+    #         ])
 
-            # Execute pipeline on inputted data
-            self.data = preprocessor.fit(self.data)
-        except:
-            self.errors.append(("one_hot_encode: Process failed")) 
+    #         # Execute pipeline on inputted data
+    #         self.data = preprocessor.ransform(self.data)
+    #     except:
+    #         self.errors.append(("one_hot_encode: Process failed")) 
