@@ -36,4 +36,3 @@ class IndexView(View):
 
         logger.info(f"{request.user} accessed the index page.")
         return render(request, self.template_name, context=context)
-    

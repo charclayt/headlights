@@ -72,4 +72,3 @@ class CustomerUploadTest(BaseViewTest, TestCase):
                 'message': "",
             }
         )
-        

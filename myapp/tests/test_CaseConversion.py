@@ -18,4 +18,3 @@ class TestSimpleResults(TestCase):
         result = CaseConversion.to_snake(test_string)
         
         self.assertEqual(result, expected)
-        

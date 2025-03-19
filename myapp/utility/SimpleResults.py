@@ -37,4 +37,3 @@ class SimpleResultWithPayload(SimpleResult):
     def __init__(self):
         super().__init__()
         self.payload: any = None
-        

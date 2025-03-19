@@ -73,4 +73,3 @@ class ClaimUploadView(View):
                 'status': status,
                 'message': '\n\n'.join([message.text for message in result.messages])
             })
-        

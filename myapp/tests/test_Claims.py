@@ -105,4 +105,3 @@ class TestClaims(TestCase):
         
         #check if settlement value was correctly assigned
         self.assertEqual(claims[0].settlement_value, 520)
-               
