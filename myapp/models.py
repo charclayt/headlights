@@ -314,11 +314,15 @@ class UploadedRecord(models.Model):
         return f"{self.user_id} | {self.claim_id} | {self.feedback_id} | {self.model_id} | {self.predicted_settlement} | {self.upload_date}"
 
     @staticmethod
-    def upload_claims_from_file(file, user: UserProfile) -> SimpleResultWithPayload:
+    def upload_claims_from_file(file, user: UserProfile, ignore_validation: bool) -> SimpleResultWithPayload:
         result = SimpleResultWithPayload()
         
         csv = pd.read_csv(file)
-        claimValidationResult = Claim.validate_columns(csv)
+        
+        claimValidationResult = SimpleResult()
+        if not ignore_validation:
+            claimValidationResult = Claim.validate_columns(csv)
+            
         if not claimValidationResult.success:
             result.add_messages_from_result_and_mark_unsuccessful_if_error_found(claimValidationResult)
             return result
@@ -343,7 +347,7 @@ class UploadedRecord(models.Model):
         result.payload = uploadedRecords
         
         return result
-    
+     
     @staticmethod
     def get_records_by_user(user: UserProfile) -> SimpleResultWithPayload:
         result = SimpleResultWithPayload()
