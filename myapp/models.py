@@ -278,7 +278,7 @@ class PreprocessingStep(models.Model):
 class PreprocessingModelMap(models.Model):
     preprocessing_model_map_id = models.AutoField(db_column='PreprocessingModelMapID', primary_key=True)
     preprocessing_step_id = models.ForeignKey(PreprocessingStep, models.PROTECT, db_column='PreprocessingStepID', blank=True, null=True)
-    model_id = models.ForeignKey(Model, models.PROTECT, db_column='ModelID', blank=True, null=True)
+    model_id = models.ForeignKey(PredictionModel, models.PROTECT, db_column='ModelID', blank=True, null=True)
     
     def __str__(self) -> str:
         """
