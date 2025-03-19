@@ -176,20 +176,21 @@ class DatabaseLog(models.Model):
         return f"{self.log_time} | {self.user_id} | {self.affected_table_id} | {self.operation_performed} | {self.successful} | {self.notes}"
 
 
-class Model(models.Model): # I think we should rename this as model is referenced a lot throughout Django
+class PredictionModel(models.Model):
     model_id = models.AutoField(db_column='ModelID', primary_key=True)  
-    model_name = models.CharField(db_column='ModelName', max_length=255, blank=True, null=True)  
+    model_name = models.CharField(db_column='ModelName', max_length=255, blank=True, null=True)
+    model_type = models.CharField(db_column='ModelType', max_length=255, blank=True, null=True)
     notes = models.CharField(db_column='Notes', max_length=255, blank=True, null=True)  
     filepath = models.CharField(db_column='FilePath', max_length=255, blank=True, null=True)  
     price_per_prediction = models.FloatField(db_column='PricePerPrediction', blank=True, null=True)
 
     class Meta:
         managed = True
-        db_table = 'Model'
+        db_table = 'PredictionModel'
 
     def __str__(self) -> str:
         """
-        This function returns a Model in a neat string format.
+        This function returns a PredictionModel in a neat string format.
         """
         return f"{self.model_name} | {self.notes} | {self.filepath} | {self.price_per_prediction}"
 
@@ -244,7 +245,7 @@ class UploadedRecord(models.Model):
     user_id = models.ForeignKey(UserProfile, models.PROTECT, db_column='UserID', blank=True, null=True)  
     claim_id = models.ForeignKey(Claim, models.PROTECT, db_column='ClaimID', blank=True, null=True)  
     feedback_id = models.ForeignKey(Feedback, models.PROTECT, db_column='FeedbackID', blank=True, null=True)  
-    model_id = models.ForeignKey(Model, models.PROTECT, db_column='ModelID', blank=True, null=True)  
+    model_id = models.ForeignKey(PredictionModel, models.PROTECT, db_column='ModelID', blank=True, null=True)  
     predicted_settlement = models.FloatField(db_column='PredictedSettlement', blank=True, null=True)  
     upload_date = models.DateField(db_column='UploadDate', blank=True, null=True)
 

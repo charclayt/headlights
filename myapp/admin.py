@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Claim, Feedback, DatabaseLog, Model, OperationLookup, TableLookup, TrainingDataset, UploadedRecord, UserProfile, Company, ContactInfo, FinanceReport
+from .models import Claim, Feedback, DatabaseLog, PredictionModel, OperationLookup, TableLookup, TrainingDataset, UploadedRecord, UserProfile, Company, ContactInfo, FinanceReport
 
 # Register your models here.
 @admin.register(Claim)
@@ -14,7 +14,7 @@ class FeedbackAdmin(admin.ModelAdmin):
 class LogAdmin(admin.ModelAdmin):
     list_display = ('database_log_id', 'log_time', 'user_id', 'affected_table_id', 'operation_performed', 'successful', 'notes')
 
-@admin.register(Model)
+@admin.register(PredictionModel)
 class ModelAdmin(admin.ModelAdmin):
     list_display = ('model_id', 'model_name', 'notes', 'filepath', 'price_per_prediction')
 

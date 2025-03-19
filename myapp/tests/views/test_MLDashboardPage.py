@@ -2,14 +2,14 @@ from django.test import TestCase
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 from myapp.tests.test_BaseView import BaseViewTest, USER_NAME, USER_PASSWORD
-from myapp.models import Model, UploadedRecord
+from myapp.models import PredictionModel, UploadedRecord
 from myapp.tests.config import Views, Templates, TestData, ErrorCodes
 
 class MLDashboardPageTest(BaseViewTest, TestCase):
 
     URL = Views.MACHINE_LEARNING
     TEMPLATE = Templates.MACHINE_LEARNING
-    MODEL = Model
+    MODEL = PredictionModel
 
     def setUp(self):
         return BaseViewTest.setUp(self)
@@ -32,13 +32,13 @@ class MLDashboardPageTest(BaseViewTest, TestCase):
 
         # Remove existing objects, and dependent objects
         UploadedRecord.objects.all().delete()
-        Model.objects.all().delete()
+        PredictionModel.objects.all().delete()
 
         # Test getting the model list returns a JSON response with no models
         BaseViewTest._test_get_json_response(self, status=ErrorCodes.OK, response={'status': 'success', 'message': 'no models found'})
 
         # Create a model object
-        Model.objects.create(model_id = 1,
+        PredictionModel.objects.create(model_id = 1,
                              model_name = TestData.NAME,
                              notes = "",
                              filepath = "",

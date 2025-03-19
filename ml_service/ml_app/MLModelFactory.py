@@ -1,10 +1,11 @@
 from .MLModelService import DefaultClaimsModel, GenericModel
 
-class ModelFactory:
+class PredictionModelFactory:
     
     @staticmethod
-    def build_model(name):
-        if name == 'default':
-            return DefaultClaimsModel()
+    def build_model(model):
+        # TODO: rework this to not be hard coded if else
+        if model.type == 'default':
+            return DefaultClaimsModel(model)
         else:
-            return GenericModel()
+            return GenericModel(model)
