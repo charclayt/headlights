@@ -40,8 +40,24 @@ class CustomerUploadTest(BaseViewTest, TestCase):
                 'message': "Invalid file type"
             }
         )
+        
+        # Test uploading a model with correct file type but incorrect columns
+        with open('myapp/tests/data/InvalidTestClaimData.csv', "rb") as f:
+            data = f.read()
+            
+        valid_file = SimpleUploadedFile("test.csv", data)
+        payload = {'claims_file': valid_file}
+        response = BaseViewTest._test_post_view_response(self, payload=payload)
 
-        # Test uploading a model with correct file type
+        self.assertJSONEqual(
+            response.content,
+            {
+                'status': "confirmationRequired",
+                'message': "The following columns could not be found in the uploaded file: Gender\n\nThe following columns are either missnamed or invalid: ExcessCol"
+            }
+        )
+
+        # Test uploading a model with correct file type and valid columns
         with open('myapp/tests/data/TestClaimData.csv', "rb") as f:
             data = f.read()
             
@@ -56,3 +72,4 @@ class CustomerUploadTest(BaseViewTest, TestCase):
                 'message': "",
             }
         )
+        

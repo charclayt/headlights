@@ -25,7 +25,7 @@ class TestUploadedRecords(TestCase):
         settlement_value = df['SettlementValue'][0]
             
         with open('myapp/tests/data/TestClaimData.csv') as f:
-            result = UploadedRecord.upload_claims_from_file(f, None)
+            result = UploadedRecord.upload_claims_from_file(f, None, False)
             
         self.assertNotEqual(result, None)
         self.assertTrue(result.success, "Data upload was unsuccessful")      
@@ -34,7 +34,15 @@ class TestUploadedRecords(TestCase):
     def test_failed_record_upload_from_file(self):
                     
         with open('myapp/tests/data/InvalidTestClaimData.csv') as f:
-            result = UploadedRecord.upload_claims_from_file(f, None)
+            result = UploadedRecord.upload_claims_from_file(f, None, False)
+            
+        self.assertNotEqual(result, None)
+        self.assertFalse(result.success, "Data upload was not marked as failed")
+        self.assertEqual(result.payload, None)
+        
+        #ignore validation so the program has to handle invalid data
+        with open('myapp/tests/data/InvalidTestClaimData.csv') as f:
+            result = UploadedRecord.upload_claims_from_file(f, None, True)
             
         self.assertNotEqual(result, None)
         self.assertFalse(result.success, "Data upload was not marked as failed")
