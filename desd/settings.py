@@ -57,7 +57,7 @@ ROOT_URLCONF = "desd.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [os.path.join("/app", "templates")],  # Changed from "/shared/templates"
+        "DIRS": [os.path.join(BASE_DIR, "templates")],  # I changed from "DIRS": [os.path.join("/app", "templates")] to this for relative paths:"
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
