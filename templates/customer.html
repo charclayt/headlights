@@ -11,11 +11,15 @@
             {% csrf_token %}
             <div class="form-group">
                 <label for="claimsFile">Claims Data File (.csv):</label>
-                <input type="file" id="claimsFile" name="claims_file" accept=".csv" required>
+                <input type="file" id="claimsFile" name="claims_file" accept=".csv" onchange="resetMessages();" required>
             </div>
             <input id="claimUploadSubmit" type="submit" text="Upload"></input>
         </form>
         <div id="errorMessage" style="white-space: pre-line" class="error-message"></div>
+        <div id="confirmationBox" class="warning-message">
+            <div id="confirmationMessage" style="white-space: pre-line"></div>
+            <input id="confirmIgnoreValidation" type="button" value="Upload Anyway">
+        </div>
     </div>
 
     <script>
@@ -26,7 +30,45 @@
             const formData = new FormData(form);
             document.getElementById("claimUploadSubmit").disabled = true;
 
-            const response = await fetch('./record-upload', {
+            const response = await fetch('./record-upload/', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const result = await response.json();
+            
+            if (result.status === 'success') {
+                location.reload();
+
+            } else if (result.status == 'confirmationRequired') {
+                const confirmBox = document.getElementById('confirmationBox');
+                const confirmMessage = document.getElementById('confirmationMessage');
+                confirmMessage.textContent = result.message + "\n\nSome data may be missing if this file is uploaded";
+                confirmBox.style.display = 'block';
+            } else {
+                const errorMessage = document.getElementById('errorMessage');
+                errorMessage.textContent = result.message;
+                errorMessage.style.display = 'block';
+            }
+        });
+
+        function resetMessages() {
+            const errorMessage = document.getElementById('errorMessage');
+            errorMessage.style.display = 'none';
+            const confirmBox = document.getElementById('confirmationBox');
+            confirmBox.style.display = 'none';
+
+            document.getElementById("claimUploadSubmit").disabled = false;
+        };
+
+        document.getElementById('confirmIgnoreValidation').addEventListener('click', async (event) => {
+            event.preventDefault();
+            
+            const form = document.forms.uploadClaimsForm;
+            const formData = new FormData(form);
+            document.getElementById("confirmIgnoreValidation").disabled = true;
+
+            const response = await fetch('./record-upload/1/', {
                 method: 'POST',
                 body: formData
             });
@@ -37,12 +79,15 @@
                 location.reload();
 
             } else {
+                resetMessages();
+                
                 const errorMessage = document.getElementById('errorMessage');
                 errorMessage.textContent = result.message;
                 errorMessage.style.display = 'block';
+                document.getElementById("claimUploadSubmit").disabled = true;
             }
 
-            document.getElementById("claimUploadSubmit").disabled = false;
+            document.getElementById("confirmIgnoreValidation").disabled = false;
         });
     </script>
     

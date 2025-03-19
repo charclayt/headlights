@@ -61,7 +61,7 @@ input[type="text"], textarea {
   box-sizing: border-box;
 }
 
-.success-message, .error-message {
+.success-message, .error-message, .warning-message {
   margin-top: 10px;
   padding: 10px;
   border-radius: 4px;
@@ -76,4 +76,8 @@ input[type="text"], textarea {
 .error-message {
   background-color: #f2dede;
   color: #a94442;
+}
+
+.warning-message {
+  background-color: #ffc107;
 }

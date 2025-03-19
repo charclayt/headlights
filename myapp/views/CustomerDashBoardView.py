@@ -48,9 +48,9 @@ class ClaimUploadView(View):
     This class handles the proccessing of uploaded claims data.
     """
     def get(self, request: HttpRequest) -> HttpResponseRedirect:
-        return redirect("./")
+        return redirect("customer_dashboard")
     
-    def post(self, request: HttpRequest) -> JsonResponse:
+    def post(self, request: HttpRequest, ignore_validation: int = 0) -> JsonResponse:
         result = SimpleResult()
         file = request.FILES['claims_file']
         
@@ -58,10 +58,19 @@ class ClaimUploadView(View):
             result.add_error_message_and_mark_unsuccessful("Invalid file type")
         
         if result.success:
-            uploadResult = UploadedRecord.upload_claims_from_file(file, None)  
+            uploadResult = UploadedRecord.upload_claims_from_file(file, None, True if ignore_validation == 1 else False)  
             result.add_messages_from_result_and_mark_unsuccessful_if_error_found(uploadResult)
+            
+        status = "success"
+        if not result.success:
+            status = "error"
+            for message in result.get_error_messages():
+                if message.text == "Column Name Error":
+                    status = "confirmationRequired"
+                    result.messages.remove(message)
         
         return JsonResponse({
-                'status': 'success' if result.success else "error",
-                'message': '\n'.join([message.text for message in result.messages])
+                'status': status,
+                'message': '\n\n'.join([message.text for message in result.messages])
             })
+        
