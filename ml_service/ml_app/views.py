@@ -1,9 +1,13 @@
-from django.shortcuts import render
-from django.views import View
+from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.utils.decorators import method_decorator
-from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
+from django.views import View
 from django.views.decorators.csrf import csrf_exempt
+from .MLModelFactory import ModelFactory
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
 
 import logging
 import os
@@ -26,7 +30,6 @@ def model_check_on_startup() -> None:
     except Exception as e:
         logger.error(f"Unexpected error checking ML models on startup: {str(e)}")
 
-
 @method_decorator(login_required, name="dispatch")
 class MLDashboardView(View):
     """
@@ -42,7 +45,7 @@ class MLDashboardView(View):
         models = Model.objects.all()
         logger.info(f"{request.user} accessed the machine learning dashboard page.")
         return render(request, self.template_name, {'models': models})
-    
+
 class ModelListView(View):
     """
     This class handles the listing of all available ML models directly from the Django database.
@@ -148,6 +151,36 @@ class UploadModelView(View):
                 'status': 'error',
                 'message': f"An unexpected error occurred: {str(e)}"
             }, status=500)
+            
+class ModelPredict(APIView):
+    
+    def post(self, request, format=None):
+        name = request.data.get('model_name')
+        
+        if(not name):
+            return Response({'message': 'Model name not supplied'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if (not Model.objects.filter(model_name=name)):
+            return Response({'message': 'Model supplied does not exist'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        factory = ModelFactory()
+
+        try:
+            model = factory.build_model(name)
+        except Exception:
+            return Response({'message': 'Internal server error'}, status=status.HTTP_404_NOT_FOUND)
+
+        data = request.data.get('data')
+
+        if(not data):
+            return Response({'message': 'Model name not supplied'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            prediction = model.predict(name, data)
+        except Exception as e:
+            return Response({'message': str(e)}, status.HTTP_400_BAD_REQUEST)
+
+        return Response(prediction, status=status.HTTP_200_OK)
 
 
 class HealthCheckView(View):

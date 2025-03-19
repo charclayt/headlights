@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "ml_app.apps.MLAppConfig",
     "widget_tweaks",
+    "rest_framework",
 ]
 
 MIDDLEWARE = [
