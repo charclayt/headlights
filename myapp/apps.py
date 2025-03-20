@@ -12,8 +12,4 @@ class MyappConfig(AppConfig):
         # Only run this in the main process (not in management commands)
         import os
         if os.environ.get('RUN_MAIN', None) != 'true':
-            try:
-                # Log application startup without trying to call model_check_on_startup
-                logger.info("Application starting up...")
-            except Exception as e:
-                logger.warning(f"Failed during startup: {e}")
+            logger.info("Application starting up...")
