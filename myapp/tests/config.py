@@ -3,6 +3,7 @@ from datetime import datetime
 class ErrorCodes:
     OK = 200
     BAD_REQUEST = 400
+    UNAUTHORIZED = 401
     FORBIDDEN = 403
     NOT_FOUND = 404
     SERVER_ERROR = 500
@@ -10,14 +11,17 @@ class ErrorCodes:
 class Views:
     HOME = "index"
     MACHINE_LEARNING = "ml_dashboard"
+    CUSTOMER_DASHBOARD = "customer_dashboard"
+    CUSTOMER_UPLOAD = "upload_claims"
 
     API_MODELS_LIST = "api_models_list"
     API_UPLOAD_MODEL = "api_upload_model"
 
 class Templates:
     HOME = "index.html"
-    MACHINE_LEARNING = "ml.html"
-
+    MACHINE_LEARNING = "ml/ml.html"
+    CUSTOMER = "customer.html"
+    
     LOGGED_OUT = "registration/logged_out.html"
     LOGIN = "registration/login.html"
     PASSWORD_RESET_COMPLETE = "registration/password_reset_complete.html"
