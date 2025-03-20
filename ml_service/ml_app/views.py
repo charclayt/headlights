@@ -180,7 +180,7 @@ class ModelPredict(APIView):
             return Response({'message': 'PredictionModel name not supplied'}, status=status.HTTP_400_BAD_REQUEST)
         
         try:
-            prediction = model.predict(data_df)[0][0]
+            prediction = model.predict(data_df)[0]
         except Exception as e:
             return Response({'message': str(e)}, status.HTTP_400_BAD_REQUEST)
 

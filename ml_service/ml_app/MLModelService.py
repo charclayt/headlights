@@ -60,7 +60,7 @@ class DefaultClaimsModel(MLModel):
 
         logger.warning(prediction)
         
-        return prediction,
+        return prediction
     
 """
     Fallback generic model.
