@@ -3,7 +3,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from unittest.mock import patch, MagicMock
 
 from myapp.tests.test_BaseView import BaseViewTest, USER_NAME, USER_PASSWORD
-from myapp.models import Model, UploadedRecord
+from myapp.models import Model, UploadedRecord, PreprocessingStep, PreprocessingModelMap
 from myapp.tests.config import Views, Templates, TestData, ErrorCodes
 
 class MLDashboardPageTest(BaseViewTest, TestCase):
@@ -72,6 +72,8 @@ class MLDashboardPageTest(BaseViewTest, TestCase):
 
         # Remove existing objects, and dependent objects
         UploadedRecord.objects.all().delete()
+        PreprocessingModelMap.objects.all().delete()
+        PreprocessingStep.objects.all().delete()
         Model.objects.all().delete()
 
         # Test getting the model list returns a JSON response with no models
