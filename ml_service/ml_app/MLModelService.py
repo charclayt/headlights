@@ -51,11 +51,6 @@ class DefaultClaimsModel(MLModel):
 
         pipeline = self.load_model(model_dir)
 
-        # TODO: work out why pipeline needs 37 columns...
-        data = data[0].copy()
-
-        logger.warning(data)
-
         prediction = pipeline.predict(data)
 
         logger.warning(prediction)
@@ -73,7 +68,7 @@ class GenericModel(MLModel):
     def preprocess_data(self, claims_data):
         return claims_data
 
-    def predict(self, name, data):
+    def predict(self, data):
         data = pd.DataFrame(data, index=[0])
         data = self.preprocess_data(data)
 
@@ -96,9 +91,6 @@ class PreProcessing():
         self.data = data
         self.steps = []
 
-        # TODO: handle errors
-        self.errors = []
-
     def apply_preprocessing(self):
         # Get all of the preprocessing mappings for the supplied model.
         preprocessing_model_maps = PreprocessingModelMap.objects.filter(model_id=self.model_id).select_related('preprocessing_step_id')
@@ -115,10 +107,10 @@ class PreProcessing():
             if method and callable(method):
                 method()
             else:
-                self.errors.append(f"Unknown or non-callable preprocessing step: {step_str}")
+                raise Exception(f"Unknown or non-callable preprocessing step: {step_str} for model: {self.model_id}")
 
-        logger.warning('preprocessing applied')
-        return self.data, self.errors
+        logger.warning(f"Preprocessing applied for model: {self.model_id}")
+        return self.data
 
     def create_days_between_col(self):
         # Determine difference between AccidentDate and ClaimDate and create new column.
@@ -126,4 +118,4 @@ class PreProcessing():
         if 'AccidentDate' in self.data.columns and 'ClaimDate' in self.data.columns:
             self.data['DaysBetweenAccidentAndClaim'] = self.data['ClaimDate'] - self.data['AccidentDate']
         else:
-            self.errors.append("create_days_between_col: 'AccidentDate' and 'ClaimDate' are not present in this data.")
+            raise Exception(f"'AccidentDate' and 'ClaimDate' are not present in this data for model: {self.model_id}")
