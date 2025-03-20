@@ -5,7 +5,6 @@ from django.shortcuts import render
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 import pandas as pd
-from .MLModelFactory import PredictionModelFactory
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -13,11 +12,11 @@ from rest_framework import status
 import logging
 import os
 
+from .MLModelService import ClaimsModel
 from .models import PredictionModel
 
 # Configure logging
 logger = logging.getLogger(__name__)
-
 
 def model_check_on_startup() -> None:
     """
@@ -165,11 +164,9 @@ class ModelPredict(APIView):
             return Response({'message': 'PredictionModel supplied does not exist'}, status=status.HTTP_400_BAD_REQUEST)
         
         model = PredictionModel.objects.filter(model_id=model_id).first()
-        
-        predicted_model_factory = PredictionModelFactory()
 
         try:
-            model = predicted_model_factory.build_model(model=model)
+            model = ClaimsModel(model=model)
         except Exception as e:
             logger.error(f"Error building model: {e}")
             return Response({'message': 'Internal server error'}, status=status.HTTP_404_NOT_FOUND)
@@ -180,7 +177,7 @@ class ModelPredict(APIView):
             return Response({'message': 'PredictionModel name not supplied'}, status=status.HTTP_400_BAD_REQUEST)
         
         try:
-            prediction = model.predict(data_df)[0]
+            prediction = model.predict(data_df)
         except Exception as e:
             return Response({'message': str(e)}, status.HTTP_400_BAD_REQUEST)
 

@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 import numpy as np
 import os
-import pandas as pd
 import pickle
 
 from .models import PreprocessingModelMap
@@ -33,9 +32,11 @@ class MLModel(ABC):
 
 """
     Class for the default claim model. 
-    Most preprocessing steps are handled in the pipeline in the training stage
+    Most preprocessing steps are handled in the pipeline in the training stage.
+    Some steps are called in the PreProcessing Class.
+    TODO: Discuss with JackP about moving away from Factory pattern.
 """
-class DefaultClaimsModel(MLModel):
+class ClaimsModel(MLModel):
     def __init__(self, model):
         super().__init__(model=model)
 
@@ -51,37 +52,14 @@ class DefaultClaimsModel(MLModel):
 
         pipeline = self.load_model(model_dir)
 
-        prediction = pipeline.predict(data)
-
-        logger.warning(prediction)
-        
-        return prediction
-    
-"""
-    Fallback generic model.
-    It is assumed that there are no specific pre-processing steps if none are specified
-""" 
-class GenericModel(MLModel):
-    def __init__(self, model):
-        super().__init__(model=model)
-
-    def preprocess_data(self, claims_data):
-        return claims_data
-
-    def predict(self, data):
-        data = pd.DataFrame(data, index=[0])
-        data = self.preprocess_data(data)
-
-        model_dir = os.path.join('/shared/', self.model_row['filepath'])
-
-        pipeline = self.load_model(model_dir)
-        
         log_prediction = pipeline.predict(data)
 
-        prediction = np.expm1(log_prediction)
+        prediction = np.expm1(log_prediction[0])
+
+        logger.warning(f"Successful prediction for model: {self.model_row.model_id}")
         
         return prediction
-    
+ 
 """
 Interact with preprocessing steps stored in the database, apply to models within their preprocessing step.
 """
@@ -98,9 +76,9 @@ class PreProcessing():
         # Use mapping table to access preprocessing IDs, then add those processes to the queue (could be an actual q instead of list)
         for model_map in preprocessing_model_maps:
             preprocessing_step = model_map.preprocessing_step_id
-            logger.warning(preprocessing_step)
             self.steps.append(preprocessing_step.preprocess_name)
 
+        # Iterate through preprocessing steps, raising an exception if any fail.
         for step_str in self.steps:
             method = getattr(self, step_str, None)
 
