@@ -5,6 +5,7 @@ from unittest.mock import patch, MagicMock
 from myapp.tests.test_BaseView import BaseViewTest, USER_NAME, USER_PASSWORD
 from myapp.models import Model, UploadedRecord
 from myapp.tests.config import Views, Templates, TestData, ErrorCodes
+from django.urls import reverse
 
 class MLDashboardPageTest(BaseViewTest, TestCase):
 
