@@ -125,7 +125,7 @@ USE_TZ = True
 
 # Change these paths
 STATIC_URL = "static/"
-STATICFILES_DIRS = ["/app/static"] 
+STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")] # I changed from STATICFILES_DIRS = [os.path.join("/app", "static")] to this for relative paths:
 
 # Media files (uploaded files)
 MEDIA_URL = '/media/'

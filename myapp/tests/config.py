@@ -16,7 +16,7 @@ class Views:
 
 class Templates:
     HOME = "index.html"
-    MACHINE_LEARNING = "ml.html"
+    MACHINE_LEARNING = "ml/ml.html"
 
     LOGGED_OUT = "registration/logged_out.html"
     LOGIN = "registration/login.html"
