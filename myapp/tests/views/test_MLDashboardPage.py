@@ -7,6 +7,8 @@ from myapp.models import PredictionModel, UploadedRecord, PreprocessingStep, Pre
 from myapp.tests.config import Views, Templates, TestData, ErrorCodes
 from django.urls import reverse
 
+import logging
+
 class MLDashboardPageTest(BaseViewTest, TestCase):
 
     URL = Views.MACHINE_LEARNING
@@ -14,7 +16,11 @@ class MLDashboardPageTest(BaseViewTest, TestCase):
     MODEL = PredictionModel
 
     def setUp(self):
+        logging.disable(logging.ERROR)
         return BaseViewTest.setUp(self)
+
+    def tearDown(self):
+        logging.disable(logging.NOTSET)
 
     def test_get_view(self):
         self.TEMPLATE = Templates.LOGIN
@@ -73,9 +79,9 @@ class MLDashboardPageTest(BaseViewTest, TestCase):
 
         # Remove existing objects, and dependent objects
         UploadedRecord.objects.all().delete()
-        PredictionModel.objects.all().delete()
         PreprocessingModelMap.objects.all().delete()
         PreprocessingStep.objects.all().delete()
+        PredictionModel.objects.all().delete()
 
         # Test getting the model list returns a JSON response with no models
         BaseViewTest._test_get_json_response(self, status=ErrorCodes.OK, response={'status': 'success', 'message': 'no models found'})
