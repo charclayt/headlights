@@ -12,7 +12,12 @@
 #   python manage.py inspectdb > models.py
 
 from django.contrib.auth.models import User
-from django.db import models
+from django.db import models, transaction
+from datetime import date
+from .utility.SimpleResults import SimpleResult, SimpleResultWithPayload
+from .utility import CaseConversion
+import pandas as pd
+
 
 class Claim(models.Model):
     claim_id = models.AutoField(db_column='ClaimID', primary_key=True)  
@@ -68,6 +73,57 @@ class Claim(models.Model):
                  {self.special_trip_costs} | {self.special_journey_expenses} | {self.special_therapy} | {self.exceptional_circumstances} | {self.minor_psychological_injury} |
                  {self.dominant_injury} | {self.whiplash} | {self.vehicle_type} | {self.weather_conditions} | {self.accident_date} | {self.claim_date} | {self.vehicle_age} |
                  {self.driver_age} | {self.number_of_passengers} | {self.accident_description} | {self.injury_description} | {self.police_report_filed} | {self.witness_present} | {self.gender}"""
+    
+    def create_claim_from_series(datarow: pd.Series):
+        claim = Claim()  
+        for key, value in datarow.items():  
+            snake_key = CaseConversion.to_snake(key)
+            if hasattr(claim, snake_key):  
+                setattr(claim, snake_key, value)  
+        
+        return claim
+    
+    @staticmethod
+    def create_claims_from_dataframe(df: pd.DataFrame) -> list:
+        claims = []
+        for index, datarow in df.iterrows():
+            claims.append(Claim.create_claim_from_series(datarow))
+            
+        return claims
+    
+    @staticmethod
+    def validate_columns(df: pd.DataFrame) -> SimpleResult:
+        result = SimpleResult()
+        
+        attributes = Claim._meta.get_fields()
+        db_column_names = []
+        for attr in attributes:
+            if hasattr(attr, 'db_column'):
+                db_column_names.append(attr.db_column)
+        db_column_names.pop(0) # Remove the primary key
+        
+        csv_columns = df.columns
+
+        excess_columns = []
+        for column in csv_columns:
+            pascal_column = CaseConversion.to_pascal(column)
+            if pascal_column in db_column_names:
+                db_column_names.remove(pascal_column)
+            else:
+                excess_columns.append(column)
+                
+        missing_columns = db_column_names[:]
+
+        if len(missing_columns) > 0 :
+            result.add_error_message_and_mark_unsuccessful(f"The following columns could not be found in the uploaded file: {', '.join(missing_columns)}")
+            
+        if len(excess_columns) > 0:
+            result.add_error_message_and_mark_unsuccessful(f"The following columns are either missnamed or invalid: {', '.join(excess_columns)}")
+            
+        if len(missing_columns) > 0 or len(excess_columns) > 0:
+            result.add_error_message("Column Name Error")
+            
+        return result
 
 
 class ContactInfo(models.Model):
@@ -207,8 +263,8 @@ class OperationLookup(models.Model):
         This function returns an OperationLookup in a neat string format.
         """
         return f"{self.operation_name}"
-
-
+    
+    
 class TableLookup(models.Model):
     table_id = models.AutoField(db_column='TableID', primary_key=True) 
     table_name = models.CharField(db_column='TableName', max_length=255, blank=True, null=True)  
@@ -257,3 +313,97 @@ class UploadedRecord(models.Model):
         This function returns an UploadedRecord in a neat string format.
         """
         return f"{self.user_id} | {self.claim_id} | {self.feedback_id} | {self.model_id} | {self.predicted_settlement} | {self.upload_date}"
+
+
+    @staticmethod
+    def upload_claims_from_file(file, user: UserProfile, ignore_validation: bool) -> SimpleResultWithPayload:
+        result = SimpleResultWithPayload()
+        
+        csv = pd.read_csv(file)
+        
+        claimValidationResult = SimpleResult()
+        if not ignore_validation:
+            claimValidationResult = Claim.validate_columns(csv)
+            
+        if not claimValidationResult.success:
+            result.add_messages_from_result_and_mark_unsuccessful_if_error_found(claimValidationResult)
+            return result
+            
+        claims: list[Claim] = Claim.create_claims_from_dataframe(csv)
+        uploadedRecords = []
+        
+        try:
+            with transaction.atomic():
+                index = 0
+                for claim in claims:
+                    index += 1
+                    try:
+                        claim.save()
+                    except ValueError as error:
+                        result.add_error_message_and_mark_unsuccessful(f"Row {index} | {error.__str__()}")
+                        continue
+                    
+                    uploadedRecord = UploadedRecord()
+                    uploadedRecord.user_id = None if not user else user # TODO: remove this check when account creation is implemented
+                    uploadedRecord.claim_id = claim
+                    uploadedRecord.feedback_id = None
+                    uploadedRecord.model_id = None
+                    uploadedRecord.predicted_settlement = None
+                    uploadedRecord.upload_date = date.today()
+                    
+                    uploadedRecord.save()
+                    uploadedRecords.append(uploadedRecord)
+                
+                if not result.success:
+                    #raise an error so that django rolls back the transaction
+                    raise AssertionError("Result was not successful")
+                
+        except AssertionError:
+            return result
+        
+        result.payload = uploadedRecords
+        
+        return result
+     
+    @staticmethod
+    def get_records_by_user(user: UserProfile) -> SimpleResultWithPayload:
+        result = SimpleResultWithPayload()
+        
+        if user:
+            result.payload = UploadedRecord.objects.filter(user_id = user.user_profile_id)
+        else:
+            result.add_info_message("User was null, returning records without a user")
+            result.payload = UploadedRecord.objects.filter(user_id = None)
+            
+        return result
+      
+
+class PreprocessingStep(models.Model):
+    preprocessing_step_id = models.AutoField(db_column='PreprocessingStepID', primary_key=True)
+    preprocess_name = models.CharField(db_column='PreprocessName', max_length=255, blank=True, null=True)
+    
+    class Meta:
+        managed = True
+        db_table = 'PreprocessingStep'
+    
+    def __str__(self) -> str:
+        """
+        This function returns an PreprocessingStep in a neat string format.
+        """
+        return f"{self.preprocess_name}"
+
+
+class PreprocessingModelMap(models.Model):
+    preprocessing_model_map_id = models.AutoField(db_column='PreprocessingModelMapID', primary_key=True)
+    preprocessing_step_id = models.ForeignKey(PreprocessingStep, models.PROTECT, db_column='PreprocessingStepID', blank=True, null=True)
+    model_id = models.ForeignKey(Model, models.PROTECT, db_column='ModelID', blank=True, null=True)
+    
+    def __str__(self) -> str:
+        """
+        This function returns an PreprocessingStep in a neat string format.
+        """
+        return f"{self.preprocessing_step_id} | {self.model_id}"
+    
+    class Meta:
+        managed = True
+        db_table = 'PreprocessingModelMap'
