@@ -85,7 +85,9 @@ class GenericModel(MLModel):
 
         pipeline = self.load_model(model_dir)
         
-        prediction = pipeline.predict(data)
+        log_prediction = pipeline.predict(data)
+
+        prediction = np.expm1(log_prediction)
         
         return prediction
     
@@ -129,32 +131,3 @@ class PreProcessing():
             self.data['DaysBetweenAccidentAndClaim'] = self.data['ClaimDate'] - self.data['AccidentDate']
         else:
             self.errors.append("create_days_between_col: 'AccidentDate' and 'ClaimDate' are not present in this data.")
-        
-    # def one_hot_encode(self):
-    #     try:
-    #         # Identify categorical and numerical columns
-    #         categorical_cols = self.data.select_dtypes(include=['object', 'string']).columns.tolist()
-    #         numerical_cols = self.data.select_dtypes(include=['int64', 'float64']).columns.tolist()
-
-    #         # Define numerical and categorical transformer pipelines
-    #         numerical_transformer = Pipeline(steps=[
-    #             ('imputer', SimpleImputer(strategy='median')),
-    #             ('scaler', StandardScaler())
-    #         ])
-
-    #         categorical_transformer = Pipeline(steps=[
-    #             ('imputer', SimpleImputer(strategy='most_frequent')),
-    #             ('onehot', OneHotEncoder(handle_unknown='ignore', sparse_output=False))
-    #         ])
-
-    #         # Combine transformers into one pipeline
-    #         preprocessor = ColumnTransformer(
-    #             transformers=[
-    #                 ('num', numerical_transformer, numerical_cols),
-    #                 ('cat', categorical_transformer, categorical_cols)
-    #         ])
-
-    #         # Execute pipeline on inputted data
-    #         self.data = preprocessor.ransform(self.data)
-    #     except:
-    #         self.errors.append(("one_hot_encode: Process failed")) 
