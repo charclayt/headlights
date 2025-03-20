@@ -36,7 +36,9 @@
         // Function to check available models
         document.getElementById('checkModels').addEventListener('click', async () => {
             try {
-                const response = await fetch('/api/models/');
+                const response = await fetch('/api/models/', {
+                    credentials: 'same-origin' // authentication cookies
+                });
                 const data = await response.json();
                 document.getElementById('modelResult').textContent = JSON.stringify(data, null, 2);
             } catch (error) {
@@ -50,11 +52,12 @@
             
             const form = event.target;
             const formData = new FormData(form);
-            
+
             try {
                 const response = await fetch('/api/upload-model/', {
                     method: 'POST',
-                    body: formData
+                    body: formData,
+                    credentials: 'same-origin' // authentication cookies
                 });
                 
                 const result = await response.json();
