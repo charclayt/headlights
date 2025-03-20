@@ -35,7 +35,7 @@ class MLDashboardPageTest(BaseViewTest, TestCase):
         
         # Test getting the model list without being logged in
         response = self.client.get(path=reverse(self.URL), follow=True)
-        self.assertEqual(response.status_code, ErrorCodes.OK)  # Will redirect to login
+        self.assertEqual(response.status_code, ErrorCodes.UNAUTHORIZED)  # Changed from OK to UNAUTHORIZED
         self.assertJSONEqual(
             response.content,
             {
@@ -52,7 +52,7 @@ class MLDashboardPageTest(BaseViewTest, TestCase):
         valid_file = SimpleUploadedFile("test.pkl", b"file_content", content_type="application/octet-stream")
         payload = {'model_name': TestData.NAME, 'notes': "", 'model_file': valid_file}
         response = self.client.post(path=reverse(self.URL), data=payload, follow=True)
-        self.assertEqual(response.status_code, ErrorCodes.OK)  # Will redirect to login
+        self.assertEqual(response.status_code, ErrorCodes.UNAUTHORIZED)  # Changed from OK to UNAUTHORIZED
         self.assertJSONEqual(
             response.content,
             {
