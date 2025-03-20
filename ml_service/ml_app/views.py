@@ -181,12 +181,13 @@ class ModelPredict(APIView):
             return Response({'message': 'PredictionModel name not supplied'}, status=status.HTTP_400_BAD_REQUEST)
         
         try:
-            prediction = model.predict(data_df)
-            logger.warning(prediction)
+            log_prediction = model.predict(data_df)
+            prediction = np.expm1(log_prediction)[0]
         except Exception as e:
             return Response({'message': str(e)}, status.HTTP_400_BAD_REQUEST)
 
-        return Response(prediction, status=status.HTTP_200_OK)
+        response_data = {'prediction' : prediction}
+        return Response({'data' : response_data}, status=status.HTTP_200_OK)
 
 class HealthCheckView(View):
     """
