@@ -27,6 +27,38 @@ class MLDashboardPageTest(BaseViewTest, TestCase):
 
         # Test getting page when logged in returns the machine learning template
         BaseViewTest.test_get_view(self)
+    
+    def test_unauthenticated_model_list(self):
+        self.URL = Views.API_MODELS_LIST
+        self.client.logout()
+        
+        # Test getting the model list without being logged in
+        response = self.client.get(path=reverse(self.URL), follow=True)
+        self.assertEqual(response.status_code, ErrorCodes.OK)  # Will redirect to login
+        self.assertJSONEqual(
+            response.content,
+            {
+                'status': 'error',
+                'message': 'Authentication required'
+            }
+        )
+
+    def test_unauthenticated_model_upload(self):
+        self.URL = Views.API_UPLOAD_MODEL
+        self.client.logout()
+        
+        # Test uploading a model without being logged in
+        valid_file = SimpleUploadedFile("test.pkl", b"file_content", content_type="application/octet-stream")
+        payload = {'model_name': TestData.NAME, 'notes': "", 'model_file': valid_file}
+        response = self.client.post(path=reverse(self.URL), data=payload, follow=True)
+        self.assertEqual(response.status_code, ErrorCodes.OK)  # Will redirect to login
+        self.assertJSONEqual(
+            response.content,
+            {
+                'status': 'error',
+                'message': 'Authentication required'
+            }
+        )
 
     @patch('myapp.views.MLDashboardView.requests.get')
     def test_model_list(self, mock_get):
@@ -119,5 +151,43 @@ class MLDashboardPageTest(BaseViewTest, TestCase):
                 'status': "success",
                 'message': "Model uploaded successfully",
                 'model_id': 2 # Model ID should be 2 as the first model was created in test_Models
+            }
+        )
+        
+    @patch('myapp.views.MLDashboardView.requests.get')
+    def test_model_list_exception(self, mock_get):
+        self.URL = Views.API_MODELS_LIST
+        
+        # Configure the mock to raise an exception
+        mock_get.side_effect = Exception("Test exception")
+        
+        # Test getting the model list when an exception occurs
+        response = self.client.get(path=reverse(self.URL), follow=True)
+        self.assertEqual(response.status_code, ErrorCodes.SERVER_ERROR)
+        self.assertJSONEqual(
+            response.content,
+            {
+                'status': 'error',
+                'message': 'Error communicating with ML service: Test exception'
+            }
+        )
+
+    @patch('myapp.views.MLDashboardView.requests.post')
+    def test_model_upload_exception(self, mock_post):
+        self.URL = Views.API_UPLOAD_MODEL
+        
+        # Configure the mock to raise an exception
+        mock_post.side_effect = Exception("Test exception")
+        
+        # Test uploading a model when an exception occurs
+        valid_file = SimpleUploadedFile("test.pkl", b"file_content", content_type="application/octet-stream")
+        payload = {'model_name': TestData.NAME, 'notes': "", 'model_file': valid_file}
+        response = self.client.post(path=reverse(self.URL), data=payload, follow=True)
+        self.assertEqual(response.status_code, ErrorCodes.SERVER_ERROR)
+        self.assertJSONEqual(
+            response.content,
+            {
+                'status': 'error',
+                'message': 'Error communicating with ML service: Test exception'
             }
         )
