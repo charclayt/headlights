@@ -45,7 +45,6 @@ class ClaimsModel(MLModel):
         return preprocessor.apply_preprocessing()
 
     def predict(self, data):
-        # TODO: discuss whether we need both of these models
         data = self.preprocess_data(data)
 
         model_dir = os.path.join('/shared/', self.model_row.filepath)
