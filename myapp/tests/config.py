@@ -10,6 +10,8 @@ class ErrorCodes:
 class Views:
     HOME = "index"
     MACHINE_LEARNING = "ml_dashboard"
+    CUSTOMER_DASHBOARD = "customer_dashboard"
+    CUSTOMER_UPLOAD = "upload_claims"
 
     API_MODELS_LIST = "api_models_list"
     API_UPLOAD_MODEL = "api_upload_model"
@@ -17,6 +19,7 @@ class Views:
 class Templates:
     HOME = "index.html"
     MACHINE_LEARNING = "ml.html"
+    CUSTOMER = "customer.html"
 
     LOGGED_OUT = "registration/logged_out.html"
     LOGIN = "registration/login.html"
