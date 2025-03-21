@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 class AccountCreationView(View):
     """
-    This class handles the rendering and proccessing of the account creation page.
+    This class handles the rendering and processing of the account creation page.
     """
 
     template_name = "registration/account_creation.html"
@@ -66,7 +66,7 @@ class AccountCreationView(View):
 @method_decorator(login_required, name="dispatch")
 class AccountContactDetailsView(View):
     """
-    This class handles the rendering and proccessing of the contact details page.
+    This class handles the rendering and processing of the contact details page.
     """
     
     template_name = "contact_details.html"
