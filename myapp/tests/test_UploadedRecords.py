@@ -5,16 +5,6 @@ from myapp.utility.SimpleResults import SimpleResultWithPayload
 
 import pandas as pd
 
-"""
-TODO
-set up:
-    see baseview test
-    run TestModels.SetUp to get models into the db
-
-test get_records_by_user
-test upload_claims_from_file
-"""
-
 class TestUploadedRecords(TestCase):
     
     def test_record_upload_from_file(self):
