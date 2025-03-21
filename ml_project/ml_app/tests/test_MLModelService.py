@@ -1,7 +1,8 @@
+import logging
 import numpy as np
+import os
 import pandas as pd
 
-from django.conf import settings
 from django.test import TestCase
 
 from ml_app.MLModelService import ClaimsModel
@@ -49,13 +50,18 @@ class MLModelServiceTest(TestCase):
         }
 
     def setUp(self):
+        logging.disable(logging.INFO)
+
+        filepath = '/shared/media/models/limited_model.pkl'
+        if os.getenv('GITHUB_ACTIONS') == 'true':
+            filepath = '../dataset/limited_model.pkl'
 
         self.prediction_model = PredictionModel.objects.create(
             model_id=1,
             model_name='test_model',
             model_type='default',
             notes='',
-            filepath='/shared/media/models/limited_model.pkl')
+            filepath=filepath)
         
         step = PreprocessingStep.objects.create(
             preprocessing_step_id = 1,
@@ -70,6 +76,10 @@ class MLModelServiceTest(TestCase):
 
         self.claims_model = ClaimsModel(PredictionModel.objects.get(model_id=1))
         self.claims_model.load_model()
+
+    def tearDown(self):
+        logging.disable(logging.NOTSET)
+        return super().tearDown()
 
     def test_predict_success(self):
         result = self.claims_model.predict(pd.DataFrame([self.payload]))
@@ -98,7 +108,9 @@ class MLModelServiceTest(TestCase):
         # get payload without required columns
         payload = self.payload
 
-        with self.assertRaises(Exception) as context:
-            self.claims_model.predict(pd.DataFrame([self.payload]))
+        del payload['ClaimDate']
 
-        self.assertIn("'AccidentDate' and 'ClaimDate' are not present in this data for model", str(context.exception))
+        with self.assertRaises(Exception) as context:
+            self.claims_model.predict(pd.DataFrame([payload]))
+
+        self.assertIn("'AccidentDate' or 'ClaimDate' are not present in this data for model", str(context.exception))

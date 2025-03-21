@@ -38,8 +38,6 @@ jobs:
         cd ml_project
         pip install -r requirements.txt
         cd ../
-        mkdir -p media/models
-        cp dataset/limited_model.pkl media/models/limited_models.pkl
     - name: Apply database migrations
       env:
           DATABASE_ENGINE: django.db.backends.mysql

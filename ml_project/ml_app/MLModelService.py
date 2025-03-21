@@ -92,4 +92,4 @@ class PreProcessing():
         if 'AccidentDate' in self.data.columns and 'ClaimDate' in self.data.columns:
             self.data['DaysBetweenAccidentAndClaim'] = self.data['ClaimDate'] - self.data['AccidentDate']
         else:
-            raise Exception(f"'AccidentDate' and 'ClaimDate' are not present in this data for model: {self.model_id}")
+            raise Exception(f"'AccidentDate' or 'ClaimDate' are not present in this data for model: {self.model_id}")
