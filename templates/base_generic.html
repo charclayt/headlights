@@ -38,10 +38,16 @@
                     {% csrf_token %}
                     <button type="submit" class="btn btn-danger btn-lg w-100">Logout</button>
                   </form>
+                  <li class="nav-item mb-3">
+                    <a class="btn btn-primary btn-lg w-100" href="{% url 'contact_details' %}">Contact Details</a>
+                  </li>
                 </li>
               {% else %}
                 <li class="nav-item mb-3">
                   <a class="btn btn-primary btn-lg w-100" href="{% url 'login' %}?next={{ request.path }}">Login</a>
+                </li>
+                <li class="nav-item mb-3">
+                  <a class="btn btn-primary btn-lg w-100" href="{% url 'account_creation' %}">Sign Up</a>
                 </li>
               {% endif %}
                 <li class="nav-item mb-3">

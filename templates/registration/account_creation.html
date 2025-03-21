@@ -1,0 +1,42 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+
+    <h1>Create an Account</h1>
+
+    {% if error_messages %}
+        {% for message in error_messages %}
+            <div id="errorMessage" class="error-message" style="display: block;">
+                {{ message.text }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <form id="accountCreationForm" method="POST" action="{% url 'account_creation' %}">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="username">Username:</label>
+            <input class="form-control" type="text" id="username" name="username" required>
+        </div>
+        <div class="form-group">
+            <label for="email">Email:</label>
+            <input class="form-control" type="email" id="email" name="email" required>
+        </div>
+        <div class="form-group">
+            <label for="password">Password:</label>
+            <input class="form-control" type="password" id="password" name="password" required>
+        </div>
+        <div class="form-group">
+            <label for="userType">Account Type:</label>
+            <select class="form-control" id="userType" name="userType" required>
+                {% for group in user_groups %}
+                    <option value={{ group.pk }}>{{ group.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <input class="btn btn-primary btn-lg" id="accountCreationSubmit" type="submit" value="Create Account"></input>
+    </form>
+
+    <p>Already have an account? <a href="{% url 'login' %}">Login</a></p>
+
+{% endblock %}

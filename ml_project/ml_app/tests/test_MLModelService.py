@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 
+from django.conf import settings
 from django.test import TestCase
 
 from ml_app.MLModelService import ClaimsModel
@@ -48,7 +49,8 @@ class MLModelServiceTest(TestCase):
         }
 
     def setUp(self):
-        model = PredictionModel.objects.create(
+
+        self.prediction_model = PredictionModel.objects.create(
             model_id=1,
             model_name='test_model',
             model_type='default',
@@ -63,12 +65,40 @@ class MLModelServiceTest(TestCase):
         PreprocessingModelMap.objects.create(
             preprocessing_model_map_id = 1,
             preprocessing_step_id=step,
-            model_id=model
+            model_id=self.prediction_model
         )
 
-    def test_predict_success(self):
-        model = ClaimsModel(PredictionModel.objects.get(model_id=1))
-        model.load_model()
-        result = model.predict(pd.DataFrame([self.payload]))
+        self.claims_model = ClaimsModel(PredictionModel.objects.get(model_id=1))
+        self.claims_model.load_model()
 
-        self.assertTrue(type(result) == np.float64, f"Non float value returned, got {type(result)}")
+    def test_predict_success(self):
+        result = self.claims_model.predict(pd.DataFrame([self.payload]))
+
+        self.assertTrue(type(result) is np.float64, f"Non float value returned, got {type(result)}")
+
+    def test_bad_preprocessing_step(self):
+        new_step = PreprocessingStep.objects.create(
+            preprocessing_step_id = 2,
+            preprocess_name = 'bad_step'
+        )
+
+        PreprocessingModelMap.objects.create(
+            preprocessing_model_map_id = 2,
+            preprocessing_step_id=new_step,
+            model_id=self.prediction_model
+        )
+
+        with self.assertRaises(Exception) as context:
+            self.claims_model.predict(pd.DataFrame([self.payload]))
+
+        self.assertIn("Unknown or non-callable preprocessing step", str(context.exception))
+
+
+    def test_create_days_col_failure(self):
+        # get payload without required columns
+        payload = self.payload
+
+        with self.assertRaises(Exception) as context:
+            self.claims_model.predict(pd.DataFrame([self.payload]))
+
+        self.assertIn("'AccidentDate' and 'ClaimDate' are not present in this data for model", str(context.exception))

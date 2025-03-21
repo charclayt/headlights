@@ -1,11 +1,12 @@
 from abc import ABC, abstractmethod
+import logging
 import numpy as np
 import os
 import pickle
 
-from .models import PreprocessingModelMap
+from django.conf import settings
 
-import logging
+from .models import PreprocessingModelMap
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +19,8 @@ class MLModel(ABC):
         self.model_row = model
     
     def load_model(self):
-        with open(self.model_row.filepath, "rb") as file:
+        model_path = os.path.join(settings.BASE_DIR, self.model_row.filepath)
+        with open(model_path, "rb") as file:
             pipeline = pickle.load(file)
         return pipeline
     
@@ -46,15 +48,12 @@ class ClaimsModel(MLModel):
 
     def predict(self, data):
         data = self.preprocess_data(data)
-
         pipeline = self.load_model()
 
         log_prediction = pipeline.predict(data)
-
         prediction = np.expm1(log_prediction[0])
 
-        logger.warning(f"Successful prediction for model: {self.model_row.model_id}")
-        
+        logger.info(f"Successful prediction for model: {self.model_row.model_id}")
         return prediction
  
 """
@@ -84,7 +83,7 @@ class PreProcessing():
             else:
                 raise Exception(f"Unknown or non-callable preprocessing step: {step_str} for model: {self.model_id}")
 
-        logger.warning(f"Preprocessing applied for model: {self.model_id}")
+        logger.info(f"Preprocessing applied for model: {self.model_id}")
         return self.data
 
     def create_days_between_col(self):
