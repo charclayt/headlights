@@ -13,6 +13,8 @@ class Views:
     MACHINE_LEARNING = "ml_dashboard"
     CUSTOMER_DASHBOARD = "customer_dashboard"
     CUSTOMER_UPLOAD = "upload_claims"
+    ACCOUNT_CREATION = "account_creation"
+    CONTACT_DETAILS = "contact_details"
 
     API_MODELS_LIST = "api_models_list"
     API_UPLOAD_MODEL = "api_upload_model"
@@ -21,7 +23,9 @@ class Templates:
     HOME = "index.html"
     MACHINE_LEARNING = "ml/ml.html"
     CUSTOMER = "customer.html"
+    CONTACT_DETAILS = "contact_details.html"
     
+    ACCOUNT_CREATION = "registration/account_creation.html"
     LOGGED_OUT = "registration/logged_out.html"
     LOGIN = "registration/login.html"
     PASSWORD_RESET_COMPLETE = "registration/password_reset_complete.html"
@@ -35,6 +39,7 @@ class TestData:
     PHONE = "07123456789"
     ADDRESS = "123 Fake Street, Bristol, BS1 1BJ"
     NAME = "test name"
+    PASSWORD = "$password123"
     VALUE = 8000
     PAST_DATE = datetime(year = 2020, month = 1, day = 1)
     PAST_DATETIME = datetime(year = 2020, month = 1, day = 1, hour = 0, minute = 0, second = 0)
