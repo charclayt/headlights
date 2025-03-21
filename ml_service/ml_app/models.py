@@ -9,7 +9,7 @@ class PredictionModel(models.Model):
     price_per_prediction = models.FloatField(db_column='PricePerPrediction', blank=True, null=True)
 
     class Meta:
-        managed = False  # ensures Django doesn't try to create or modify the table
+        managed = True
         db_table = 'PredictionModel'
 
     def __str__(self) -> str:
@@ -24,7 +24,7 @@ class PreprocessingStep(models.Model):
     preprocess_name = models.CharField(db_column='PreprocessName', max_length=255, blank=True, null=True)
     
     class Meta:
-        managed = False
+        managed = True
         db_table = 'PreprocessingStep'
     
     def __str__(self) -> str:
@@ -46,5 +46,5 @@ class PreprocessingModelMap(models.Model):
         return f"{self.preprocessing_step_id} | {self.model_id}"
     
     class Meta:
-        managed = False
+        managed = True
         db_table = 'PreprocessingModelMap'

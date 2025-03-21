@@ -17,8 +17,8 @@ class MLModel(ABC):
         super().__init__()
         self.model_row = model
     
-    def load_model(self, path):
-        with open(path, "rb") as file:
+    def load_model(self):
+        with open(self.model_row.filepath, "rb") as file:
             pipeline = pickle.load(file)
         return pipeline
     
@@ -47,9 +47,7 @@ class ClaimsModel(MLModel):
     def predict(self, data):
         data = self.preprocess_data(data)
 
-        model_dir = os.path.join('/shared/', self.model_row.filepath)
-
-        pipeline = self.load_model(model_dir)
+        pipeline = self.load_model()
 
         log_prediction = pipeline.predict(data)
 
