@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.contrib.auth.models import Group
 
-from myapp.models import UserProfile
+from myapp.models import UserProfile, Company
 from myapp.tests.config import TestData
 from myapp.tests.test_Models import TestModels
 
@@ -28,7 +28,8 @@ class TestUserProfile(TestCase):
         self.assertEqual(result.payload, None)
         
         valid_name = TestData.NAME+"1"
-        result = UserProfile.create_account(valid_name, TestData.EMAIL, TestData.PASSWORD, UserProfile.GroupIDs.ENGINEERS_ID)
+        company = Company.objects.create()
+        result = UserProfile.create_account(valid_name, TestData.EMAIL, TestData.PASSWORD, UserProfile.GroupIDs.ENGINEERS_ID, company=company)
         groups = list(result.payload.auth_id.groups.values_list('id', flat=True))
         
         self.assertTrue(result.success)
