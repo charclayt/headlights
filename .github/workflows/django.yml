@@ -4,11 +4,11 @@ on:
   push:
     branches: [ "main" ]
   pull_request:
-    branches: [ "main" ]
+    branches: 
+      - main
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
     strategy:
       max-parallel: 4
@@ -22,6 +22,7 @@ jobs:
           - 3306:3306
         env:
           MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
+          MYSQL_DATABASE: dockerdjango
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
     steps:
@@ -37,11 +38,15 @@ jobs:
     - name: Run Tests
       env:
         DATABASE_ENGINE: django.db.backends.mysql
-        DATABASE_USERNAME: root
+        DATABASE_NAME: dockerdjango
+        DATABASE_USERNAME: root  
         DATABASE_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
         DATABASE_HOST: ${{ secrets.DATABASE_HOST }}
         DATABASE_PORT: ${{ secrets.DATABASE_PORT }}
         DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+        DEBUG: "True"  
+        TESTING: "True"
+        ML_SERVICE_URL: "http://localhost:8001" 
       run: |
         coverage run --rcfile ./config/test/.coveragerc manage.py test
     - name: Generate and output coverage report
