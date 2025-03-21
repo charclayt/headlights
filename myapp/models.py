@@ -11,7 +11,7 @@
 # Changes made to the database can turned into models using the following:
 #   python manage.py inspectdb > models.py
 
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.db import models, transaction
 from datetime import date
 from .utility.SimpleResults import SimpleResult, SimpleResultWithPayload
@@ -167,6 +167,15 @@ class UserProfile(models.Model):
     contact_info_id = models.ForeignKey(ContactInfo, models.PROTECT, db_column='ContactInfoID', blank=True, null=True)
     company_id = models.ForeignKey(Company, models.PROTECT, db_column='CompanyID', blank=True, null=True)
     
+    class GroupIDs():
+        """
+        Used to more easily keep track of user group IDs instead of leaving random numbers all over the codebase
+        """
+        END_USER_ID = 1
+        ENGINEERS_ID = 2
+        ADMINISTRATORS_ID = 3
+        FINANCE_ID = 4
+    
     class Meta:
         managed = True
         db_table = 'UserProfile'
@@ -176,6 +185,60 @@ class UserProfile(models.Model):
         This function returns a UserProfile in a neat string format.
         """
         return f"{self.auth_id} | {self.contact_info_id} | {self.company_id}"
+    
+    @staticmethod
+    def validate_unique_username(username: str) -> SimpleResult:
+        result = SimpleResult()
+        
+        if User.objects.filter(username=username).exists():
+            result.add_error_message_and_mark_unsuccessful("Username already exists")
+            
+        return result
+    
+    @staticmethod
+    def create_account(username: str, email: str, password: str, groupID: int, 
+                       address: str=None, phone: str=None, company: Company=None
+                       ) -> SimpleResultWithPayload:   
+        result = SimpleResultWithPayload()
+        
+        result.add_messages_from_result_and_mark_unsuccessful_if_error_found(UserProfile.validate_unique_username(username))
+        if not result.success:
+            return result
+        
+        with transaction.atomic():
+            newUserAuth = User.objects.create_user(username=username, email=email, password=password)
+            
+            # All users should have end user/customer permissions
+            endUserGroup = Group.objects.get(id=UserProfile.GroupIDs.END_USER_ID)
+            newUserAuth.groups.add(endUserGroup)
+            
+            # Add the selected user group if it wasn't end user
+            if groupID != UserProfile.GroupIDs.END_USER_ID:
+                group = Group.objects.get(id=groupID)
+                newUserAuth.groups.add(group)
+                
+            # Populate user contact info
+            contactInfo = ContactInfo()
+            contactInfo.email = email
+            contactInfo.address = address
+            contactInfo.phone = phone
+            
+            # Populate all user profile fields
+            newUserProfile = UserProfile()
+            newUserProfile.auth_id = newUserAuth
+            newUserProfile.contact_info_id = contactInfo
+            newUserProfile.company_id = company
+            
+            # Save all new objects
+            newUserAuth.save()
+            contactInfo.save()
+            if company:
+                company.save()
+            newUserProfile.save()
+        
+        result.payload = newUserProfile
+        
+        return result
 
 
 class FinanceReport(models.Model):
