@@ -18,6 +18,8 @@ from .utility.SimpleResults import SimpleResult, SimpleResultWithPayload
 from .utility import CaseConversion
 import pandas as pd
 
+import logging
+logger = logging.getLogger(__name__)
 
 class Claim(models.Model):
     claim_id = models.AutoField(db_column='ClaimID', primary_key=True)  
