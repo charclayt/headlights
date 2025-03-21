@@ -64,7 +64,7 @@ jobs:
         TESTING: "True"
         ML_SERVICE_URL: "http://localhost:8001" 
       run: |
-        coverage run --rcfile ./config/test/.coveragerc manage.py test myapp
+        coverage run --rcfile ./config/test/.coveragerc --data-file=.coverage.myapp manage.py test myapp
     - name: Run Tests for ml_app
       env:
         DATABASE_ENGINE: django.db.backends.mysql
@@ -77,9 +77,10 @@ jobs:
         DEBUG: "True"
         TESTING: "True"
       run: |
-        coverage run --rcfile ./config/test/.coveragerc ml_project/manage.py test ml_app
+        coverage run --rcfile ./config/test/.coveragerc --data-file=.coverage.ml_app ml_project/manage.py test ml_app
     - name: Generate and output coverage report
       run: |
+        coverage combine .coverage.myapp .coverage.ml_app
         coverage report -m
         coverage xml
     - name: Upload coverage report to Codecov
