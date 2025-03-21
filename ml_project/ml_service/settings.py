@@ -96,7 +96,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = "static/"
 STATICFILES_DIRS = [
-    "/shared/static",
+    os.path.join(BASE_DIR, "/shared/static"),
 ]
 
 # Default primary key field type
@@ -104,7 +104,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Media files (uploaded files)
 MEDIA_URL = '/media/'
-MEDIA_ROOT = "/shared/media"
+MEDIA_ROOT = os.path.join(BASE_DIR, "/shared/media")
 
 # Login settings
 LOGIN_REDIRECT_URL = "/"
