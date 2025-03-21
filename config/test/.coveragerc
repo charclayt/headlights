@@ -1,3 +1,6 @@
 [run]
 source = myapp, ml_project/ml_app
-omit = */migrations/*
+omit = 
+    */migrations/*
+    */tests/*
+    */test_*.py
