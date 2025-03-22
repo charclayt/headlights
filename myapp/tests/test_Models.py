@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 
 from myapp.tests.config import TestData
 from myapp.models import Claim, ContactInfo, Company, UserProfile, FinanceReport, \
-                            Feedback, DatabaseLog, Model, OperationLookup, TableLookup, \
+                            Feedback, DatabaseLog, PredictionModel, OperationLookup, TableLookup, \
                             TrainingDataset, UploadedRecord, PreprocessingStep, \
                             PreprocessingModelMap
 
@@ -94,7 +94,7 @@ class TestModels(TestCase):
                                    successful = 0,
                                    notes = "")
 
-        Model.objects.create(model_id = 1,
+        PredictionModel.objects.create(model_id = 1,
                              model_name = TestData.NAME,
                              notes = "",
                              filepath = "",
@@ -108,7 +108,7 @@ class TestModels(TestCase):
                                       user_id = UserProfile.objects.get(user_profile_id = 1),
                                       claim_id = Claim.objects.get(claim_id = 1),
                                       feedback_id = Feedback.objects.get(feedback_id = 1),
-                                      model_id = Model.objects.get(model_id = 1),
+                                      model_id = PredictionModel.objects.get(model_id = 1),
                                       predicted_settlement = 0,
                                       upload_date = TestData.PAST_DATE)
         
@@ -117,7 +117,7 @@ class TestModels(TestCase):
         
         PreprocessingModelMap.objects.create(preprocessing_model_map_id = 1,
                                              preprocessing_step_id = PreprocessingStep.objects.get(preprocessing_step_id = 1),
-                                             model_id = Model.objects.get(model_id = 1))
+                                             model_id = PredictionModel.objects.get(model_id = 1))
         
         
         
@@ -159,7 +159,7 @@ class TestModels(TestCase):
         self.assertTrue(database_log.log_time, TestData.PAST_DATETIME)
 
     def test_model_model(self):
-        model = Model.objects.get(model_id=1)
+        model = PredictionModel.objects.get(model_id=1)
         self.assertTrue(model.__str__().startswith(model.model_name))
         self.assertTrue(model.model_name, TestData.NAME)
 

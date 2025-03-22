@@ -4,7 +4,7 @@ from django.utils.decorators import method_decorator
 from django.shortcuts import render
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
-from .MLModelFactory import ModelFactory
+import pandas as pd
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -12,11 +12,11 @@ from rest_framework import status
 import logging
 import os
 
-from .models import Model
+from .MLModelService import ClaimsModel, ModelLoadError
+from .models import PredictionModel
 
 # Configure logging
 logger = logging.getLogger(__name__)
-
 
 def model_check_on_startup() -> None:
     """
@@ -25,7 +25,7 @@ def model_check_on_startup() -> None:
     logger.info("Checking for available ML models on startup...")
     try:
         # Get all models from the database
-        models_count = Model.objects.count()
+        models_count = PredictionModel.objects.count()
         logger.info(f"Found {models_count} ML models in the system")
     except Exception as e:
         logger.error(f"Unexpected error checking ML models on startup: {str(e)}")
@@ -42,7 +42,7 @@ class MLDashboardView(View):
         Handles the GET request for the machine learning dashboard page.
         """
         # Get all models to display on the page
-        models = Model.objects.all()
+        models = PredictionModel.objects.all()
         logger.info(f"{request.user} accessed the machine learning dashboard page.")
         return render(request, self.template_name, {'models': models})
 
@@ -56,7 +56,7 @@ class ModelListView(View):
         """
         try:
             # Get all models from the database
-            models = Model.objects.all()
+            models = PredictionModel.objects.all()
 
             models_list = [
                 {
@@ -132,16 +132,16 @@ class UploadModelView(View):
                     destination.write(chunk)
             
             # Create a new model record in the database
-            model = Model.objects.create(
+            model = PredictionModel.objects.create(
                 model_name=model_name,
                 notes=notes,
                 filepath=file_path
             )
             
-            logger.info(f"Model '{model_name}' uploaded successfully with ID {model.model_id}.")
+            logger.info(f"PredictionModel '{model_name}' uploaded successfully with ID {model.model_id}.")
             return JsonResponse({
                 'status': 'success',
-                'message': 'Model uploaded successfully',
+                'message': 'PredictionModel uploaded successfully',
                 'model_id': model.model_id
             })
         
@@ -155,33 +155,34 @@ class UploadModelView(View):
 class ModelPredict(APIView):
     
     def post(self, request, format=None):
-        name = request.data.get('model_name')
+        model_id = request.data.get('model_id')
         
-        if(not name):
-            return Response({'message': 'Model name not supplied'}, status=status.HTTP_400_BAD_REQUEST)
+        if(not model_id):
+            return Response({'message': 'PredictionModel ID not supplied'}, status=status.HTTP_400_BAD_REQUEST)
         
-        if (not Model.objects.filter(model_name=name)):
-            return Response({'message': 'Model supplied does not exist'}, status=status.HTTP_400_BAD_REQUEST)
+        if (not PredictionModel.objects.filter(model_id=model_id)):
+            return Response({'message': 'PredictionModel supplied does not exist'}, status=status.HTTP_400_BAD_REQUEST)
         
-        factory = ModelFactory()
+        model = PredictionModel.objects.filter(model_id=model_id).first()
 
         try:
-            model = factory.build_model(name)
-        except Exception:
-            return Response({'message': 'Internal server error'}, status=status.HTTP_404_NOT_FOUND)
+            model = ClaimsModel(model=model)
+        except ModelLoadError as e:
+            logger.error(f"Error building model: {e}")
+            return Response({'message': str(e)}, status=status.HTTP_404_NOT_FOUND)
 
-        data = request.data.get('data')
+        data_df = pd.DataFrame([request.data.get('data')])
 
-        if(not data):
-            return Response({'message': 'Model name not supplied'}, status=status.HTTP_400_BAD_REQUEST)
+        if(data_df.empty):
+            return Response({'message': 'PredictionModel name not supplied'}, status=status.HTTP_400_BAD_REQUEST)
         
         try:
-            prediction = model.predict(name, data)
+            prediction = model.predict(data_df)
         except Exception as e:
             return Response({'message': str(e)}, status.HTTP_400_BAD_REQUEST)
 
-        return Response(prediction, status=status.HTTP_200_OK)
-
+        response_data = {'prediction' : prediction}
+        return Response({'data' : response_data}, status=status.HTTP_200_OK)
 
 class HealthCheckView(View):
     """
