@@ -7,7 +7,7 @@
   {
     "model": "auth.group",
     "pk": 2,
-    "fields": { "name": "Engineers", "permissions": [56, 33, 34, 36] }
+    "fields": { "name": "Engineers", "permissions": [56, 33, 34, 36, 77, 78, 79, 80] }
   },
   {
     "model": "auth.group",

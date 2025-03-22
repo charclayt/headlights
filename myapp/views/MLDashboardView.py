@@ -29,7 +29,7 @@ class MLDashboardView(View):
         logger.info(f"{request.user} accessed the machine learning dashboard page.")
         return render(request, self.template_name)
 
-@method_decorator([login_required, permission_required("add_predictionmodel")], name="dispatch")
+@method_decorator(require_http_methods(["GET"]), name="dispatch")
 class ModelListView(View):
     """
     This class proxies requests for listing ML models to the ML service.
@@ -58,7 +58,7 @@ class ModelListView(View):
                 'message': f"Error communicating with ML service: {str(e)}"
             }, status=500)
 
-@method_decorator([login_required, permission_required("add_predictionmodel")], name="dispatch")
+@method_decorator(csrf_exempt, name="dispatch")
 class UploadModelView(View):
     """
     This class proxies requests for uploading ML models to the ML service.
