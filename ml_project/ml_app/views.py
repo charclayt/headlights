@@ -142,6 +142,7 @@ class UploadModelView(View):
             return JsonResponse({
                 'status': 'success',
                 'message': 'PredictionModel uploaded successfully',
+                'model_id': model.model_id
             })
         
         except Exception as e:
