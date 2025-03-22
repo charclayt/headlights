@@ -2,7 +2,6 @@
 # TODO: move test to myapp/tests/views/test_MLDashboardPage.py when predict FE implemented.
 
 from django.test import TestCase
-from django.core.files.uploadedfile import SimpleUploadedFile
 import logging
 import os
 from rest_framework.test import APIClient
