@@ -103,7 +103,6 @@ class MLModelServiceTest(TestCase):
 
         self.assertIn("Unknown or non-callable preprocessing step", str(context.exception))
 
-
     def test_create_days_col_failure(self):
         # get payload without required columns
         payload = self.payload

@@ -10,6 +10,9 @@ from .models import PreprocessingModelMap
 
 logger = logging.getLogger(__name__)
 
+class ModelLoadError(Exception):
+    pass
+
 """
     Abstract base class for concrete ML classes to inherit from
 """
@@ -17,12 +20,16 @@ class MLModel(ABC):
     def __init__(self, model):
         super().__init__()
         self.model_row = model
+        self.pipeline = self.load_model()
     
     def load_model(self):
-        model_path = os.path.join(settings.BASE_DIR, self.model_row.filepath)
-        with open(model_path, "rb") as file:
-            pipeline = pickle.load(file)
-        return pipeline
+        try:
+            model_path = os.path.join(settings.BASE_DIR, self.model_row.filepath)
+            with open(model_path, "rb") as file:
+                pipeline = pickle.load(file)
+            return pipeline
+        except Exception as e:
+            raise ModelLoadError(f"Failed to load model: {self.model_row.model_id}") from e
     
     @abstractmethod
     def preprocess_data(self, data):
@@ -48,9 +55,8 @@ class ClaimsModel(MLModel):
 
     def predict(self, data):
         data = self.preprocess_data(data)
-        pipeline = self.load_model()
 
-        log_prediction = pipeline.predict(data)
+        log_prediction = self.pipeline.predict(data)
         prediction = np.expm1(log_prediction[0])
 
         logger.info(f"Successful prediction for model: {self.model_row.model_id}")

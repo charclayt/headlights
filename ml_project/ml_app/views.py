@@ -12,7 +12,7 @@ from rest_framework import status
 import logging
 import os
 
-from .MLModelService import ClaimsModel
+from .MLModelService import ClaimsModel, ModelLoadError
 from .models import PredictionModel
 
 # Configure logging
@@ -142,7 +142,6 @@ class UploadModelView(View):
             return JsonResponse({
                 'status': 'success',
                 'message': 'PredictionModel uploaded successfully',
-                'model_id': model.model_id
             })
         
         except Exception as e:
@@ -167,9 +166,9 @@ class ModelPredict(APIView):
 
         try:
             model = ClaimsModel(model=model)
-        except Exception as e:
+        except ModelLoadError as e:
             logger.error(f"Error building model: {e}")
-            return Response({'message': 'Internal server error'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'message': str(e)}, status=status.HTTP_404_NOT_FOUND)
 
         data_df = pd.DataFrame([request.data.get('data')])
 
