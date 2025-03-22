@@ -2,18 +2,18 @@
   {
     "model": "auth.group",
     "pk": 1,
-    "fields": { "name": "End Users", "permissions": [] }
+    "fields": { "name": "End User", "permissions": [] }
   },
   {
     "model": "auth.group",
     "pk": 2,
-    "fields": { "name": "Engineers", "permissions": [56, 33, 34, 36, 77, 78, 79, 80] }
+    "fields": { "name": "Engineer", "permissions": [56, 33, 34, 36, 77, 78, 79, 80] }
   },
   {
     "model": "auth.group",
     "pk": 3,
     "fields": {
-      "name": "Administrators",
+      "name": "Administrator",
       "permissions": [
         1, 2, 3, 4, 9, 10, 11, 12, 5, 6, 7, 8, 13, 14, 15, 16, 17, 18, 19, 20,
         25, 26, 27, 28, 29, 30, 31, 32, 49, 50, 51, 52, 53, 54, 55, 56, 33, 34,
