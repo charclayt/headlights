@@ -13,7 +13,7 @@ import requests
 # Configure logging
 logger = logging.getLogger(__name__)
 
-@method_decorator([login_required, permission_required("add_predictionmodel")], name="dispatch")
+@method_decorator([login_required, permission_required("myapp.add_predictionmodel")], name="dispatch")
 class MLDashboardView(View):
     """
     This class handles rendering the machine learning dashboard page.
