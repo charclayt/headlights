@@ -137,9 +137,12 @@
 
         // Opens the modal form for submitting feedback
         document.addEventListener('DOMContentLoaded', (e) => {
-            modalForm(document.getElementById('submit-prediction-feedback'), {
-                formURL: "{% url 'prediction-feedback' %}",
-            });
+            const formElement = document.getElementById('submit-prediction-feedback');
+            if (formElement) {
+                modalForm(formElement, {
+                    formURL: "{% url 'prediction-feedback' %}",
+                });
+            }
         })
     </script>
     
