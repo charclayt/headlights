@@ -6,7 +6,7 @@ from django.test import RequestFactory, TestCase
 from myapp.tests.test_BaseView import BaseViewTest, USER_NAME, USER_PASSWORD
 from myapp.tests.config import Views, Templates, TestData, ErrorCodes
 
-from myapp.views.CustomerDashBoardView import CustomerDashboardView, PredictionFeedbackView
+from myapp.views.CustomerDashBoardView import PredictionFeedbackView
 from myapp.models import Claim, Feedback, UploadedRecord
 
 class CustomerDashboardTest(BaseViewTest, TestCase):
