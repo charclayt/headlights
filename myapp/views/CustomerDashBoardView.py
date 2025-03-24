@@ -135,7 +135,7 @@ class CustomerDashboardView(View):
             uploaded_record = get_claim_prediction(current_user, selected_claim)
             request.session['uploaded_record_id'] = uploaded_record.uploaded_record_id
 
-            return HttpResponseRedirect(reverse_lazy('customer_dashboard'))
+            return redirect("customer_dashboard")
 
 @method_decorator(login_required, name="dispatch")
 class ClaimUploadView(View):
@@ -170,9 +170,9 @@ class ClaimUploadView(View):
             })
 
 @method_decorator(login_required, name="dispatch")
-class ModelFeedbackView(BSModalCreateView):
+class PredictionFeedbackView(BSModalCreateView):
     """
-    This class handles the processing of model feedback data.
+    This class handles the processing of prediction feedback data.
     """
     template_name = "forms/prediction_feedback_form.html"
     form_class = FeedbackForm
@@ -181,7 +181,7 @@ class ModelFeedbackView(BSModalCreateView):
 
     def form_valid(self, form):
         """
-        Handles the form validation for the model feedback form.
+        Handles the form validation for the prediction feedback form.
 
         Assigns the request user_id to the feedback form, and assigns the feedback to the uploaded record.
 
