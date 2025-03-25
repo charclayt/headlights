@@ -34,9 +34,55 @@
                 {% endfor %}
             </select>
         </div>
+        <div id="companyDetails" style="display: none;">
+            <div class="form-group">
+                <label for="isOwner">Company Owner</label>
+                <input class="form-check-input" type="checkbox" id="isOwner" name="isOwner">
+            </div>
+            <div class="form-group" id="companyNameDiv" style="display: none;">
+                <label for="companyName">Company Name:</label>
+                <input class="form-control" type="text" id="companyName" name="companyName">
+            </div>
+        </div>
         <input class="btn btn-primary btn-lg" id="accountCreationSubmit" type="submit" value="Create Account"></input>
     </form>
 
     <p>Already have an account? <a href="{% url 'login' %}">Login</a></p>
+
+    <script>
+        let financeID = {{ finance_user }};
+
+        document.getElementById('userType').addEventListener('change', async (event) => {
+
+            const select = event.target
+            const companyDetails = document.getElementById('companyDetails')
+            const companyNameTextbox = document.getElementById('companyName')
+            const selectedValue = parseInt(select.value)
+
+            if (selectedValue === financeID) {
+                companyDetails.style.display = 'block'
+            } else{
+                companyDetails.style.display = 'none'
+                companyNameTextbox.required = false
+            }
+        });
+
+        document.getElementById('isOwner').addEventListener('change', async (event) => {
+
+            const ownerCheck = event.target
+            const isChecked = ownerCheck.checked
+            const companyNameDiv = document.getElementById('companyNameDiv')
+            const companyNameTextbox = document.getElementById('companyName')
+            
+
+            if (isChecked) {
+                companyNameDiv.style.display = 'block'
+                companyNameTextbox.required = true
+            } else{
+                companyNameDiv.style.display = 'none'
+                companyNameTextbox.required = false
+            }
+        });
+    </script>
 
 {% endblock %}
