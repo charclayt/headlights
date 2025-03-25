@@ -7,6 +7,7 @@ from myapp.views.IndexView import IndexView
 from myapp.views.MLDashboardView import MLDashboardView, ModelListView, UploadModelView
 from myapp.views.CustomerDashBoardView import CustomerDashboardView, ClaimUploadView
 from myapp.views.AccountManagementView import AccountCreationView, AccountContactDetailsView
+from myapp.views.FinanceDashboardViews import FinanceDashboardView, CompanyDetailsView, CompanyManageEmployeesView
 
 
 urlpatterns = [
@@ -20,7 +21,12 @@ urlpatterns = [
     
     # Account management URLs
     path("account/create/", AccountCreationView.as_view(), name="account_creation"),
-    path("account/contact-details", AccountContactDetailsView.as_view(), name="contact_details"),
+    path("account/contact-details/", AccountContactDetailsView.as_view(), name="contact_details"),
+    
+    # Finance URLs
+    path("finance/", FinanceDashboardView.as_view(), name="finance_dashboard"),
+    path("finance/company-details/", CompanyDetailsView.as_view(), name="company_details"),
+    path("finance/manage-employees/", CompanyManageEmployeesView.as_view(), name="company_manage_employees"),
     
     # ML-related API endpoints
     path("api/models/", ModelListView.as_view(), name="models_list"),
