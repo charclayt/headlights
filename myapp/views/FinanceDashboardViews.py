@@ -2,17 +2,15 @@ from django.shortcuts import render
 from django.views import View
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.db.models import Q
-from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required, permission_required
-from django.contrib.auth.models import Group
 from django.utils.decorators import method_decorator
 from django.shortcuts import redirect
 
 import logging
 import json
 
-from myapp.models import UserProfile, Company
-from myapp.utility.SimpleResults import SimpleResult, Message
+from myapp.models import UserProfile
+from myapp.utility.SimpleResults import SimpleResult
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -145,5 +143,3 @@ class CompanyManageEmployeesView(View):
         }
         
         return render(request, self.template_name, context=context)
-    
-    
