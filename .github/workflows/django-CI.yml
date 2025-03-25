@@ -35,22 +35,52 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-    - name: Run Tests
+        cd ml_project
+        pip install -r requirements.txt
+        cd ../
+    - name: Apply database migrations
+      env:
+          DATABASE_ENGINE: django.db.backends.mysql
+          DATABASE_NAME: dockerdjango
+          DATABASE_USERNAME: root
+          DATABASE_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
+          DATABASE_HOST: ${{ secrets.DATABASE_HOST }}
+          DATABASE_PORT: ${{ secrets.DATABASE_PORT }}
+          DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+          DEBUG: "True"
+          TESTING: "True"
+      run: |
+        python manage.py migrate
+    - name: Run Tests for myapp
       env:
         DATABASE_ENGINE: django.db.backends.mysql
         DATABASE_NAME: dockerdjango
-        DATABASE_USERNAME: root  
+        DATABASE_USERNAME: root
         DATABASE_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
         DATABASE_HOST: ${{ secrets.DATABASE_HOST }}
         DATABASE_PORT: ${{ secrets.DATABASE_PORT }}
         DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
-        DEBUG: "True"  
+        DEBUG: "True"
         TESTING: "True"
         ML_SERVICE_URL: "http://localhost:8001" 
       run: |
-        coverage run --rcfile ./config/test/.coveragerc manage.py test
+        coverage run --rcfile ./config/test/.coveragerc --data-file=.coverage.myapp manage.py test myapp
+    - name: Run Tests for ml_app
+      env:
+        DATABASE_ENGINE: django.db.backends.mysql
+        DATABASE_NAME: dockerdjango
+        DATABASE_USERNAME: root
+        DATABASE_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
+        DATABASE_HOST: ${{ secrets.DATABASE_HOST }}
+        DATABASE_PORT: ${{ secrets.DATABASE_PORT }}
+        DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+        DEBUG: "True"
+        TESTING: "True"
+      run: |
+        coverage run --rcfile ./config/test/.coveragerc --data-file=.coverage.ml_app ml_project/manage.py test ml_app
     - name: Generate and output coverage report
       run: |
+        coverage combine .coverage.myapp .coverage.ml_app
         coverage report -m
         coverage xml
     - name: Upload coverage report to Codecov

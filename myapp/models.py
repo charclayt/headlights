@@ -11,13 +11,15 @@
 # Changes made to the database can turned into models using the following:
 #   python manage.py inspectdb > models.py
 
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.db import models, transaction
 from datetime import date
 from .utility.SimpleResults import SimpleResult, SimpleResultWithPayload
 from .utility import CaseConversion
 import pandas as pd
 
+import logging
+logger = logging.getLogger(__name__)
 
 class Claim(models.Model):
     claim_id = models.AutoField(db_column='ClaimID', primary_key=True)  
@@ -158,12 +160,48 @@ class Company(models.Model):
         """
         return f"{self.name} | {self.contact_info_id}"
     
+    @staticmethod
+    def create_new_company(owner, company_name: str, email: str=None, 
+                           address: str=None, phone: str=None) -> SimpleResultWithPayload:
+        result = SimpleResultWithPayload()
+        
+        contact_info = ContactInfo()
+        contact_info.email = email
+        contact_info.address = address
+        contact_info.phone = phone
+        
+        company = Company()
+        company.name = company_name
+        company.contact_info_id = contact_info
+
+        owner.company_id = company
+        owner.is_company_owner = True
+        
+        with transaction.atomic():
+            contact_info.save()
+            company.save()
+            owner.save()
+            
+        result.payload = company
+        
+        return result
+    
 
 class UserProfile(models.Model):
     user_profile_id = models.AutoField(db_column='UserProfileID', primary_key=True)
     auth_id = models.ForeignKey(User, models.PROTECT, db_column='AuthID', blank=True, null=True)
     contact_info_id = models.ForeignKey(ContactInfo, models.PROTECT, db_column='ContactInfoID', blank=True, null=True)
     company_id = models.ForeignKey(Company, models.PROTECT, db_column='CompanyID', blank=True, null=True)
+    is_company_owner = models.BooleanField(db_column='IsCompanyOwner', blank=True, null=True)  
+    
+    class GroupIDs():
+        """
+        Used to more easily keep track of user group IDs instead of leaving random numbers all over the codebase
+        """
+        END_USER_ID = 1
+        ENGINEER_ID = 2
+        ADMINISTRATOR_ID = 3
+        FINANCE_ID = 4
     
     class Meta:
         managed = True
@@ -174,6 +212,60 @@ class UserProfile(models.Model):
         This function returns a UserProfile in a neat string format.
         """
         return f"{self.auth_id} | {self.contact_info_id} | {self.company_id}"
+    
+    @staticmethod
+    def validate_unique_username(username: str) -> SimpleResult:
+        result = SimpleResult()
+        
+        if User.objects.filter(username=username).exists():
+            result.add_error_message_and_mark_unsuccessful("Username already exists")
+            
+        return result
+    
+    @staticmethod
+    def create_account(username: str, email: str, password: str, groupID: int, 
+                       address: str=None, phone: str=None, company: Company=None
+                       ) -> SimpleResultWithPayload:   
+        result = SimpleResultWithPayload()
+        
+        result.add_messages_from_result_and_mark_unsuccessful_if_error_found(UserProfile.validate_unique_username(username))
+        if not result.success:
+            return result
+        
+        with transaction.atomic():
+            newUserAuth = User.objects.create_user(username=username, email=email, password=password)
+            
+            # All users should have end user/customer permissions
+            endUserGroup = Group.objects.get(id=UserProfile.GroupIDs.END_USER_ID)
+            newUserAuth.groups.add(endUserGroup)
+            
+            # Add the selected user group if it wasn't end user
+            if groupID != UserProfile.GroupIDs.END_USER_ID:
+                group = Group.objects.get(id=groupID)
+                newUserAuth.groups.add(group)
+                
+            # Populate user contact info
+            contactInfo = ContactInfo()
+            contactInfo.email = email
+            contactInfo.address = address
+            contactInfo.phone = phone
+            
+            # Populate all user profile fields
+            newUserProfile = UserProfile()
+            newUserProfile.auth_id = newUserAuth
+            newUserProfile.contact_info_id = contactInfo
+            newUserProfile.company_id = company
+            
+            # Save all new objects
+            newUserAuth.save()
+            contactInfo.save()
+            if company:
+                company.save()
+            newUserProfile.save()
+        
+        result.payload = newUserProfile
+        
+        return result
 
 
 class FinanceReport(models.Model):
@@ -232,20 +324,21 @@ class DatabaseLog(models.Model):
         return f"{self.log_time} | {self.user_id} | {self.affected_table_id} | {self.operation_performed} | {self.successful} | {self.notes}"
 
 
-class Model(models.Model): # I think we should rename this as model is referenced a lot throughout Django
+class PredictionModel(models.Model):
     model_id = models.AutoField(db_column='ModelID', primary_key=True)  
-    model_name = models.CharField(db_column='ModelName', max_length=255, blank=True, null=True)  
+    model_name = models.CharField(db_column='ModelName', max_length=255, blank=True, null=True)
+    model_type = models.CharField(db_column='ModelType', max_length=255, blank=True, null=True)
     notes = models.CharField(db_column='Notes', max_length=255, blank=True, null=True)  
     filepath = models.CharField(db_column='FilePath', max_length=255, blank=True, null=True)  
     price_per_prediction = models.FloatField(db_column='PricePerPrediction', blank=True, null=True)
 
     class Meta:
         managed = True
-        db_table = 'Model'
+        db_table = 'PredictionModel'
 
     def __str__(self) -> str:
         """
-        This function returns a Model in a neat string format.
+        This function returns a PredictionModel in a neat string format.
         """
         return f"{self.model_name} | {self.notes} | {self.filepath} | {self.price_per_prediction}"
 
@@ -300,7 +393,7 @@ class UploadedRecord(models.Model):
     user_id = models.ForeignKey(UserProfile, models.PROTECT, db_column='UserID', blank=True, null=True)  
     claim_id = models.ForeignKey(Claim, models.PROTECT, db_column='ClaimID', blank=True, null=True)  
     feedback_id = models.ForeignKey(Feedback, models.PROTECT, db_column='FeedbackID', blank=True, null=True)  
-    model_id = models.ForeignKey(Model, models.PROTECT, db_column='ModelID', blank=True, null=True)  
+    model_id = models.ForeignKey(PredictionModel, models.PROTECT, db_column='ModelID', blank=True, null=True)  
     predicted_settlement = models.FloatField(db_column='PredictedSettlement', blank=True, null=True)  
     upload_date = models.DateField(db_column='UploadDate', blank=True, null=True)
 
@@ -396,7 +489,7 @@ class PreprocessingStep(models.Model):
 class PreprocessingModelMap(models.Model):
     preprocessing_model_map_id = models.AutoField(db_column='PreprocessingModelMapID', primary_key=True)
     preprocessing_step_id = models.ForeignKey(PreprocessingStep, models.PROTECT, db_column='PreprocessingStepID', blank=True, null=True)
-    model_id = models.ForeignKey(Model, models.PROTECT, db_column='ModelID', blank=True, null=True)
+    model_id = models.ForeignKey(PredictionModel, models.PROTECT, db_column='ModelID', blank=True, null=True)
     
     def __str__(self) -> str:
         """

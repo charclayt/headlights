@@ -3,18 +3,24 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from unittest.mock import patch, MagicMock
 
 from myapp.tests.test_BaseView import BaseViewTest, USER_NAME, USER_PASSWORD
-from myapp.models import Model, UploadedRecord, PreprocessingStep, PreprocessingModelMap
+from myapp.models import PredictionModel, UploadedRecord, PreprocessingStep, PreprocessingModelMap
 from myapp.tests.config import Views, Templates, TestData, ErrorCodes
 from django.urls import reverse
+
+import logging
 
 class MLDashboardPageTest(BaseViewTest, TestCase):
 
     URL = Views.MACHINE_LEARNING
     TEMPLATE = Templates.MACHINE_LEARNING
-    MODEL = Model
+    MODEL = PredictionModel
 
     def setUp(self):
+        logging.disable(logging.ERROR)
         return BaseViewTest.setUp(self)
+
+    def tearDown(self):
+        logging.disable(logging.NOTSET)
 
     def test_get_view(self):
         self.TEMPLATE = Templates.LOGIN
@@ -75,13 +81,13 @@ class MLDashboardPageTest(BaseViewTest, TestCase):
         UploadedRecord.objects.all().delete()
         PreprocessingModelMap.objects.all().delete()
         PreprocessingStep.objects.all().delete()
-        Model.objects.all().delete()
+        PredictionModel.objects.all().delete()
 
         # Test getting the model list returns a JSON response with no models
         BaseViewTest._test_get_json_response(self, status=ErrorCodes.OK, response={'status': 'success', 'message': 'no models found'})
 
         # Create a model object
-        Model.objects.create(model_id = 1,
+        PredictionModel.objects.create(model_id = 1,
                              model_name = TestData.NAME,
                              notes = "",
                              filepath = "",
@@ -156,14 +162,14 @@ class MLDashboardPageTest(BaseViewTest, TestCase):
                 'model_id': 2 # Model ID should be 2 as the first model was created in test_Models
             }
         )
-        
+
     @patch('myapp.views.MLDashboardView.requests.get')
     def test_model_list_exception(self, mock_get):
         self.URL = Views.API_MODELS_LIST
-        
+
         # Configure the mock to raise an exception
         mock_get.side_effect = Exception("Test exception")
-        
+
         # Test getting the model list when an exception occurs
         response = self.client.get(path=reverse(self.URL), follow=True)
         self.assertEqual(response.status_code, ErrorCodes.SERVER_ERROR)
@@ -178,10 +184,10 @@ class MLDashboardPageTest(BaseViewTest, TestCase):
     @patch('myapp.views.MLDashboardView.requests.post')
     def test_model_upload_exception(self, mock_post):
         self.URL = Views.API_UPLOAD_MODEL
-        
+
         # Configure the mock to raise an exception
         mock_post.side_effect = Exception("Test exception")
-        
+
         # Test uploading a model when an exception occurs
         valid_file = SimpleUploadedFile("test.pkl", b"file_content", content_type="application/octet-stream")
         payload = {'model_name': TestData.NAME, 'notes': "", 'model_file': valid_file}

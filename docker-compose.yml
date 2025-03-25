@@ -58,7 +58,7 @@ services:
 
   ml-service:
     build: 
-      context: ./ml_service
+      context: ./ml_project
       dockerfile: Dockerfile
     container_name: ml-service
     ports:
@@ -79,7 +79,7 @@ services:
       DATABASE_PORT: ${DATABASE_PORT}
       PYTHONPATH: /app
     volumes:
-      - ./ml_service:/app
+      - ./ml_project:/app
       - ./media:/shared/media
       - ./templates:/shared/templates
       - ./static:/shared/static
