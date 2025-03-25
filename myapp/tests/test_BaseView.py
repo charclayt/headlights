@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User, Group, Permission
 from django.test import Client, TestCase
+from django.test.client import MULTIPART_CONTENT
 from django.urls import reverse
 
 from myapp.tests.config import ErrorCodes, Views, Templates
@@ -48,9 +49,9 @@ class BaseViewTest(TestCase):
 
         return resp
 
-    def _test_post_view_response(self, status=ErrorCodes.OK, payload=None, **kwargs):
+    def _test_post_view_response(self, status=ErrorCodes.OK, payload=None, content_type=MULTIPART_CONTENT, **kwargs):
         # private method so that it has to be called to be run instead of automatic
-        resp = self.client.post(path=reverse(self.URL, **kwargs), data=payload, follow=True)
+        resp = self.client.post(path=reverse(self.URL, **kwargs), data=payload, content_type=content_type, follow=True)
         self.assertEqual(resp.status_code, status)
 
         return resp

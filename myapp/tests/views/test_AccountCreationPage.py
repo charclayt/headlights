@@ -12,7 +12,9 @@ class AccountCreationTest(BaseViewTest, TestCase):
 
     def setUp(self):
         end_user_group = Group.objects.create(pk=UserProfile.GroupIDs.END_USER_ID, name="end user")
+        finance_group = Group.objects.create(pk=UserProfile.GroupIDs.FINANCE_ID, name="finance")
         end_user_group.save()
+        finance_group.save()
         
         return BaseViewTest.setUp(self)
 
@@ -35,7 +37,7 @@ class AccountCreationTest(BaseViewTest, TestCase):
         
         #This should successfully create an account, logging in the user and redirecting them to the home page
         unique_name = TestData.NAME+"ACCOUNT_CREATION_TEST"
-        payload = {"username": unique_name, "email": TestData.EMAIL, "password": TestData.PASSWORD, "userType": UserProfile.GroupIDs.END_USER_ID}
+        payload = {"username": unique_name, "email": TestData.EMAIL, "password": TestData.PASSWORD, "userType": UserProfile.GroupIDs.FINANCE_ID, "isOwner": True}
         response = BaseViewTest._test_post_view_response(self, payload=payload)
         self.assertEqual(response.templates[0].name, Templates.HOME)
         self.client.logout()

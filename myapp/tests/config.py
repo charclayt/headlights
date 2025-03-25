@@ -15,6 +15,9 @@ class Views:
     CUSTOMER_UPLOAD = "upload_claims"
     ACCOUNT_CREATION = "account_creation"
     CONTACT_DETAILS = "contact_details"
+    FINANCE_DASHBOARD = "finance_dashboard"
+    COMPANY_DETAILS = "company_details"
+    COMPANY_MANAGE_EMPLOYEES = "company_manage_employees"
 
     API_MODELS_LIST = "api_models_list"
     API_UPLOAD_MODEL = "api_upload_model"
@@ -23,7 +26,10 @@ class Templates:
     HOME = "index.html"
     MACHINE_LEARNING = "ml/ml.html"
     CUSTOMER = "customer.html"
+    FINANCE = "finance.html"
     CONTACT_DETAILS = "contact_details.html"
+    COMPANY_DETAILS = "company_details.html"
+    COMPANY_USER_MANAGEMENT = "company_manage_users.html"
     
     ACCOUNT_CREATION = "registration/account_creation.html"
     LOGGED_OUT = "registration/logged_out.html"

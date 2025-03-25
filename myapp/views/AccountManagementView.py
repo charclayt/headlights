@@ -10,7 +10,7 @@ from django.shortcuts import redirect
 
 import logging
 
-from myapp.models import UserProfile
+from myapp.models import UserProfile, Company
 from myapp.utility.SimpleResults import SimpleResult, Message
 
 # Configure logging
@@ -38,18 +38,22 @@ class AccountCreationView(View):
         username = request.POST.get('username')
         email = request.POST.get('email')
         password = request.POST.get('password')
-        userType = request.POST.get('userType')
+        user_type = request.POST.get('userType')
+        is_owner = request.POST.get('isOwner')
+        company_name = request.POST.get('companyName')
         
-        result = UserProfile.create_account(username, email, password, userType)
+        result = UserProfile.create_account(username, email, password, user_type)
         
-        # If successful, log them in with their provided credentials
-        if result.success:
-            userProfile: UserProfile = result.payload
-            login(request, userProfile.auth_id)
-            return redirect("index")
-            
         # If unsuccessful, return the user to the account creation page 
-        return self.__render_account_creation_page(request, result.get_error_messages())
+        if not result.success:
+            return self.__render_account_creation_page(request, result.get_error_messages())
+              
+        userProfile: UserProfile = result.payload
+        if (userProfile.auth_id.groups.filter(id=UserProfile.GroupIDs.FINANCE_ID).exists() and is_owner):
+            result = Company.create_new_company(userProfile, company_name)
+        
+        login(request, userProfile.auth_id)
+        return redirect("index")
 
     def __render_account_creation_page(self, request, error_messages: list[Message]) -> HttpResponse:
         # Admin should not be a selectable user type
@@ -57,6 +61,7 @@ class AccountCreationView(View):
         
         context = {
             'user_groups': user_groups,
+            'finance_user': UserProfile.GroupIDs.FINANCE_ID,
             'error_messages': error_messages
         }
         

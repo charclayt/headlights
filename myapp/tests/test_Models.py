@@ -66,7 +66,8 @@ class TestModels(TestCase):
         UserProfile.objects.create(user_profile_id = 1,
                                    auth_id = User.objects.get(username = TestData.EMAIL),
                                    contact_info_id = ContactInfo.objects.get(contact_info_id = 1),
-                                   company_id = Company.objects.get(company_id = 1))
+                                   company_id = Company.objects.get(company_id = 1),
+                                   is_company_owner = True)
         
         FinanceReport.objects.create(finance_report_id = 1,
                                      user_id = UserProfile.objects.get(user_profile_id = 1),
@@ -192,4 +193,3 @@ class TestModels(TestCase):
         preprocess_model_map = PreprocessingModelMap.objects.get(preprocessing_model_map_id=1)
         self.assertTrue(preprocess_model_map.__str__().startswith(preprocess_model_map.preprocessing_step_id.preprocess_name))
         self.assertEqual(preprocess_model_map.preprocessing_step_id.preprocess_name, TestData.NAME)
-        

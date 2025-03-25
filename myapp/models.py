@@ -160,12 +160,39 @@ class Company(models.Model):
         """
         return f"{self.name} | {self.contact_info_id}"
     
+    @staticmethod
+    def create_new_company(owner, company_name: str, email: str=None, 
+                           address: str=None, phone: str=None) -> SimpleResultWithPayload:
+        result = SimpleResultWithPayload()
+        
+        contact_info = ContactInfo()
+        contact_info.email = email
+        contact_info.address = address
+        contact_info.phone = phone
+        
+        company = Company()
+        company.name = company_name
+        company.contact_info_id = contact_info
+
+        owner.company_id = company
+        owner.is_company_owner = True
+        
+        with transaction.atomic():
+            contact_info.save()
+            company.save()
+            owner.save()
+            
+        result.payload = company
+        
+        return result
+    
 
 class UserProfile(models.Model):
     user_profile_id = models.AutoField(db_column='UserProfileID', primary_key=True)
     auth_id = models.ForeignKey(User, models.PROTECT, db_column='AuthID', blank=True, null=True)
     contact_info_id = models.ForeignKey(ContactInfo, models.PROTECT, db_column='ContactInfoID', blank=True, null=True)
     company_id = models.ForeignKey(Company, models.PROTECT, db_column='CompanyID', blank=True, null=True)
+    is_company_owner = models.BooleanField(db_column='IsCompanyOwner', blank=True, null=True)  
     
     class GroupIDs():
         """
