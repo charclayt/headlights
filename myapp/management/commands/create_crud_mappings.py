@@ -1,5 +1,4 @@
 from django.core.management.base import BaseCommand
-from django.apps import apps
 from myapp.models import OperationLookup
 
 class Command(BaseCommand):

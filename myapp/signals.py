@@ -1,9 +1,8 @@
+from django.conf import settings
 from django.db.models.signals import post_save, post_delete
-from django.db import models, transaction
-
+from django.db import transaction
 from django.dispatch import receiver
 from django.utils.timezone import now
-from django.apps import apps
 
 from myapp.middleware import get_current_user
 from myapp.models import DatabaseLog, OperationLookup, TableLookup, UserProfile
@@ -26,16 +25,21 @@ def set_in_signal(value):
 def log_create_or_update(sender, instance, created, **kwargs):
     """Logs create and update operations for all models."""
 
-    if prevent_recursion():
+    # Don't write logs in tests or if a log is already being written.
+    if getattr(settings, "TESTING", False) or prevent_recursion():
         return
 
     set_in_signal(True)
 
     try:
+        # 1 = CREATE, 3 = UPDATE
         operation_id = 1 if created else 3
+
+        # Get UserProfile object if action performed by user.
         user = get_current_user()
-        user_profile = UserProfile.objects.get(auth_id=user)
-    
+        user_profile = UserProfile.objects.filter(auth_id=user).first()
+
+        # Use atomic commits to create new DatabaseLog
         with transaction.atomic():
             DatabaseLog.objects.create(
             log_time=now(),
@@ -45,24 +49,29 @@ def log_create_or_update(sender, instance, created, **kwargs):
             successful=True
     )
     except Exception as e:
-        logging.warning('failed to save logging to DB')
-        logging.warning(f"{e}")
+        logging.warning(f"Failed to save logging to DB: {e}")
     finally:
         set_in_signal(False)
 
 @receiver(post_delete)
 def log_delete(sender, instance, **kwargs):
     """Logs delete operations for all models."""
-    if prevent_recursion():
+
+    # Don't write logs in tests or if a log is already being written.
+    if getattr(settings, "TESTING", False) or prevent_recursion():
         return
 
     set_in_signal(True)
 
     try:
+        # 4 = DELETE
         operation_id = 4
-        user = get_current_user()
-        user_profile = UserProfile.objects.get(auth_id=user)
 
+        # Get UserProfile object if action performed by user.
+        user = get_current_user()
+        user_profile = UserProfile.objects.filter(auth_id=user).first()
+
+        # Use atomic commits to create new DatabaseLog
         with transaction.atomic():
             DatabaseLog.objects.create(
                 log_time=now(),
@@ -72,7 +81,6 @@ def log_delete(sender, instance, **kwargs):
                 successful=True
             )
     except Exception as e:
-        logging.warning('failed to save logging to DB')
-        logging.warning(f"{e}")
+        logging.warning(f"Failed to save logging to DB: {e}")
     finally:
         set_in_signal(False)
