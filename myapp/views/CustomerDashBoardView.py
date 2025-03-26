@@ -1,18 +1,21 @@
 from django import forms
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
+from django.forms.models import model_to_dict
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect,JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views import View
-
+import json
 from bootstrap_modal_forms.forms import BSModalModelForm
 from bootstrap_modal_forms.generic import BSModalCreateView
 
 import logging
+import requests
 
-from myapp.models import Claim, UploadedRecord, Feedback, UserProfile
+from myapp.models import Claim, UploadedRecord, Feedback, UserProfile, PredictionModel
 from myapp.utility.SimpleResults import SimpleResult
 
 # Configure logging
@@ -23,6 +26,12 @@ class UploadedClaimsForm(forms.Form):
     # uploaded_claims = forms.ModelChoiceField(queryset=Claim.objects.all(), widget=forms.Select(attrs={'class': 'form-control'}))
     uploaded_claims = forms.ModelChoiceField(
         queryset=Claim.objects.all(),
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+
+    model = forms.ModelChoiceField(
+        # This currently shows all info from db row. Look at how to get just name without breaking FE
+        queryset = PredictionModel.objects.all(),
         widget=forms.Select(attrs={'class': 'form-control'})
     )
 
@@ -38,18 +47,28 @@ class FeedbackForm(BSModalModelForm):
         fields = ['rating', 'notes']
 
 
-def get_claim_prediction(user, claim) -> UploadedRecord:
+def get_claim_prediction(user, claim, model) -> UploadedRecord:
     """
     This function gets the prediction result for a claim, and creates an UploadedRecord object.
 
     Args:
         claim: the claim object.
+        model: the model object
 
     Returns:
         UploadedRecord: the uploaded record object.
     """
-    # TODO: Integrate with prediction API here : get prediction_result for claim
-    # predicted_settlement = model.predict(claim)
+
+    # Get data & format as json for request
+    model_id = model.model_id
+    claim_data = model_to_dict(claim)
+    claim_data.pop('claim_id', None)
+    ml_service_url = getattr(settings, 'ML_SERVICE_URL', 'http://ml-service:8001')
+    response = requests.post(
+        f"{ml_service_url}/api/model/predict/", 
+        json={'model_id': model_id, 'data': claim_data})
+    
+    response_data = response.json()
 
     # TODO: Maybe move UploadedRecord creation to calling function, and just predict here
 
@@ -59,7 +78,7 @@ def get_claim_prediction(user, claim) -> UploadedRecord:
                       claim_id = claim,
                     #   model_id = model,
                     #   predicted_settlement=predicted_settlement,
-                      predicted_settlement = 0,
+                      predicted_settlement = response_data['data']['prediction'],
                       upload_date = timezone.now()
     )
     uploaded_record.save()
@@ -131,8 +150,9 @@ class CustomerDashboardView(View):
             return HttpResponse("Invalid form submission", status=400)
         else:
             selected_claim = form.cleaned_data['uploaded_claims']
+            selected_model = form.cleaned_data['model']
 
-            uploaded_record = get_claim_prediction(current_user, selected_claim)
+            uploaded_record = get_claim_prediction(current_user, selected_claim, selected_model)
             request.session['uploaded_record_id'] = uploaded_record.uploaded_record_id
 
             return redirect("customer_dashboard")
