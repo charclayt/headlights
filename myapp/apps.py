@@ -11,5 +11,7 @@ class MyappConfig(AppConfig):
         # Import here to avoid circular imports
         # Only run this in the main process (not in management commands)
         import os
+        import myapp.signals
+
         if os.environ.get('RUN_MAIN', None) != 'true':
             logger.info("Application starting up...")
