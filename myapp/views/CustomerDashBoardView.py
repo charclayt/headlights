@@ -20,22 +20,22 @@ logger = logging.getLogger(__name__)
 
 
 class UploadedClaimsForm(forms.Form):
-    uploaded_claims = forms.ModelChoiceField(queryset=Claim.objects.all())
+    # uploaded_claims = forms.ModelChoiceField(queryset=Claim.objects.all(), widget=forms.Select(attrs={'class': 'form-control'}))
+    uploaded_claims = forms.ModelChoiceField(
+        queryset=Claim.objects.all(),
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
 
 class FeedbackForm(BSModalModelForm):
+    rating_choices = [(i, str(i)) for i in range(1, 6)] # 1 to 5 rating choices
+
+    rating = forms.ChoiceField(choices=rating_choices, required=True)
+    notes = forms.CharField(widget=forms.Textarea, max_length=Feedback._meta.get_field('notes').max_length,
+                            label="Feedback Notes", required=False)
+
     class Meta:
         model = Feedback
         fields = ['rating', 'notes']
-
-    def clean(self):
-        super(FeedbackForm, self).clean()
-
-        # Validate the rating field, between 1 and 5
-        rating = self.cleaned_data.get('rating')
-        if rating < 1 or rating > 5:
-            self._errors['rating'] = self.error_class(['Rating must be between 1 and 5'])
-        
-        return self.cleaned_data
 
 
 def get_claim_prediction(user, claim) -> UploadedRecord:
