@@ -2,7 +2,7 @@ from django import forms
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.forms.models import model_to_dict
-from django.http import HttpRequest, HttpResponse, HttpResponseRedirect,JsonResponse
+from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.utils import timezone
@@ -47,18 +47,27 @@ class FeedbackForm(BSModalModelForm):
         fields = ['rating', 'notes']
 
 def create_uploaded_record(record: dict) -> UploadedRecord:
-        # Create an UploadedRecord object
-    uploaded_record = UploadedRecord.objects.create(
-                      user_id = record['user'],
-                      claim_id = record['claim'],
-                    #   model_id = model,
-                    #   predicted_settlement=predicted_settlement,
-                      predicted_settlement = record['prediction'],
-                      upload_date = timezone.now()
-    )
-    uploaded_record.save()
 
-    return uploaded_record
+    try:
+        required_keys = {'user', 'claim', 'prediction'}
+        if not all(key in record for key in required_keys):
+            missing_keys = required_keys - record.keys()
+            raise ValueError(f"Missing required keys in record: {missing_keys}")
+        
+        uploaded_record = UploadedRecord.objects.create(
+                        user_id = record['user'],
+                        claim_id = record['claim'],
+                        predicted_settlement = record['prediction'],
+                        upload_date = timezone.now()
+        )
+        uploaded_record.save()
+        return uploaded_record
+    except ValueError as e:
+        logger.error("Invalid input data for UploadedRecord: %s", str(e))
+        raise
+    except Exception as e:
+        logger.exception("Unexpected error while creating UploadedRecord")
+        raise RuntimeError("An unexpected error occurred while saving the record") from e
 
 def get_claim_prediction(user, claim, model):
     """
@@ -72,32 +81,41 @@ def get_claim_prediction(user, claim, model):
         UploadedRecord: the uploaded record object.
     """
 
-    # Get data & format as json for request
-    # TODO: add validation for the response. check status code, predict key, etc
     model_id = model.model_id
     claim_data = model_to_dict(claim)
     claim_data.pop('claim_id', None)
+
     ml_service_url = getattr(settings, 'ML_SERVICE_URL', 'http://ml-service:8001')
-    response = requests.post(
+
+    try:
+        response = requests.post(
         f"{ml_service_url}/api/model/predict/", 
-        json={'model_id': model_id, 'data': claim_data})
+        json={'model_id': model_id, 'data': claim_data},
+        timeout=10)
+
+        # raises an exception for http errors
+        response.raise_for_status()
     
-    if(response.status_code == 200):
         try:
             response_data = response.json()
-
-            if 'data' in response_data and 'prediction' in response_data['data']:
-                predicted_settlement = response_data['data']['prediction']
-                return predicted_settlement
-            else:
-                print(f"Invalid response format: data or prediction key missing")
-
         except requests.exceptions.JSONDecodeError:
-            logger.exception('Failed to parse JSON response')
-    else:
-        print(f"Request failed with status code: {response.status_code}")
-
-
+            logger.exception("Failed to parse JSON response from ML service")
+            raise ValueError("Invalid JSON response from ML service")
+        
+        if (not isinstance(response_data, dict)) or ('data' not in response_data):
+            logger.error("Unexpected response format: %s", response_data)
+            raise ValueError("ML service response format is invalid")
+        
+        if 'prediction' not in response_data['data']:
+            logger.error("Prediction key missing in response: %s", response_data)
+            raise ValueError("Prediction key missing from ML response")
+        
+        return response_data['data']['prediction']
+        
+    except requests.exceptions.RequestException as e:
+        logger.exception("Failed to fetch prediction from ML service")
+        raise ConnectionError("Error connecting to ML service") from e
+    
 
 @method_decorator(login_required, name="dispatch")
 class CustomerDashboardView(View):
@@ -162,20 +180,35 @@ class CustomerDashboardView(View):
         if not form.is_valid():
             return HttpResponse("Invalid form submission", status=400)
         else:
-            selected_claim = form.cleaned_data['uploaded_claims']
-            selected_model = form.cleaned_data['model']
+            try:
+                selected_claim = form.cleaned_data['uploaded_claims']
+                selected_model = form.cleaned_data['model']
 
-            # uploaded_record = get_claim_prediction(current_user, selected_claim, selected_model)
-            predicted_settlement = get_claim_prediction(current_user, selected_claim, selected_model)
-
-            if(predicted_settlement):
-                uploaded_record = create_uploaded_record({'user': current_user, 'claim': selected_claim, 'prediction': predicted_settlement})
-                request.session['uploaded_record_id'] = uploaded_record.uploaded_record_id
-                return redirect("customer_dashboard")
-            else:
-                #TODO error handling
-
-
+                predicted_settlement = get_claim_prediction(current_user, selected_claim, selected_model)
+                if predicted_settlement is not None:
+                    try:
+                        uploaded_record = create_uploaded_record({
+                            'user': current_user, 
+                            'claim': selected_claim, 
+                            'prediction': predicted_settlement
+                        })
+                        request.session['uploaded_record_id'] = uploaded_record.uploaded_record_id
+                        return redirect("customer_dashboard")
+                    except ValueError as e:
+                        return HttpResponseBadRequest(JsonResponse({"error": str(e)}))
+                    except RuntimeError as e:
+                        return JsonResponse({"error": "Unexpected server error"}, status=500)
+                else:
+                    return HttpResponseBadRequest(JsonResponse({"error": "Prediction value is missing"}))
+            except ValueError as e:
+                logger.error("Prediction error: %s", str(e))
+                return HttpResponseBadRequest(JsonResponse({"error": "Invalid response from ML service"}))
+            except ConnectionError as e:
+                logger.error("Connection error: %s", str(e))
+                return JsonResponse({"error": "Could not connect to ML service"}, status=503)
+            except Exception as e:
+                logger.exception("Unexpected error during claim prediction")
+                return JsonResponse({"error": "An unexpected error occurred"}, status=500)
 
 @method_decorator(login_required, name="dispatch")
 class ClaimUploadView(View):
