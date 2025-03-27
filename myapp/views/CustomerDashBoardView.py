@@ -8,7 +8,6 @@ from django.urls import reverse_lazy
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views import View
-import json
 from bootstrap_modal_forms.forms import BSModalModelForm
 from bootstrap_modal_forms.generic import BSModalCreateView
 
@@ -196,7 +195,7 @@ class CustomerDashboardView(View):
                         return redirect("customer_dashboard")
                     except ValueError as e:
                         return HttpResponseBadRequest(JsonResponse({"error": str(e)}))
-                    except RuntimeError as e:
+                    except RuntimeError:
                         return JsonResponse({"error": "Unexpected server error"}, status=500)
                 else:
                     return HttpResponseBadRequest(JsonResponse({"error": "Prediction value is missing"}))
@@ -206,7 +205,7 @@ class CustomerDashboardView(View):
             except ConnectionError as e:
                 logger.error("Connection error: %s", str(e))
                 return JsonResponse({"error": "Could not connect to ML service"}, status=503)
-            except Exception as e:
+            except Exception:
                 logger.exception("Unexpected error during claim prediction")
                 return JsonResponse({"error": "An unexpected error occurred"}, status=500)
 
