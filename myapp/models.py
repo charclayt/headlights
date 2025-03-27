@@ -11,6 +11,8 @@
 # Changes made to the database can turned into models using the following:
 #   python manage.py inspectdb > models.py
 
+# DO NOT REORDER MODELS WITHOUT THEN RERUNNING manage populate_tablelookup.py
+
 from django.contrib.auth.models import User, Group
 from django.db import models, transaction
 from datetime import date
