@@ -80,9 +80,9 @@ class Claim(models.Model):
     def create_claim_from_series(datarow: pd.Series):
         claim = Claim()  
         for key, value in datarow.items():  
-            snake_key = CaseConversion.to_snake(key)
-            if hasattr(claim, snake_key):  
-                setattr(claim, snake_key, value)  
+            # snake_key = CaseConversion.to_snake(key)
+            if hasattr(claim, key):  
+                setattr(claim, key, value)  
         
         return claim
     
