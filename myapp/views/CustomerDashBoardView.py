@@ -1,17 +1,71 @@
-from django.shortcuts import render
-from django.views import View
-from django.http import HttpRequest, HttpResponse, HttpResponseRedirect,JsonResponse
+from django import forms
 from django.contrib.auth.decorators import login_required
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect,JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse_lazy
+from django.utils import timezone
 from django.utils.decorators import method_decorator
-from django.shortcuts import redirect
+from django.views import View
+
+from bootstrap_modal_forms.forms import BSModalModelForm
+from bootstrap_modal_forms.generic import BSModalCreateView
 
 import logging
 
-from myapp.models import Claim, UploadedRecord
+from myapp.models import Claim, UploadedRecord, Feedback, UserProfile
 from myapp.utility.SimpleResults import SimpleResult
 
 # Configure logging
 logger = logging.getLogger(__name__)
+
+
+class UploadedClaimsForm(forms.Form):
+    # uploaded_claims = forms.ModelChoiceField(queryset=Claim.objects.all(), widget=forms.Select(attrs={'class': 'form-control'}))
+    uploaded_claims = forms.ModelChoiceField(
+        queryset=Claim.objects.all(),
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+
+class FeedbackForm(BSModalModelForm):
+    rating_choices = [(i, str(i)) for i in range(1, 6)] # 1 to 5 rating choices
+
+    rating = forms.ChoiceField(choices=rating_choices, required=True)
+    notes = forms.CharField(widget=forms.Textarea, max_length=Feedback._meta.get_field('notes').max_length,
+                            label="Feedback Notes", required=False)
+
+    class Meta:
+        model = Feedback
+        fields = ['rating', 'notes']
+
+
+def get_claim_prediction(user, claim) -> UploadedRecord:
+    """
+    This function gets the prediction result for a claim, and creates an UploadedRecord object.
+
+    Args:
+        claim: the claim object.
+
+    Returns:
+        UploadedRecord: the uploaded record object.
+    """
+    # TODO: Integrate with prediction API here : get prediction_result for claim
+    # predicted_settlement = model.predict(claim)
+
+    # TODO: Maybe move UploadedRecord creation to calling function, and just predict here
+
+    # Create an UploadedRecord object
+    uploaded_record = UploadedRecord.objects.create(
+                      user_id = user,
+                      claim_id = claim,
+                    #   model_id = model,
+                    #   predicted_settlement=predicted_settlement,
+                      predicted_settlement = 0,
+                      upload_date = timezone.now()
+    )
+    uploaded_record.save()
+
+    return uploaded_record
+
 
 @method_decorator(login_required, name="dispatch")
 class CustomerDashboardView(View):
@@ -27,25 +81,66 @@ class CustomerDashboardView(View):
 
         Args:
             request: the GET request object.
-            message: 
 
         Returns:
             render: the customer.html template.
         """
+        current_user = get_object_or_404(UserProfile, auth_id = self.request.user.id)
 
         num_claims = Claim.objects.all().count()
+        uploaded_claims_form = UploadedClaimsForm()
+        user_uploaded_records = UploadedRecord.objects.filter(user_id=current_user)
         
+        uploaded_record_id = request.session.get('uploaded_record_id', None)
+        uploaded_record = None
+        if uploaded_record_id:
+            try:
+                uploaded_record = UploadedRecord.objects.get(uploaded_record_id=uploaded_record_id)
+            except UploadedRecord.DoesNotExist:
+                uploaded_record = None
+                # Remove invalid session key
+                del request.session['uploaded_record_id']
+
         context = {
             'num_claims': num_claims,
+            'uploaded_claims_form': uploaded_claims_form,
+            'user_uploaded_records': user_uploaded_records,
+            'uploaded_record': uploaded_record
         }
 
         logger.info(f"{request.user} accessed the customer dashboard.")
         return render(request, self.template_name, context=context)
 
+    def post(self, request: HttpRequest) -> HttpResponseRedirect:
+        """
+        Handles the POST request for the customer dashboard.
+
+        Submits the uploaded claims form, and returns the prediction result from the prediction API.
+
+        Args:
+            request: the POST request object.
+
+        Returns:
+            HttpResponseRedirect: the customer dashboard page, with the prediction result.
+
+        """
+        form = UploadedClaimsForm(request.POST)
+        current_user = get_object_or_404(UserProfile, auth_id = self.request.user.id)
+
+        if not form.is_valid():
+            return HttpResponse("Invalid form submission", status=400)
+        else:
+            selected_claim = form.cleaned_data['uploaded_claims']
+
+            uploaded_record = get_claim_prediction(current_user, selected_claim)
+            request.session['uploaded_record_id'] = uploaded_record.uploaded_record_id
+
+            return redirect("customer_dashboard")
+
 @method_decorator(login_required, name="dispatch")
 class ClaimUploadView(View):
     """
-    This class handles the proccessing of uploaded claims data.
+    This class handles the processing of uploaded claims data.
     """
     def get(self, request: HttpRequest) -> HttpResponseRedirect:
         return redirect("customer_dashboard")
@@ -73,3 +168,44 @@ class ClaimUploadView(View):
                 'status': status,
                 'message': '\n\n'.join([message.text for message in result.messages])
             })
+
+@method_decorator(login_required, name="dispatch")
+class PredictionFeedbackView(BSModalCreateView):
+    """
+    This class handles the processing of prediction feedback data.
+    """
+    template_name = "forms/prediction_feedback_form.html"
+    form_class = FeedbackForm
+    success_message = 'Success: Feedback submitted.'
+    success_url = reverse_lazy('customer_dashboard')
+
+    def form_valid(self, form):
+        """
+        Handles the form validation for the prediction feedback form.
+
+        Assigns the request user_id to the feedback form, and assigns the feedback to the uploaded record.
+
+        Args:
+            form: the feedback form.
+
+        Returns:
+            super().form_valid(form): the feedback form.
+        """
+        user_profile = get_object_or_404(UserProfile, auth_id=self.request.user.id)
+
+        # Save the feedback form instance first
+        feedback_instance = form.instance
+        feedback_instance.user_id = user_profile
+        feedback_instance.save()
+
+        # Retrieve the uploaded_record_id from the session, and assign the feedback to the uploaded record
+        uploaded_record_id = self.request.session.get('uploaded_record_id', None)
+        if uploaded_record_id:
+            uploaded_record = get_object_or_404(UploadedRecord, uploaded_record_id=uploaded_record_id)
+            uploaded_record.feedback_id = feedback_instance
+            uploaded_record.save()
+
+            # Clear the uploaded_record_id from the session after feedback is submitted
+            del self.request.session['uploaded_record_id']
+
+        return super().form_valid(form)

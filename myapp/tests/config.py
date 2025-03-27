@@ -15,6 +15,7 @@ class Views:
     CUSTOMER_UPLOAD = "upload_claims"
     ACCOUNT_CREATION = "account_creation"
     CONTACT_DETAILS = "contact_details"
+    PREDICTION_FEEDBACK = "prediction_feedback"
     FINANCE_DASHBOARD = "finance_dashboard"
     COMPANY_DETAILS = "company_details"
     COMPANY_MANAGE_EMPLOYEES = "company_manage_employees"
@@ -28,6 +29,7 @@ class Templates:
     CUSTOMER = "customer.html"
     FINANCE = "finance.html"
     CONTACT_DETAILS = "contact_details.html"
+    PREDICTION_FEEDBACK = "forms/prediction_feedback_form.html"
     COMPANY_DETAILS = "company_details.html"
     COMPANY_USER_MANAGEMENT = "company_manage_users.html"
     
