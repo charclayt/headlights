@@ -46,8 +46,21 @@ class FeedbackForm(BSModalModelForm):
         model = Feedback
         fields = ['rating', 'notes']
 
+def create_uploaded_record(record: dict) -> UploadedRecord:
+        # Create an UploadedRecord object
+    uploaded_record = UploadedRecord.objects.create(
+                      user_id = record['user'],
+                      claim_id = record['claim'],
+                    #   model_id = model,
+                    #   predicted_settlement=predicted_settlement,
+                      predicted_settlement = record['prediction'],
+                      upload_date = timezone.now()
+    )
+    uploaded_record.save()
 
-def get_claim_prediction(user, claim, model) -> UploadedRecord:
+    return uploaded_record
+
+def get_claim_prediction(user, claim, model):
     """
     This function gets the prediction result for a claim, and creates an UploadedRecord object.
 
@@ -60,6 +73,7 @@ def get_claim_prediction(user, claim, model) -> UploadedRecord:
     """
 
     # Get data & format as json for request
+    # TODO: add validation for the response. check status code, predict key, etc
     model_id = model.model_id
     claim_data = model_to_dict(claim)
     claim_data.pop('claim_id', None)
@@ -68,22 +82,21 @@ def get_claim_prediction(user, claim, model) -> UploadedRecord:
         f"{ml_service_url}/api/model/predict/", 
         json={'model_id': model_id, 'data': claim_data})
     
-    response_data = response.json()
+    if(response.status_code == 200):
+        try:
+            response_data = response.json()
 
-    # TODO: Maybe move UploadedRecord creation to calling function, and just predict here
+            if 'data' in response_data and 'prediction' in response_data['data']:
+                predicted_settlement = response_data['data']['prediction']
+                return predicted_settlement
+            else:
+                print(f"Invalid response format: data or prediction key missing")
 
-    # Create an UploadedRecord object
-    uploaded_record = UploadedRecord.objects.create(
-                      user_id = user,
-                      claim_id = claim,
-                    #   model_id = model,
-                    #   predicted_settlement=predicted_settlement,
-                      predicted_settlement = response_data['data']['prediction'],
-                      upload_date = timezone.now()
-    )
-    uploaded_record.save()
+        except requests.exceptions.JSONDecodeError:
+            logger.exception('Failed to parse JSON response')
+    else:
+        print(f"Request failed with status code: {response.status_code}")
 
-    return uploaded_record
 
 
 @method_decorator(login_required, name="dispatch")
@@ -152,10 +165,17 @@ class CustomerDashboardView(View):
             selected_claim = form.cleaned_data['uploaded_claims']
             selected_model = form.cleaned_data['model']
 
-            uploaded_record = get_claim_prediction(current_user, selected_claim, selected_model)
-            request.session['uploaded_record_id'] = uploaded_record.uploaded_record_id
+            # uploaded_record = get_claim_prediction(current_user, selected_claim, selected_model)
+            predicted_settlement = get_claim_prediction(current_user, selected_claim, selected_model)
 
-            return redirect("customer_dashboard")
+            if(predicted_settlement):
+                uploaded_record = create_uploaded_record({'user': current_user, 'claim': selected_claim, 'prediction': predicted_settlement})
+                request.session['uploaded_record_id'] = uploaded_record.uploaded_record_id
+                return redirect("customer_dashboard")
+            else:
+                #TODO error handling
+
+
 
 @method_decorator(login_required, name="dispatch")
 class ClaimUploadView(View):

@@ -7,7 +7,7 @@ class ClaimAdmin(admin.ModelAdmin):
     list_display = (
         "ClaimID", "SettlementValue", "AccidentType", "InjuryPrognosis",
         "SpecialHealthExpenses", "SpecialReduction", "SpecialOverage", "GeneralRest",
-        "SpecialAdditionalInjury", "SpecialEarningsLoss", "SpecialUsageLoss",  # <== Updated here
+        "SpecialAdditionalInjury", "SpecialEarningsLoss", "SpecialUsageLoss",
         "SpecialMedications", "SpecialAssetDamage", "SpecialRehabilitation", "SpecialFixes",
         "GeneralFixed", "GeneralUplift", "SpecialLoanerVehicle", "SpecialTripCosts",
         "SpecialJourneyExpenses", "SpecialTherapy", "ExceptionalCircumstances",

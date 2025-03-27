@@ -76,6 +76,7 @@ class Claim(models.Model):
                  {self.DominantInjury} | {self.Whiplash} | {self.VehicleType} | {self.WeatherConditions} | {self.AccidentDate} | {self.ClaimDate} | {self.VehicleAge} |
                  {self.DriverAge} | {self.NumberOfPassengers} | {self.AccidentDescription} | {self.InjuryDescription} | {self.PoliceReportFiled} | {self.WitnessPresent} | {self.Gender}"""
     
+    # will have to change this function
     def create_claim_from_series(datarow: pd.Series):
         claim = Claim()  
         for key, value in datarow.items():  
