@@ -3,6 +3,7 @@ from django.test import Client, TestCase
 from django.test.client import MULTIPART_CONTENT
 from django.urls import reverse
 
+from myapp.models import UserProfile
 from myapp.tests.config import ErrorCodes, Views, Templates
 from myapp.tests.test_Models import TestModels
 
@@ -27,11 +28,14 @@ class BaseViewTest(TestCase):
         self.user.groups.add(self.group)
         self.user.save()
 
+        self.user_profile = UserProfile.objects.create(auth_id=self.user)
+
         self.client = Client()
         self.client.force_login(self.user)
 
     def tearDown(self):
         self.group.delete()
+        self.user_profile.delete()
         self.user.delete()
 
     def test_get_view(self, status=ErrorCodes.OK):
