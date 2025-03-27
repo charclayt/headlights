@@ -7,7 +7,7 @@ from myapp.tests.test_BaseView import BaseViewTest, USER_NAME, USER_PASSWORD
 from myapp.tests.config import Views, Templates, TestData, ErrorCodes
 
 from myapp.views.CustomerDashBoardView import PredictionFeedbackView
-from myapp.models import Claim, Feedback, UploadedRecord
+from myapp.models import Claim, Feedback, UploadedRecord, PredictionModel
 
 class CustomerDashboardTest(BaseViewTest, TestCase):
 
@@ -40,8 +40,10 @@ class CustomerDashboardTest(BaseViewTest, TestCase):
 
     def test_post_view_valid(self):
         claim = Claim.objects.first()
-        form_data = {'uploaded_claims': claim.ClaimID}
+        model = PredictionModel.objects.first()
 
+        form_data = {'uploaded_claims': claim.ClaimID, 'model': model.model_id}
+        
         BaseViewTest._test_post_view_response(self, payload=form_data)
 
         # Delete the uploaded record from the database
