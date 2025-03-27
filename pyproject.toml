@@ -1,3 +1,4 @@
-exclude= [
+[tool.ruff]
+exclude = [
     "myapp/apps.py"
 ]
