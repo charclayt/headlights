@@ -40,7 +40,7 @@ class CustomerDashboardTest(BaseViewTest, TestCase):
 
     def test_post_view_valid(self):
         claim = Claim.objects.first()
-        form_data = {'uploaded_claims': claim.claim_id}
+        form_data = {'uploaded_claims': claim.ClaimID}
 
         BaseViewTest._test_post_view_response(self, payload=form_data)
 
