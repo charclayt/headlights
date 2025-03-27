@@ -42,12 +42,12 @@ def log_create_or_update(sender, instance, created, **kwargs):
         # Use atomic commits to create new DatabaseLog
         with transaction.atomic():
             DatabaseLog.objects.create(
-            log_time=now(),
-            user_id=user_profile,
-            affected_table_id=TableLookup.objects.get(table_name=sender.__name__),
-            operation_performed=OperationLookup.objects.get(pk=operation_id),
-            successful=True
-    )
+                log_time=now(),
+                user_id=user_profile,
+                affected_table_id=TableLookup.objects.get(table_name=sender.__name__),
+                operation_performed=OperationLookup.objects.get(pk=operation_id),
+                successful=True
+            )
     except Exception as e:
         logging.warning(f"Failed to save logging to DB: {e}")
     finally:
