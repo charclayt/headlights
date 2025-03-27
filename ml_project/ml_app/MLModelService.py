@@ -43,7 +43,6 @@ class MLModel(ABC):
     Class for the default claim model. 
     Most preprocessing steps are handled in the pipeline in the training stage.
     Some steps are called in the PreProcessing Class.
-    TODO: Discuss with JackP about moving away from Factory pattern.
 """
 class ClaimsModel(MLModel):
     def __init__(self, model):
