@@ -167,7 +167,74 @@ class CustomerDashboardTest(BaseViewTest, TestCase):
         self.assertNotIn('uploaded_record_id', self.client.session)
 
     @patch("myapp.views.CustomerDashBoardView.get_claim_prediction")
+    def test_post_view_connection_error(self, mock_get_claim_prediction):
+        """ Test that the view returns bad response on connection error """
+        claim = Claim.objects.first()
+        model = PredictionModel.objects.first()
+
+        mock_get_claim_prediction.side_effect = ConnectionError("Simulate connection error")
+        mock_get_claim_prediction.return_value = None
+        
+        form_data = {'uploaded_claims': claim, 'model': model}
+        
+        BaseViewTest._test_post_view_response(self, ErrorCodes.BAD_REQUEST, payload=form_data)
+
+    @patch("myapp.views.CustomerDashBoardView.get_claim_prediction")
+    def test_post_view_generic_exception(self, mock_get_claim_prediction):
+        """ Test that the view returns bad request on catch-all exception """
+        claim = Claim.objects.first()
+        model = PredictionModel.objects.first()
+
+        mock_get_claim_prediction.side_effect = RuntimeError("Simulate generic error")
+        mock_get_claim_prediction.return_value = None
+        
+        form_data = {'uploaded_claims': claim, 'model': model}
+        
+        BaseViewTest._test_post_view_response(self, ErrorCodes.BAD_REQUEST, payload=form_data)
+
+    @patch("myapp.views.CustomerDashBoardView.get_claim_prediction")
+    def test_post_view_prediction_empty(self, mock_get_claim_prediction):
+        """ Test that the view returns bad request on receiving empty prediction value from ML service """
+        claim = Claim.objects.first()
+        model = PredictionModel.objects.first()
+
+        mock_get_claim_prediction.return_value = None
+        
+        form_data = {'uploaded_claims': claim, 'model': model}
+        
+        BaseViewTest._test_post_view_response(self, ErrorCodes.BAD_REQUEST, payload=form_data)
+
+    @patch("myapp.views.CustomerDashBoardView.create_uploaded_record")
+    @patch("myapp.views.CustomerDashBoardView.get_claim_prediction")
+    def test_post_view_create_record_value_error(self, mock_create_uploaded_record, mock_get_claim_prediction):
+        """ Test that the view returns bad request on value error in create_uploaded_record"""
+        claim = Claim.objects.first()
+        model = PredictionModel.objects.first()
+
+        mock_create_uploaded_record.side_effect = ValueError("Simulate value error")
+        mock_get_claim_prediction.return_value = 1000
+        
+        form_data = {'uploaded_claims': claim, 'model': model}
+        
+        BaseViewTest._test_post_view_response(self, ErrorCodes.BAD_REQUEST, payload=form_data)
+
+    @patch("myapp.views.CustomerDashBoardView.create_uploaded_record")
+    @patch("myapp.views.CustomerDashBoardView.get_claim_prediction")
+    def test_post_view_create_record_generic_exception(self, mock_create_uploaded_record, mock_get_claim_prediction):
+        """ Test that the view returns bad request on catch-all exception thrown in create_uploaded_record"""
+        claim = Claim.objects.first()
+        model = PredictionModel.objects.first()
+
+        mock_create_uploaded_record.side_effect = NotImplementedError("Simulate unexpected error")
+        mock_get_claim_prediction.return_value = 1000
+        
+        form_data = {'uploaded_claims': claim, 'model': model}
+        
+        BaseViewTest._test_post_view_response(self, ErrorCodes.BAD_REQUEST, payload=form_data)
+         
+    @patch("myapp.views.CustomerDashBoardView.get_claim_prediction")
     def test_post_view_valid(self, mock_get_claim_prediction):
+        """ Test view creates record on valid request """
         claim = Claim.objects.first()
         model = PredictionModel.objects.first()
 
@@ -179,6 +246,19 @@ class CustomerDashboardTest(BaseViewTest, TestCase):
 
         # Delete the uploaded record from the database
         UploadedRecord.objects.filter(user_id=self.user_profile).delete()
+    
+    @patch("myapp.views.CustomerDashBoardView.get_claim_prediction")
+    def test_post_view_value_error(self, mock_get_claim_prediction):
+        """ Test that the view handles invalid data from ML service """
+        claim = Claim.objects.first()
+        model = PredictionModel.objects.first()
+
+        mock_get_claim_prediction.side_effect = ValueError("Simulate value error")
+        mock_get_claim_prediction.return_value = None
+        
+        form_data = {'uploaded_claims': claim, 'model': model}
+        
+        BaseViewTest._test_post_view_response(self, ErrorCodes.BAD_REQUEST, payload=form_data)
 
     def test_post_view_invalid(self):
         form_data = {'uploaded_claims': 0}
