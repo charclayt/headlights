@@ -2,6 +2,7 @@ from django.contrib.sessions.middleware import SessionMiddleware
 from django.contrib.messages.storage.fallback import FallbackStorage
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import RequestFactory, TestCase
+from unittest.mock import patch, MagicMock
 
 from myapp.tests.test_BaseView import BaseViewTest, USER_NAME, USER_PASSWORD
 from myapp.tests.config import Views, Templates, TestData, ErrorCodes
@@ -38,10 +39,13 @@ class CustomerDashboardTest(BaseViewTest, TestCase):
         # Check if the session key is removed
         self.assertNotIn('uploaded_record_id', self.client.session)
 
-    def test_post_view_valid(self):
+    @patch("myapp.views.CustomerDashBoardView.get_claim_prediction")
+    def test_post_view_valid(self, mock_get_claim_prediction):
         claim = Claim.objects.first()
         model = PredictionModel.objects.first()
 
+        mock_get_claim_prediction.return_value = 1000
+        
         form_data = {'uploaded_claims': claim.ClaimID, 'model': model.model_id}
         
         BaseViewTest._test_post_view_response(self, payload=form_data)
