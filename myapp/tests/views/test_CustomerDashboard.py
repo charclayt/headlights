@@ -1,13 +1,17 @@
+from django.conf import settings
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.contrib.messages.storage.fallback import FallbackStorage
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.forms.models import model_to_dict
 from django.test import RequestFactory, TestCase
 from unittest.mock import patch
+
+import requests
 
 from myapp.tests.test_BaseView import BaseViewTest, USER_NAME, USER_PASSWORD
 from myapp.tests.config import Views, Templates, TestData, ErrorCodes
 
-from myapp.views.CustomerDashBoardView import PredictionFeedbackView
+from myapp.views.CustomerDashBoardView import get_claim_prediction, PredictionFeedbackView
 from myapp.models import Claim, Feedback, UploadedRecord, PredictionModel
 
 class CustomerDashboardTest(BaseViewTest, TestCase):
@@ -28,6 +32,78 @@ class CustomerDashboardTest(BaseViewTest, TestCase):
         self.TEMPLATE = Templates.CUSTOMER
 
         BaseViewTest.test_get_view(self)
+
+    @patch("requests.post")
+    def test_get_prediction_connection_error(self, mock_post):
+        """Test that a connection error is handled properly."""
+        claim = Claim.objects.first()
+        model = PredictionModel.objects.first()
+        mock_post.side_effect = requests.exceptions.RequestException("Connection failed")
+
+        with self.assertRaises(ConnectionError) as context:
+            get_claim_prediction(claim, model)
+
+        self.assertEqual(str(context.exception), "Error connecting to ML service")
+
+    @patch("requests.post")
+    def test_get_prediction_json_decode_error(self, mock_post):
+        """Test that a JSONDecodeError is handled correctly."""
+        claim = Claim.objects.first()
+        model = PredictionModel.objects.first()
+        mock_post.return_value.status_code = 200
+        mock_post.return_value.json.side_effect = requests.exceptions.JSONDecodeError("Expecting value", "", 0)
+
+        with self.assertRaises(ValueError) as context:
+            get_claim_prediction(claim, model)
+
+        self.assertEqual(str(context.exception), "Invalid JSON response from ML service")
+
+    @patch("requests.post")
+    def test_get_prediction_unexpected_response_format(self, mock_post):
+        """Test that a response without 'data' raises a ValueError."""
+        claim = Claim.objects.first()
+        model = PredictionModel.objects.first()
+        mock_post.return_value.status_code = 200
+        mock_post.return_value.json.return_value = {}
+
+        with self.assertRaises(ValueError) as context:
+            get_claim_prediction(claim, model)
+
+        self.assertEqual(str(context.exception), "ML service response format is invalid")
+    
+    @patch("requests.post")
+    def test_get_predicition_missing_prediction_key(self, mock_post):
+        """Test that a response missing 'prediction' in 'data' raises a ValueError."""
+        claim = Claim.objects.first()
+        model = PredictionModel.objects.first()
+        mock_post.return_value.status_code = 200
+        mock_post.return_value.json.return_value = {"data": {}}
+
+        with self.assertRaises(ValueError) as context:
+            get_claim_prediction(claim, model)
+
+        self.assertEqual(str(context.exception), "Prediction key missing from ML response")
+
+    @patch("requests.post")
+    def test_get_prediction_success(self, mock_post):
+        """ Test that the function correctly processes a successful response. """
+
+        mock_post.return_value.status_code = 200
+        mock_post.return_value.json.return_value = {
+            "data": {"prediction": 0.85}
+        }
+
+        claim = Claim.objects.first()
+        model = PredictionModel.objects.first()
+        prediction = get_claim_prediction(claim, model)
+
+        self.assertEqual(prediction, 0.85)
+
+        mock_post.assert_called_once_with(
+            f"{getattr(settings, 'ML_SERVICE_URL', 'http://ml-service:8001')}/api/model/predict/",
+            json={'model_id': model.model_id, 'data': model_to_dict(claim)},
+            timeout=10
+        )
 
     def test_get_uploaded_record_does_not_exist(self):
         session = self.client.session
