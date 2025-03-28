@@ -2,6 +2,7 @@ from django.conf import settings
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.contrib.messages.storage.fallback import FallbackStorage
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.db import IntegrityError
 from django.forms.models import model_to_dict
 from django.test import RequestFactory, TestCase
 from unittest.mock import patch
@@ -11,7 +12,7 @@ import requests
 from myapp.tests.test_BaseView import BaseViewTest, USER_NAME, USER_PASSWORD
 from myapp.tests.config import Views, Templates, TestData, ErrorCodes
 
-from myapp.views.CustomerDashBoardView import get_claim_prediction, PredictionFeedbackView
+from myapp.views.CustomerDashBoardView import create_uploaded_record, get_claim_prediction, PredictionFeedbackView
 from myapp.models import Claim, Feedback, UploadedRecord, PredictionModel
 
 class CustomerDashboardTest(BaseViewTest, TestCase):
@@ -21,6 +22,56 @@ class CustomerDashboardTest(BaseViewTest, TestCase):
 
     def setUp(self):
         return BaseViewTest.setUp(self)
+    
+    @patch('myapp.models.UploadedRecord.objects.create')
+    def test_create_uploaded_record_exception(self, mock_create):
+        """ Test that function handles unexpected exception """
+        claim = Claim.objects.first()
+        model = PredictionModel.objects.first()
+        record = {
+            'user': self.user_profile,
+            'claim': claim,
+            'prediction': 100 # arbritary value
+        }
+
+        # mock db create to raise an error
+        mock_create.side_effect = IntegrityError("Simulated database error")
+        
+        # function catches unexpected errors as a runtime error
+        with self.assertRaises(RuntimeError) as context:
+            uploaded_record = create_uploaded_record(record)
+
+        self.assertEqual(str(context.exception), "An unexpected error occurred while saving the record")
+    
+    def test_create_uploaded_record_success(self):
+        """ Test that function successfully creates record"""
+        claim = Claim.objects.first()
+        record = {
+            'user': self.user_profile,
+            'claim': claim,
+            'prediction': 100 # arbritary value
+        }
+
+        uploaded_record = create_uploaded_record(record)
+
+        self.assertTrue(isinstance(uploaded_record, UploadedRecord))
+        # Delete the uploaded record from the database
+        UploadedRecord.objects.filter(user_id=self.user_profile).delete()
+
+
+    def test_create_uploaded_record_value_error(self):
+        """ Test that function throws value error if missing key """
+        claim = Claim.objects.first()
+        record = {
+            'user': self.user_profile,
+            'claim': claim,
+        }
+
+        with self.assertRaises(ValueError) as context:
+            uploaded_record = create_uploaded_record(record)
+
+        self.assertEqual(str(context.exception), "Missing required keys in record: {'prediction'}")
+
 
     def test_get_view(self):
         self.TEMPLATE = Templates.LOGIN
