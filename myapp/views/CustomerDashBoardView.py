@@ -68,7 +68,7 @@ def create_uploaded_record(record: dict) -> UploadedRecord:
         logger.exception("Unexpected error while creating UploadedRecord")
         raise RuntimeError("An unexpected error occurred while saving the record") from e
 
-def get_claim_prediction(user, claim, model):
+def get_claim_prediction(claim, model):
     """
     This function gets the prediction result for a claim, and creates an UploadedRecord object.
 
