@@ -172,11 +172,11 @@ class CustomerDashboardTest(BaseViewTest, TestCase):
         model = PredictionModel.objects.first()
 
         mock_get_claim_prediction.side_effect = ConnectionError("Simulate connection error")
-        mock_get_claim_prediction.return_value = None
+        # mock_get_claim_prediction.return_value = None
         
-        form_data = {'uploaded_claims': claim, 'model': model}
+        form_data = {'uploaded_claims': claim.ClaimID, 'model': model.model_id}
         
-        BaseViewTest._test_post_view_response(self, ErrorCodes.BAD_REQUEST, payload=form_data)
+        BaseViewTest._test_post_view_response(self, ErrorCodes.SERVER_ERROR, payload=form_data)
 
     @patch("myapp.views.CustomerDashBoardView.get_claim_prediction")
     def test_post_view_generic_exception(self, mock_get_claim_prediction):
@@ -185,11 +185,10 @@ class CustomerDashboardTest(BaseViewTest, TestCase):
         model = PredictionModel.objects.first()
 
         mock_get_claim_prediction.side_effect = RuntimeError("Simulate generic error")
-        mock_get_claim_prediction.return_value = None
         
-        form_data = {'uploaded_claims': claim, 'model': model}
+        form_data = {'uploaded_claims': claim.ClaimID, 'model': model.model_id}
         
-        BaseViewTest._test_post_view_response(self, ErrorCodes.BAD_REQUEST, payload=form_data)
+        BaseViewTest._test_post_view_response(self, ErrorCodes.SERVER_ERROR, payload=form_data)
 
     @patch("myapp.views.CustomerDashBoardView.get_claim_prediction")
     def test_post_view_prediction_empty(self, mock_get_claim_prediction):
@@ -199,7 +198,7 @@ class CustomerDashboardTest(BaseViewTest, TestCase):
 
         mock_get_claim_prediction.return_value = None
         
-        form_data = {'uploaded_claims': claim, 'model': model}
+        form_data = {'uploaded_claims': claim.ClaimID, 'model': model.model_id}
         
         BaseViewTest._test_post_view_response(self, ErrorCodes.BAD_REQUEST, payload=form_data)
 
@@ -213,7 +212,7 @@ class CustomerDashboardTest(BaseViewTest, TestCase):
         mock_create_uploaded_record.side_effect = ValueError("Simulate value error")
         mock_get_claim_prediction.return_value = 1000
         
-        form_data = {'uploaded_claims': claim, 'model': model}
+        form_data = {'uploaded_claims': claim.ClaimID, 'model': model.model_id}
         
         BaseViewTest._test_post_view_response(self, ErrorCodes.BAD_REQUEST, payload=form_data)
 
@@ -255,7 +254,7 @@ class CustomerDashboardTest(BaseViewTest, TestCase):
         mock_get_claim_prediction.side_effect = ValueError("Simulate value error")
         mock_get_claim_prediction.return_value = None
         
-        form_data = {'uploaded_claims': claim, 'model': model}
+        form_data = {'uploaded_claims': claim.ClaimID, 'model': model.model_id}
         
         BaseViewTest._test_post_view_response(self, ErrorCodes.BAD_REQUEST, payload=form_data)
 

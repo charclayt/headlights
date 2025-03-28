@@ -204,7 +204,7 @@ class CustomerDashboardView(View):
                 return HttpResponseBadRequest(JsonResponse({"error": "Invalid response from ML service"}))
             except ConnectionError as e:
                 logger.error("Connection error: %s", str(e))
-                return JsonResponse({"error": "Could not connect to ML service"}, status=503)
+                return JsonResponse({"error": "Could not connect to ML service"}, status=500)
             except Exception:
                 logger.exception("Unexpected error during claim prediction")
                 return JsonResponse({"error": "An unexpected error occurred"}, status=500)
