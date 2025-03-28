@@ -179,35 +179,23 @@ class CustomerDashboardView(View):
         if not form.is_valid():
             return HttpResponse("Invalid form submission", status=400)
         else:
-            try:
-                selected_claim = form.cleaned_data['uploaded_claims']
-                selected_model = form.cleaned_data['model']
+            selected_claim = form.cleaned_data['uploaded_claims']
+            selected_model = form.cleaned_data['model']
 
-                predicted_settlement = get_claim_prediction(current_user, selected_claim, selected_model)
-                if predicted_settlement is not None:
-                    try:
-                        uploaded_record = create_uploaded_record({
-                            'user': current_user, 
-                            'claim': selected_claim, 
-                            'prediction': predicted_settlement
-                        })
-                        request.session['uploaded_record_id'] = uploaded_record.uploaded_record_id
-                        return redirect("customer_dashboard")
-                    except ValueError as e:
-                        return HttpResponseBadRequest(JsonResponse({"error": str(e)}))
-                    except RuntimeError:
-                        return JsonResponse({"error": "Unexpected server error"}, status=500)
-                else:
-                    return HttpResponseBadRequest(JsonResponse({"error": "Prediction value is missing"}))
-            except ValueError as e:
-                logger.error("Prediction error: %s", str(e))
-                return HttpResponseBadRequest(JsonResponse({"error": "Invalid response from ML service"}))
-            except ConnectionError as e:
-                logger.error("Connection error: %s", str(e))
-                return JsonResponse({"error": "Could not connect to ML service"}, status=500)
-            except Exception:
-                logger.exception("Unexpected error during claim prediction")
-                return JsonResponse({"error": "An unexpected error occurred"}, status=500)
+            predicted_settlement = get_claim_prediction(selected_claim, selected_model)
+
+            if predicted_settlement is not None:
+                uploaded_record = create_uploaded_record({
+                    'user': current_user, 
+                    'claim': selected_claim, 
+                    'prediction': predicted_settlement
+                    })
+                request.session['uploaded_record_id'] = uploaded_record.uploaded_record_id
+                return redirect("customer_dashboard")
+            else:
+
+                return HttpResponseBadRequest(JsonResponse({"error": "Prediction value is missing"}))
+
 
 @method_decorator(login_required, name="dispatch")
 class ClaimUploadView(View):
