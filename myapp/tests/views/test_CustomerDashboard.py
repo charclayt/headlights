@@ -27,7 +27,6 @@ class CustomerDashboardTest(BaseViewTest, TestCase):
     def test_create_uploaded_record_exception(self, mock_create):
         """ Test that function handles unexpected exception """
         claim = Claim.objects.first()
-        model = PredictionModel.objects.first()
         record = {
             'user': self.user_profile,
             'claim': claim,
@@ -39,7 +38,7 @@ class CustomerDashboardTest(BaseViewTest, TestCase):
         
         # function catches unexpected errors as a runtime error
         with self.assertRaises(RuntimeError) as context:
-            uploaded_record = create_uploaded_record(record)
+            create_uploaded_record(record)
 
         self.assertEqual(str(context.exception), "An unexpected error occurred while saving the record")
     
@@ -68,7 +67,7 @@ class CustomerDashboardTest(BaseViewTest, TestCase):
         }
 
         with self.assertRaises(ValueError) as context:
-            uploaded_record = create_uploaded_record(record)
+            create_uploaded_record(record)
 
         self.assertEqual(str(context.exception), "Missing required keys in record: {'prediction'}")
 
