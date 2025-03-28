@@ -3,9 +3,9 @@ URL configuration for desd project.
 """
 from django.urls import path
 
+from myapp.views.CustomerDashBoardView import CustomerDashboardView, ClaimUploadView, PredictionFeedbackView
 from myapp.views.IndexView import IndexView
 from myapp.views.MLDashboardView import MLDashboardView, ModelListView, UploadModelView
-from myapp.views.CustomerDashBoardView import CustomerDashboardView, ClaimUploadView
 from myapp.views.AccountManagementView import AccountCreationView, AccountContactDetailsView
 from myapp.views.FinanceDashboardViews import FinanceDashboardView, CompanyDetailsView, CompanyManageEmployeesView
 
@@ -18,6 +18,7 @@ urlpatterns = [
     path("customer/", CustomerDashboardView.as_view(), name="customer_dashboard"),  
     path("customer/record-upload/", ClaimUploadView.as_view(), name="upload_claims"),
     path("customer/record-upload/<int:ignore_validation>/", ClaimUploadView.as_view(), name="upload_claims"),
+    path("customer/prediction-feedback/", PredictionFeedbackView.as_view(), name="prediction_feedback"),
     
     # Account management URLs
     path("account/create/", AccountCreationView.as_view(), name="account_creation"),
