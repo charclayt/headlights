@@ -19,7 +19,7 @@ class TestUploadedRecords(TestCase):
             
         self.assertNotEqual(result, None)
         self.assertTrue(result.success, "Data upload was unsuccessful")      
-        self.assertEqual(result.payload[0].claim_id.settlement_value, settlement_value)
+        self.assertEqual(result.payload[0].claim_id.SettlementValue, settlement_value)
         
     def test_failed_record_upload_from_file(self):
                     

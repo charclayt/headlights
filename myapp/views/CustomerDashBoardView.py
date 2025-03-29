@@ -1,18 +1,20 @@
 from django import forms
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
-from django.http import HttpRequest, HttpResponse, HttpResponseRedirect,JsonResponse
+from django.forms.models import model_to_dict
+from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views import View
-
 from bootstrap_modal_forms.forms import BSModalModelForm
 from bootstrap_modal_forms.generic import BSModalCreateView
 
 import logging
+import requests
 
-from myapp.models import Claim, UploadedRecord, Feedback, UserProfile
+from myapp.models import Claim, UploadedRecord, Feedback, UserProfile, PredictionModel
 from myapp.utility.SimpleResults import SimpleResult
 
 # Configure logging
@@ -23,6 +25,12 @@ class UploadedClaimsForm(forms.Form):
     # uploaded_claims = forms.ModelChoiceField(queryset=Claim.objects.all(), widget=forms.Select(attrs={'class': 'form-control'}))
     uploaded_claims = forms.ModelChoiceField(
         queryset=Claim.objects.all(),
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+
+    model = forms.ModelChoiceField(
+        # This currently shows all info from db row. Look at how to get just name without breaking FE
+        queryset = PredictionModel.objects.all(),
         widget=forms.Select(attrs={'class': 'form-control'})
     )
 
@@ -37,35 +45,76 @@ class FeedbackForm(BSModalModelForm):
         model = Feedback
         fields = ['rating', 'notes']
 
+def create_uploaded_record(record: dict) -> UploadedRecord:
 
-def get_claim_prediction(user, claim) -> UploadedRecord:
+    try:
+        required_keys = {'user', 'claim', 'prediction'}
+        if not all(key in record for key in required_keys):
+            missing_keys = required_keys - record.keys()
+            raise ValueError(f"Missing required keys in record: {missing_keys}")
+        
+        uploaded_record = UploadedRecord.objects.create(
+                        user_id = record['user'],
+                        claim_id = record['claim'],
+                        predicted_settlement = record['prediction'],
+                        upload_date = timezone.now()
+        )
+        uploaded_record.save()
+        return uploaded_record
+    except ValueError as e:
+        logger.error("Invalid input data for UploadedRecord: %s", str(e))
+        raise
+    except Exception as e:
+        logger.exception("Unexpected error while creating UploadedRecord")
+        raise RuntimeError("An unexpected error occurred while saving the record") from e
+
+def get_claim_prediction(claim, model):
     """
     This function gets the prediction result for a claim, and creates an UploadedRecord object.
 
     Args:
         claim: the claim object.
+        model: the model object
 
     Returns:
         UploadedRecord: the uploaded record object.
     """
-    # TODO: Integrate with prediction API here : get prediction_result for claim
-    # predicted_settlement = model.predict(claim)
 
-    # TODO: Maybe move UploadedRecord creation to calling function, and just predict here
+    model_id = model.model_id
+    claim_data = model_to_dict(claim)
+    claim_data.pop('claim_id', None)
 
-    # Create an UploadedRecord object
-    uploaded_record = UploadedRecord.objects.create(
-                      user_id = user,
-                      claim_id = claim,
-                    #   model_id = model,
-                    #   predicted_settlement=predicted_settlement,
-                      predicted_settlement = 0,
-                      upload_date = timezone.now()
-    )
-    uploaded_record.save()
+    ml_service_url = getattr(settings, 'ML_SERVICE_URL', 'http://ml-service:8001')
 
-    return uploaded_record
+    try:
+        response = requests.post(
+        f"{ml_service_url}/api/model/predict/", 
+        json={'model_id': model_id, 'data': claim_data},
+        timeout=10)
 
+        # raises an exception for http errors
+        response.raise_for_status()
+    
+        try:
+            response_data = response.json()
+        except requests.exceptions.JSONDecodeError:
+            logger.exception("Failed to parse JSON response from ML service")
+            raise ValueError("Invalid JSON response from ML service")
+        
+        if (not isinstance(response_data, dict)) or ('data' not in response_data):
+            logger.error("Unexpected response format: %s", response_data)
+            raise ValueError("ML service response format is invalid")
+        
+        if 'prediction' not in response_data['data']:
+            logger.error("Prediction key missing in response: %s", response_data)
+            raise ValueError("Prediction key missing from ML response")
+        
+        return response_data['data']['prediction']
+        
+    except requests.exceptions.RequestException as e:
+        logger.exception("Failed to fetch prediction from ML service")
+        raise ConnectionError("Error connecting to ML service") from e
+    
 
 @method_decorator(login_required, name="dispatch")
 class CustomerDashboardView(View):
@@ -131,11 +180,22 @@ class CustomerDashboardView(View):
             return HttpResponse("Invalid form submission", status=400)
         else:
             selected_claim = form.cleaned_data['uploaded_claims']
+            selected_model = form.cleaned_data['model']
 
-            uploaded_record = get_claim_prediction(current_user, selected_claim)
-            request.session['uploaded_record_id'] = uploaded_record.uploaded_record_id
+            predicted_settlement = get_claim_prediction(selected_claim, selected_model)
 
-            return redirect("customer_dashboard")
+            if predicted_settlement is not None:
+                uploaded_record = create_uploaded_record({
+                    'user': current_user, 
+                    'claim': selected_claim, 
+                    'prediction': predicted_settlement
+                    })
+                request.session['uploaded_record_id'] = uploaded_record.uploaded_record_id
+                return redirect("customer_dashboard")
+            else:
+
+                return HttpResponseBadRequest(JsonResponse({"error": "Prediction value is missing"}))
+
 
 @method_decorator(login_required, name="dispatch")
 class ClaimUploadView(View):
