@@ -24,43 +24,43 @@ import logging
 logger = logging.getLogger(__name__)
 
 class Claim(models.Model):
-    ClaimID = models.AutoField(db_column='ClaimID', primary_key=True)  
-    SettlementValue = models.FloatField(db_column='SettlementValue', blank=True, null=True)  
-    AccidentType = models.CharField(db_column='AccidentType', max_length=255, blank=True, null=True)  
-    InjuryPrognosis = models.IntegerField(db_column='InjuryPrognosis', blank=True, null=True)  
-    SpecialHealthExpenses = models.FloatField(db_column='SpecialHealthExpenses', blank=True, null=True)  
-    SpecialReduction = models.FloatField(db_column='SpecialReduction', blank=True, null=True)  
-    SpecialOverage = models.FloatField(db_column='SpecialOverage', blank=True, null=True)  
-    GeneralRest = models.FloatField(db_column='GeneralRest', blank=True, null=True)  
-    SpecialAdditionalInjury = models.FloatField(db_column='SpecialAdditionalInjury', blank=True, null=True)  
-    SpecialEarningsLoss = models.FloatField(db_column='SpecialEarningsLoss', blank=True, null=True)  
-    SpecialUsageLoss = models.FloatField(db_column='SpecialUsageLoss', blank=True, null=True)  
-    SpecialMedications = models.FloatField(db_column='SpecialMedications', blank=True, null=True)  
-    SpecialAssetDamage = models.FloatField(db_column='SpecialAssetDamage', blank=True, null=True)  
-    SpecialRehabilitation = models.FloatField(db_column='SpecialRehabilitation', blank=True, null=True)  
-    SpecialFixes = models.FloatField(db_column='SpecialFixes', blank=True, null=True)  
-    GeneralFixed = models.FloatField(db_column='GeneralFixed', blank=True, null=True)  
-    GeneralUplift = models.FloatField(db_column='GeneralUplift', blank=True, null=True)  
-    SpecialLoanerVehicle = models.FloatField(db_column='SpecialLoanerVehicle', blank=True, null=True)  
-    SpecialTripCosts = models.FloatField(db_column='SpecialTripCosts', blank=True, null=True)  
-    SpecialJourneyExpenses = models.FloatField(db_column='SpecialJourneyExpenses', blank=True, null=True)  
-    SpecialTherapy = models.FloatField(db_column='SpecialTherapy', blank=True, null=True)  
-    ExceptionalCircumstances = models.IntegerField(db_column='ExceptionalCircumstances', blank=True, null=True)  
-    MinorPsychologicalInjury = models.IntegerField(db_column='MinorPsychologicalInjury', blank=True, null=True)  
-    DominantInjury = models.CharField(db_column='DominantInjury', max_length=255, blank=True, null=True)  
-    Whiplash = models.IntegerField(db_column='Whiplash', blank=True, null=True)  
-    VehicleType = models.CharField(db_column='VehicleType', max_length=255, blank=True, null=True)  
-    WeatherConditions = models.CharField(db_column='WeatherConditions', max_length=255, blank=True, null=True)  
-    AccidentDate = models.IntegerField(db_column='AccidentDate', blank=True, null=True)  
-    ClaimDate = models.IntegerField(db_column='ClaimDate', blank=True, null=True)  
-    VehicleAge = models.IntegerField(db_column='VehicleAge', blank=True, null=True)  
-    DriverAge = models.IntegerField(db_column='DriverAge', blank=True, null=True)  
-    NumberOfPassengers = models.IntegerField(db_column='NumberOfPassengers', blank=True, null=True)  
-    AccidentDescription = models.CharField(db_column='AccidentDescription', max_length=255, blank=True, null=True)  
-    InjuryDescription = models.CharField(db_column='InjuryDescription', max_length=255, blank=True, null=True)  
-    PoliceReportFiled = models.IntegerField(db_column='PoliceReportFiled', blank=True, null=True)  
-    WitnessPresent = models.IntegerField(db_column='WitnessPresent', blank=True, null=True)  
-    Gender = models.CharField(db_column='Gender', max_length=255, blank=True, null=True)  
+    claim_id = models.AutoField(db_column='ClaimID', primary_key=True)  
+    settlement_value = models.FloatField(db_column='SettlementValue', blank=True, null=True)  
+    accident_type = models.CharField(db_column='AccidentType', max_length=255, blank=True, null=True)  
+    injury_prognosis = models.IntegerField(db_column='InjuryPrognosis', blank=True, null=True)  
+    special_health_expenses = models.FloatField(db_column='SpecialHealthExpenses', blank=True, null=True)  
+    special_reduction = models.FloatField(db_column='SpecialReduction', blank=True, null=True)  
+    special_overage = models.FloatField(db_column='SpecialOverage', blank=True, null=True)  
+    general_rest = models.FloatField(db_column='GeneralRest', blank=True, null=True)  
+    special_additional_injury = models.FloatField(db_column='SpecialAdditionalInjury', blank=True, null=True)  
+    special_earnings_loss = models.FloatField(db_column='SpecialEarningsLoss', blank=True, null=True)  
+    special_usage_loss = models.FloatField(db_column='SpecialUsageLoss', blank=True, null=True)  
+    special_medications = models.FloatField(db_column='SpecialMedications', blank=True, null=True)  
+    special_asset_damage = models.FloatField(db_column='SpecialAssetDamage', blank=True, null=True)  
+    special_rehabilitation = models.FloatField(db_column='SpecialRehabilitation', blank=True, null=True)  
+    special_fixes = models.FloatField(db_column='SpecialFixes', blank=True, null=True)  
+    general_fixed = models.FloatField(db_column='GeneralFixed', blank=True, null=True)  
+    general_uplift = models.FloatField(db_column='GeneralUplift', blank=True, null=True)  
+    special_loaner_vehicle = models.FloatField(db_column='SpecialLoanerVehicle', blank=True, null=True)  
+    special_trip_costs = models.FloatField(db_column='SpecialTripCosts', blank=True, null=True)  
+    special_journey_expenses = models.FloatField(db_column='SpecialJourneyExpenses', blank=True, null=True)  
+    special_therapy = models.FloatField(db_column='SpecialTherapy', blank=True, null=True)  
+    exceptional_circumstances = models.IntegerField(db_column='ExceptionalCircumstances', blank=True, null=True)  
+    minor_psychological_injury = models.IntegerField(db_column='MinorPsychologicalInjury', blank=True, null=True)  
+    dominant_injury = models.CharField(db_column='DominantInjury', max_length=255, blank=True, null=True)  
+    whiplash = models.IntegerField(db_column='Whiplash', blank=True, null=True)  
+    vehicle_type = models.CharField(db_column='VehicleType', max_length=255, blank=True, null=True)  
+    weather_conditions = models.CharField(db_column='WeatherConditions', max_length=255, blank=True, null=True)  
+    accident_date = models.IntegerField(db_column='AccidentDate', blank=True, null=True)  
+    claim_date = models.IntegerField(db_column='ClaimDate', blank=True, null=True)  
+    vehicle_age = models.IntegerField(db_column='VehicleAge', blank=True, null=True)  
+    driver_age = models.IntegerField(db_column='DriverAge', blank=True, null=True)  
+    number_of_passengers = models.IntegerField(db_column='NumberOfPassengers', blank=True, null=True)  
+    accident_description = models.CharField(db_column='AccidentDescription', max_length=255, blank=True, null=True)  
+    injury_description = models.CharField(db_column='InjuryDescription', max_length=255, blank=True, null=True)  
+    police_report_filed = models.IntegerField(db_column='PoliceReportFiled', blank=True, null=True)  
+    witness_present = models.IntegerField(db_column='WitnessPresent', blank=True, null=True)  
+    gender = models.CharField(db_column='Gender', max_length=255, blank=True, null=True)  
 
     class Meta:
         managed = True
@@ -70,13 +70,13 @@ class Claim(models.Model):
         """
         This function returns a Claim in a neat string format.
         """
-        return f"""{self.SettlementValue} | {self.AccidentType} | {self.InjuryPrognosis} | {self.SpecialHealthExpenses} |
-                 {self.SpecialReduction} | {self.SpecialOverage} | {self.GeneralRest} | {self.SpecialAdditionalInjury} |
-                 {self.SpecialEarningsLoss} | {self.SpecialUsageLoss} | {self.SpecialMedications} | {self.SpecialAssetDamage} |
-                 {self.SpecialRehabilitation} | {self.SpecialFixes} | {self.GeneralFixed} | {self.GeneralUplift} | {self.SpecialLoanerVehicle} |
-                 {self.SpecialTripCosts} | {self.SpecialJourneyExpenses} | {self.SpecialTherapy} | {self.ExceptionalCircumstances} | {self.MinorPsychologicalInjury} |
-                 {self.DominantInjury} | {self.Whiplash} | {self.VehicleType} | {self.WeatherConditions} | {self.AccidentDate} | {self.ClaimDate} | {self.VehicleAge} |
-                 {self.DriverAge} | {self.NumberOfPassengers} | {self.AccidentDescription} | {self.InjuryDescription} | {self.PoliceReportFiled} | {self.WitnessPresent} | {self.Gender}"""
+        return f"""{self.settlement_value} | {self.accident_type} | {self.injury_prognosis} | {self.special_health_expenses} |
+                 {self.special_reduction} | {self.special_overage} | {self.general_rest} | {self.special_additional_injury} |
+                 {self.special_earnings_loss} | {self.special_usage_loss} | {self.special_medications} | {self.special_asset_damage} |
+                 {self.special_rehabilitation} | {self.special_fixes} | {self.general_fixed} | {self.general_uplift} | {self.special_loaner_vehicle} |
+                 {self.special_trip_costs} | {self.special_journey_expenses} | {self.special_therapy} | {self.exceptional_circumstances} | {self.minor_psychological_injury} |
+                 {self.dominant_injury} | {self.whiplash} | {self.vehicle_type} | {self.weather_conditions} | {self.accident_date} | {self.claim_date} | {self.vehicle_age} |
+                 {self.driver_age} | {self.number_of_passengers} | {self.accident_description} | {self.injury_description} | {self.police_report_filed} | {self.witness_present} | {self.gender}"""
     
     # will have to change this function
     def create_claim_from_series(datarow: pd.Series):

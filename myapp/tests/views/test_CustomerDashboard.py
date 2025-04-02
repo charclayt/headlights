@@ -173,7 +173,7 @@ class CustomerDashboardTest(BaseViewTest, TestCase):
 
         mock_get_claim_prediction.return_value = 1000
         
-        form_data = {'uploaded_claims': claim.ClaimID, 'model': model.model_id}
+        form_data = {'uploaded_claims': claim.claim_id, 'model': model.model_id}
         
         BaseViewTest._test_post_view_response(self, payload=form_data)
 
