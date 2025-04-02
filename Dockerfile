@@ -28,3 +28,4 @@ CMD ["python", "manage.py", "migrate", "&&", \
     "python", "manage.py", "loaddata", "myapp/migrations/data_dumps/auth_group_data.json", "&&", \
     "python", "manage.py", "loaddata", "myapp/migrations/data_dumps/auth_user_data.json", "&&", \
     "python", "manage.py", "runserver", "0.0.0.0:8000"]
+    
