@@ -10,6 +10,8 @@ from django.conf import settings
 import logging
 import requests
 
+from myapp.models import PreprocessingStep
+
 # Configure logging
 logger = logging.getLogger(__name__)
 
@@ -45,35 +47,6 @@ class MLDashboardView(View):
                 'message': f"Error communicating with ML service: {str(e)}"
             }, status=500)
 
-# @method_decorator(require_http_methods(["GET"]), name="dispatch")
-# class ModelListView(View):
-#     """
-#     This class proxies requests for listing ML models to the ML service.
-#     """
-    
-#     def get(self, request: HttpRequest) -> JsonResponse:
-#         """
-#         Handles the GET request for listing all available ML models.
-#         Proxies the request to the ML service.
-#         """
-#         if not request.user.is_authenticated:
-#             return JsonResponse({
-#                 'status': 'error',
-#                 'message': 'Authentication required'
-#             }, status=401)
-            
-#         try:
-#             # sends authenticated request to ML service, it just
-#             ml_service_url = getattr(settings, 'ML_SERVICE_URL', 'http://ml-service:8001')
-#             response = requests.get(f"{ml_service_url}/api/models/")
-#             return JsonResponse(response.json())
-#         except Exception as e:
-#             logger.error(f"Error getting models from ML service: {str(e)}")
-#             return JsonResponse({
-#                 'status': 'error',
-#                 'message': f"Error communicating with ML service: {str(e)}"
-#             }, status=500)
-
 @method_decorator([login_required, permission_required("myapp.add_predictionmodel")], name="dispatch")  
 class UploadModelView(View):
     """
@@ -82,7 +55,22 @@ class UploadModelView(View):
     template_name = "ml/upload_model.html"
 
     def get(self, request: HttpRequest) -> JsonResponse:
-        return render(request, self.template_name)
+        preprocessing_steps = PreprocessingStep.objects.all()
+        
+        data = []
+        for x in preprocessing_steps:
+            entry = {
+                "id": x.preprocessing_step_id,
+                "name": x.preprocess_name
+            }
+            data.append(entry)
+        print(data, flush=True)
+
+        context = {
+            'preprocessing_steps': data
+        }
+
+        return render(request, self.template_name, context=context)
     
     def post(self, request: HttpRequest) -> JsonResponse:
         """
@@ -105,6 +93,10 @@ class UploadModelView(View):
             # Create multipart form data request
             files = {'model_file': (model_file.name, model_file, model_file.content_type)}
             data = {k: v for k, v in request.POST.items()}
+            data.pop('preprocessingSteps', None)
+
+            selected_steps = request.POST.getlist("preprocessingSteps")
+            data["selected_steps"] = selected_steps
             
             # Send request to ML service
             response = requests.post(

@@ -15,6 +15,16 @@
                 <label for="modelNotes">Notes:</label>
                 <textarea id="modelNotes" name="notes" rows="3" maxlength="255"></textarea>
             </div>
+            {% if preprocessing_steps %}
+            <div class="form-group">
+                <label for="preprocessingSteps">Select preprocessing steps: </label>
+                <select name="preprocessingSteps[]" id="preprocessingSteps" multiple> 
+                    {% for row in preprocessing_steps %}
+                        <option value="{{ row.id }}">{{row.name}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% endif %}
             <div class="form-group">
                 <label for="modelFile">Model File (.pkl):</label>
                 <input type="file" id="modelFile" name="model_file" accept=".pkl" required>
