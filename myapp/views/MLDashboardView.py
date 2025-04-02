@@ -3,8 +3,6 @@ from django.views import View
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required, permission_required
-from django.views.decorators.http import require_http_methods
-from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 
 import logging
@@ -28,8 +26,7 @@ class MLDashboardView(View):
         Handles the GET request for the machine learning dashboard page.
         Renders the ML dashboard template.
         """
-        # logger.info(f"{request.user} accessed the machine learning dashboard page.")
-        # return render(request, self.template_name)
+        logger.info(f"{request.user} accessed the machine learning dashboard page.")
         try:
             # sends authenticated request to ML service, it just
             ml_service_url = getattr(settings, 'ML_SERVICE_URL', 'http://ml-service:8001')
@@ -78,17 +75,22 @@ class UploadModelView(View):
         Proxies the request to the ML service.
         """
 
+        if not request.user.is_authenticated:
+            return JsonResponse(
+                {'status': 'error', 'message': 'Authentication required'},
+                status=401
+            )
+
         try:
             ml_service_url = getattr(settings, 'ML_SERVICE_URL', 'http://ml-service:8001')
             # Forward files and data to the ML service
             model_file = request.FILES.get('model_file')
             
             if not model_file:
-                context ={
-                    'error': True,
-                    'message': "No model file provided"
-                }
-                return render(request, self.template_name, context=context)
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'No model file provided'
+                }, status=400)
             
             # Create multipart form data request
             files = {'model_file': (model_file.name, model_file, model_file.content_type)}
