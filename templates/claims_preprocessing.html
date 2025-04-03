@@ -1,0 +1,63 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+    <h1>Claim Data Formatting</h1>
+
+    <div class="container">
+        <h2>Format Claims</h2>
+        <form id="uploadClaimsForm" action="" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="claimsFile">Claims Data File (.csv):</label>
+                <input class="form-control" type="file" id="claimsFile" name="claims_file" accept=".csv" onchange="resetMessages();" required>
+            </div>
+            <input class="btn btn-primary btn-lg" id="claimUploadSubmit" type="submit" value="Get Formatted Claims"></input>
+        </form>
+        {% if status == "error" %}
+            <div id="errorMessage" style="white-space: pre-line" class="error-message" style="display: block;">
+                {% for message in messages %}
+                        {{ message.text }}
+                {% endfor %}
+            </div>
+        {% elif status == "confirmationRequired" %}
+            <div id="confirmationBox" class="warning-message" style="display: block;">
+                <div id="confirmationMessage">
+                    {% for message in messages %}
+                        {{ message.text }} <br><br>
+                    {% endfor %}
+                    Some data may be missing or ignored when this file is formatted<br><br>
+                    If you wish to continue anyway, select your file again and press the button bellow
+                </div>
+                <input class="btn btn-danger btn-lg"  id="confirmIgnoreValidation" type="button" value="Upload Anyway">
+            </div>
+        {% endif %}
+    </div>
+
+    <script>
+        document.getElementById('claimUploadSubmit').addEventListener('click', async (event) => {
+            event.preventDefault();
+            const form = document.getElementById("uploadClaimsForm");
+            if (form.reportValidity()){
+                form.action = "{% url 'claims_preprocessing' %}";
+                form.submit();
+                resetMessages();
+            }
+        });
+
+        function resetMessages() {
+            const errorMessage = document.getElementById('errorMessage');
+            errorMessage.style.display = 'none';
+            const confirmBox = document.getElementById('confirmationBox');
+            confirmBox.style.display = 'none';
+        };
+
+        document.getElementById('confirmIgnoreValidation').addEventListener('click', async (event) => {
+            event.preventDefault();
+            const form = document.getElementById("uploadClaimsForm");
+            if (form.reportValidity()){
+                form.action = "{% url 'claims_preprocessing' 1 %}";
+                form.submit()
+            }
+        });
+    </script>
+{% endblock %}
