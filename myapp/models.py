@@ -150,7 +150,7 @@ class Claim(models.Model):
         
         # Replace np.nan values with None
         df.fillna('', inplace=True)
-        df.replace('', None)
+        df.replace('', None, inplace=True)
         
         if "InjuryPrognosis" in df.columns:
             # Turn injury prognosis into an integer
@@ -159,7 +159,7 @@ class Claim(models.Model):
                 if cellData:
                     months = int(''.join(c for c in cellData if c.isdigit()))
                     df.at[i, "InjuryPrognosis"] = months
-                    i += 1
+                i += 1
         
         # convert yes/no columns into 1/0
         binaryCols = ['ExceptionalCircumstances', 'MinorPsychologicalInjury', 'Whiplash', 'PoliceReportFiled', 'WitnessPresent']
@@ -478,10 +478,14 @@ class UploadedRecord(models.Model):
 
 
     @staticmethod
-    def upload_claims_from_file(file, user: UserProfile, ignore_validation: bool) -> SimpleResultWithPayload:
+    def upload_claims_from_file(file, user: UserProfile, ignore_validation: bool, preprocess: bool = False) -> SimpleResultWithPayload:
         result = SimpleResultWithPayload()
         
         csv = pd.read_csv(file)
+        
+        # Replace empty values with None
+        csv.fillna('', inplace=True)
+        csv.replace('', None, inplace=True)
         
         claimValidationResult = SimpleResult()
         if not ignore_validation:
@@ -490,6 +494,13 @@ class UploadedRecord(models.Model):
         if not claimValidationResult.success:
             result.add_messages_from_result_and_mark_unsuccessful_if_error_found(claimValidationResult)
             return result
+        
+        if preprocess:
+            preprocessResult = Claim.apply_preprocessing(csv, ignore_validation)
+            result.add_messages_from_result_and_mark_unsuccessful_if_error_found(preprocessResult)     
+            if not result.success:
+                return result
+            csv = preprocessResult.payload
             
         claims: list[Claim] = Claim.create_claims_from_dataframe(csv)
         uploadedRecords = []

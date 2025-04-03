@@ -210,12 +210,13 @@ class ClaimUploadView(View):
     def post(self, request: HttpRequest, ignore_validation: int = 0) -> JsonResponse:
         result = SimpleResult()
         file = request.FILES['claims_file']
+        preprocess = request.POST.get('preprocess')
         
         if not file.name.endswith(".csv"):
             result.add_error_message_and_mark_unsuccessful("Invalid file type")
         
         if result.success:
-            uploadResult = UploadedRecord.upload_claims_from_file(file, None, True if ignore_validation == 1 else False)  
+            uploadResult = UploadedRecord.upload_claims_from_file(file, None, True if ignore_validation == 1 else False, preprocess)  
             result.add_messages_from_result_and_mark_unsuccessful_if_error_found(uploadResult)
             
         status = "success"

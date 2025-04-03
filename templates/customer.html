@@ -18,6 +18,10 @@
                 <label for="claimsFile">Claims Data File (.csv):</label>
                 <input type="file" id="claimsFile" name="claims_file" accept=".csv" onchange="resetMessages();" required>
             </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="preprocess" name="preprocess">
+                <label for="preprocess" class="form-check-label">Automatically Format Claims</label>
+            </div>
             <input id="claimUploadSubmit" type="submit" text="Upload"></input>
         </form>
         <div id="errorMessage" style="white-space: pre-line" class="error-message"></div>

@@ -14,7 +14,7 @@
             <input class="btn btn-primary btn-lg" id="claimUploadSubmit" type="submit" value="Get Formatted Claims"></input>
         </form>
         {% if status == "error" %}
-            <div id="errorMessage" style="white-space: pre-line" class="error-message" style="display: block;">
+            <div id="errorMessage" style="display: block;" class="error-message">
                 {% for message in messages %}
                         {{ message.text }}
                 {% endfor %}
@@ -47,8 +47,6 @@
         function resetMessages() {
             const errorMessage = document.getElementById('errorMessage');
             errorMessage.style.display = 'none';
-            const confirmBox = document.getElementById('confirmationBox');
-            confirmBox.style.display = 'none';
         };
 
         document.getElementById('confirmIgnoreValidation').addEventListener('click', async (event) => {
