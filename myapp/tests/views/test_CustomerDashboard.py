@@ -146,12 +146,15 @@ class CustomerDashboardTest(BaseViewTest, TestCase):
         claim = Claim.objects.first()
         model = PredictionModel.objects.first()
         prediction = get_claim_prediction(claim, model)
+        
+        claimDict = model_to_dict(claim)
+        claimDict.pop('claim_id')
 
         self.assertEqual(prediction, 0.85)
 
         mock_post.assert_called_once_with(
             f"{getattr(settings, 'ML_SERVICE_URL', 'http://ml-service:8001')}/api/model/predict/",
-            json={'model_id': model.model_id, 'data': model_to_dict(claim)},
+            json={'model_id': model.model_id, 'data': claimDict},
             timeout=10
         )
 
@@ -173,7 +176,7 @@ class CustomerDashboardTest(BaseViewTest, TestCase):
 
         mock_get_claim_prediction.return_value = 1000
         
-        form_data = {'uploaded_claims': claim.ClaimID, 'model': model.model_id}
+        form_data = {'uploaded_claims': claim.claim_id, 'model': model.model_id}
         
         BaseViewTest._test_post_view_response(self, payload=form_data)
 

@@ -72,7 +72,7 @@ class TestClaims(TestCase):
         for index, series in df.iterrows():
             claim = Claim.create_claim_from_series(series)
             
-        self.assertEqual(claim.SettlementValue, 520)
+        self.assertEqual(claim.settlement_value, 520)
         
     
     def test_claim_creation_from_dataframe(self):
@@ -104,4 +104,4 @@ class TestClaims(TestCase):
         claims: list[Claim] = Claim.create_claims_from_dataframe(df)
         
         #check if settlement value was correctly assigned
-        self.assertEqual(claims[0].SettlementValue, 520)
+        self.assertEqual(claims[0].settlement_value, 520)
