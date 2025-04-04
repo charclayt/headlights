@@ -23,7 +23,7 @@ class MLDashboardPageTest(BaseViewTest, TestCase):
         logging.disable(logging.NOTSET)
 
     @patch('myapp.views.MLDashboardView.requests.get')
-    def test_get_view(self):
+    def test_get_view(self, mock_get):
         self.TEMPLATE = Templates.LOGIN
         self.client.logout()
 
