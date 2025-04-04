@@ -61,8 +61,7 @@ class UploadModelView(View):
                 "name": x.preprocess_name
             }
             data.append(entry)
-        print(data, flush=True)
-
+            
         context = {
             'preprocessing_steps': data
         }
