@@ -27,6 +27,7 @@ class Views:
 class Templates:
     HOME = "index.html"
     MACHINE_LEARNING = "ml/ml.html"
+    ML_UPLOAD_MODEL = "ml/upload_model.html"
     CUSTOMER = "customer.html"
     FINANCE = "finance.html"
     CONTACT_DETAILS = "contact_details.html"
