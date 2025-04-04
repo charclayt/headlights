@@ -16,43 +16,43 @@ class TestModels(TestCase):
 
         # Create model objects
 
-        Claim.objects.create(ClaimID=1,
-                     SettlementValue=TestData.VALUE,
-                     AccidentType="",
-                     InjuryPrognosis=0,
-                     SpecialHealthExpenses=0,
-                     SpecialReduction=0,
-                     SpecialOverage=0,
-                     GeneralRest=0,
-                     SpecialAdditionalInjury=0,
-                     SpecialEarningsLoss=0,
-                     SpecialUsageLoss=0,
-                     SpecialMedications=0,
-                     SpecialAssetDamage=0,
-                     SpecialRehabilitation=0,
-                     SpecialFixes=0,
-                     GeneralFixed=0,
-                     GeneralUplift=0,
-                     SpecialLoanerVehicle=0,
-                     SpecialTripCosts=0,
-                     SpecialJourneyExpenses=0,
-                     SpecialTherapy=0,
-                     ExceptionalCircumstances=0,
-                     MinorPsychologicalInjury=0,
-                     DominantInjury="",
-                     Whiplash=0,
-                     VehicleType="",
-                     WeatherConditions="",
-                     AccidentDate=0,
-                     ClaimDate=0,
-                     VehicleAge=0,
-                     DriverAge=0,
-                     NumberOfPassengers=0,
-                     AccidentDescription="",
-                     InjuryDescription="",
-                     PoliceReportFiled=0,
-                     WitnessPresent=0,
-                     Gender="")
+        Claim.objects.create(claim_id = 1,
+                             settlement_value = TestData.VALUE,
+                             accident_type = "",
+                             injury_prognosis = 0,
+                             special_health_expenses = 0,
+                             special_reduction = 0,
+                             special_overage = 0,
+                             general_rest = 0,
+                             special_additional_injury = 0,
+                             special_earnings_loss = 0,
+                             special_usage_loss = 0,
+                             special_medications = 0,
+                             special_asset_damage = 0,
+                             special_rehabilitation = 0,
+                             special_fixes = 0,
+                             general_fixed = 0,
+                             general_uplift = 0,
+                             special_loaner_vehicle = 0,
+                             special_trip_costs = 0,
+                             special_journey_expenses = 0,
+                             special_therapy = 0,
+                             exceptional_circumstances = 0,
+                             minor_psychological_injury = 0,
+                             dominant_injury = "",
+                             whiplash = 0,
+                             vehicle_type = "",
+                             weather_conditions = "",
+                             accident_date = 0,
+                             claim_date = 0,
+                             vehicle_age = 0,
+                             driver_age = 0,
+                             number_of_passengers = 0,
+                             accident_description = "",
+                             injury_description = "",
+                             police_report_filed = 0,
+                             witness_present = 0,
+                             gender = "")
         
         ContactInfo.objects.create(contact_info_id = 1,
                                    phone = TestData.PHONE,
@@ -103,11 +103,11 @@ class TestModels(TestCase):
         
         
         TrainingDataset.objects.create(training_dataset_id = 1,
-                                       claim_id = Claim.objects.get(ClaimID = 1))
+                                       claim_id = Claim.objects.get(claim_id = 1))
         
         UploadedRecord.objects.create(uploaded_record_id = 1,
                                       user_id = UserProfile.objects.get(user_profile_id = 1),
-                                      claim_id = Claim.objects.get(ClaimID = 1),
+                                      claim_id = Claim.objects.get(claim_id = 1),
                                       feedback_id = Feedback.objects.get(feedback_id = 1),
                                       model_id = PredictionModel.objects.get(model_id = 1),
                                       predicted_settlement = 0,
@@ -125,9 +125,9 @@ class TestModels(TestCase):
     # Test the models, ensure they are created correctly and the first field is correct
 
     def test_model_claim(self):
-        claim = Claim.objects.get(ClaimID=1)
-        self.assertTrue(claim.__str__().startswith(str(claim.SettlementValue)))
-        self.assertTrue(claim.SettlementValue, TestData.VALUE)
+        claim = Claim.objects.get(claim_id=1)
+        self.assertTrue(claim.__str__().startswith(str(claim.settlement_value)))
+        self.assertTrue(claim.settlement_value, TestData.VALUE)
 
     def test_model_contact_info(self):
         contact_info = ContactInfo.objects.get(contact_info_id=1)
@@ -176,8 +176,8 @@ class TestModels(TestCase):
 
     def test_model_training_dataset(self):
         training_dataset = TrainingDataset.objects.get(training_dataset_id=1)
-        self.assertTrue(training_dataset.__str__().startswith(str(training_dataset.claim_id.SettlementValue)))
-        self.assertTrue(training_dataset.claim_id.SettlementValue, TestData.VALUE)
+        self.assertTrue(training_dataset.__str__().startswith(str(training_dataset.claim_id.settlement_value)))
+        self.assertTrue(training_dataset.claim_id.settlement_value, TestData.VALUE)
 
     def test_model_uploaded_record(self):
         uploaded_record = UploadedRecord.objects.get(uploaded_record_id=1)
