@@ -3,7 +3,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from unittest.mock import patch, MagicMock
 
 from myapp.tests.test_BaseView import BaseViewTest, USER_NAME, USER_PASSWORD
-from myapp.models import PredictionModel, UploadedRecord, PreprocessingStep, PreprocessingModelMap
+from myapp.models import PredictionModel
 from myapp.tests.config import Views, Templates, TestData, ErrorCodes
 from django.urls import reverse
 
