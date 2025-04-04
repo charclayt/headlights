@@ -22,6 +22,7 @@ class MLDashboardPageTest(BaseViewTest, TestCase):
     def tearDown(self):
         logging.disable(logging.NOTSET)
 
+    @patch('myapp.views.MLDashboardView.requests.get')
     def test_get_view(self):
         self.TEMPLATE = Templates.LOGIN
         self.client.logout()
