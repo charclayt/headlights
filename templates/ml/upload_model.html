@@ -18,7 +18,7 @@
             {% if preprocessing_steps %}
             <div class="form-group">
                 <label for="preprocessingSteps">Select preprocessing steps: </label>
-                <select name="preprocessingSteps[]" id="preprocessingSteps" multiple> 
+                <select name="dataProcessingOptions[]" id="preprocessingSteps" multiple> 
                     {% for row in preprocessing_steps %}
                         <option value="{{ row.id }}">{{row.name}}</option>
                     {% endfor %}
