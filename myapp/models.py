@@ -157,7 +157,7 @@ class Claim(models.Model):
             i = 0
             for cellData in df["InjuryPrognosis"]:
                 if cellData:
-                    months = int(''.join(c for c in cellData if c.isdigit()))
+                    months = int(''.join(c for c in str(cellData) if c.isdigit()))
                     df.at[i, "InjuryPrognosis"] = months
                 i += 1
         
@@ -175,7 +175,7 @@ class Claim(models.Model):
         for rowIndex, rowData in df.iterrows():
             if "AccidentDate" in df.columns:
                 accidentDate = rowData["AccidentDate"]
-                if accidentDate and type(accidentDate) == str:
+                if accidentDate and accidentDate is str:
                     accidentDate = accidentDate[:10]
                     accidentDate = datetime.datetime.strptime(accidentDate, '%Y-%m-%d')
                     accidentJulianDay = accidentDate.strftime('%j')
@@ -184,7 +184,7 @@ class Claim(models.Model):
                 
             if "ClaimDate" in df.columns:
                 claimDate = rowData["ClaimDate"]
-                if claimDate and type(claimDate) == str:
+                if claimDate and claimDate is str:
                     claimDate = claimDate[:10]
                     claimDate = datetime.datetime.strptime(claimDate, '%Y-%m-%d')
                     claimJulianDay = claimDate.strftime('%j')

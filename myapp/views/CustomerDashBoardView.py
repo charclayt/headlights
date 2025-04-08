@@ -2,7 +2,7 @@ from django import forms
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.forms.models import model_to_dict
-from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, HttpResponseRedirect, JsonResponse, FileResponse
+from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.utils import timezone
@@ -14,7 +14,6 @@ from bootstrap_modal_forms.generic import BSModalCreateView
 import logging
 import requests
 import pandas as pd
-import io
 
 from myapp.models import Claim, UploadedRecord, Feedback, UserProfile, PredictionModel
 from myapp.utility.SimpleResults import SimpleResult, SimpleResultWithPayload
