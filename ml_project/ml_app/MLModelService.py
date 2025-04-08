@@ -7,6 +7,7 @@ import pickle
 from django.conf import settings
 
 from .models import PreprocessingModelMap
+from .utility.CaseConversion import to_pascal
 
 logger = logging.getLogger(__name__)
 
@@ -79,6 +80,9 @@ class PreProcessing():
             preprocessing_step = model_map.preprocessing_step_id
             self.steps.append(preprocessing_step.preprocess_name)
 
+        #set data columns to the expected naming format
+        self.convert_columns_to_pascal()
+        
         # Iterate through preprocessing steps, raising an exception if any fail.
         for step_str in self.steps:
             method = getattr(self, step_str, None)
@@ -90,6 +94,13 @@ class PreProcessing():
 
         logger.info(f"Preprocessing applied for model: {self.model_id}")
         return self.data
+    
+    def convert_columns_to_pascal(self):
+        pascal_cols = []
+        for col in self.data.columns:
+            pascal_cols.append(to_pascal(col))
+            
+        self.data.columns = pascal_cols
 
     def create_days_between_col(self):
         # Determine difference between AccidentDate and ClaimDate and create new column.
