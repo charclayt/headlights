@@ -1,4 +1,5 @@
 from django.contrib.auth.decorators import login_required
+from django.db.models import Prefetch
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.utils.decorators import method_decorator
 from django.shortcuts import render
@@ -55,8 +56,11 @@ class ModelListView(View):
         Handles the GET request for listing all available ML models.
         """
         try:
-            # Get all models from the database
-            models = PredictionModel.objects.all()
+            preprocessing_steps_queryset = PreprocessingModelMap.objects.select_related('preprocessing_step_id')
+
+            models = PredictionModel.objects.prefetch_related(
+                Prefetch('preprocessingmodelmap_set', queryset=preprocessing_steps_queryset, to_attr='preprocessing_steps')
+            ).all()
 
             models_list = [
                 {
@@ -64,7 +68,7 @@ class ModelListView(View):
                     'name': model.model_name,
                     'notes': model.notes,
                     'filepath': model.filepath,
-                    'preprocessingSteps': ''
+                    'preprocessingSteps': [map_item.preprocessing_step_id.preprocess_name for map_item in model.preprocessing_steps]
                 }
                 for model in models
             ]

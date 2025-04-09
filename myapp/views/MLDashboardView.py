@@ -32,6 +32,10 @@ class MLDashboardView(View):
             ml_service_url = getattr(settings, 'ML_SERVICE_URL', 'http://ml-service:8001')
             response = requests.get(f"{ml_service_url}/api/models/")
             data = response.json()
+
+            for x in data['models']:
+                x['preprocessingSteps'] = ", ".join(str(i) for i in x['preprocessingSteps'])
+
             context = {
                 'success': True,
                 'models': data['models'],
@@ -95,7 +99,6 @@ class UploadModelView(View):
             files = {'model_file': (model_file.name, model_file, model_file.content_type)}
             data = {k: v for k, v in request.POST.items()}
             data.pop('dataProcessingOptions[]', None)
-            print(request.POST, flush=True)
             selected_steps = request.POST.getlist("dataProcessingOptions[]")
             data["selected_steps"] = selected_steps
             
