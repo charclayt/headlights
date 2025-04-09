@@ -34,7 +34,8 @@ class MLDashboardView(View):
             data = response.json()
 
             for x in data['models']:
-                x['preprocessingSteps'] = ", ".join(str(i) for i in x['preprocessingSteps'])
+                if isinstance(x['preprocessingSteps'], list):
+                    x['preprocessingSteps'] = ", ".join(x['preprocessingSteps'])
 
             context = {
                 'success': True,
