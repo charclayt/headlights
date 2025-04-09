@@ -94,9 +94,9 @@ class UploadModelView(View):
             # Create multipart form data request
             files = {'model_file': (model_file.name, model_file, model_file.content_type)}
             data = {k: v for k, v in request.POST.items()}
-            data.pop('preprocessingSteps', None)
-
-            selected_steps = request.POST.getlist("preprocessingSteps")
+            data.pop('dataProcessingOptions[]', None)
+            print(request.POST, flush=True)
+            selected_steps = request.POST.getlist("dataProcessingOptions[]")
             data["selected_steps"] = selected_steps
             
             # Send request to ML service

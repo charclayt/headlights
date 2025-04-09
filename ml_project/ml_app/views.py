@@ -13,7 +13,7 @@ import logging
 import os
 
 from .MLModelService import ClaimsModel, ModelLoadError
-from .models import PredictionModel
+from .models import PredictionModel, PreprocessingStep, PreprocessingModelMap
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -102,6 +102,7 @@ class UploadModelView(View):
             # Get model name and notes from the request
             model_name = request.POST.get('model_name')
             notes = request.POST.get('notes', '')
+            selected_steps = request.POST.getlist('selected_steps')
             
             # Check if model file was provided
             if 'model_file' not in request.FILES:
@@ -122,6 +123,15 @@ class UploadModelView(View):
                     'message': 'Invalid file format. Only .pkl files are allowed.'
                 }, status=400)
             
+            if(selected_steps):
+                preprocessingSteps = PreprocessingStep.objects.filter(preprocessing_step_id__in=selected_steps)
+                if(not preprocessingSteps):
+                    logger.info("Preprocessing ids do not exist")
+                    return JsonResponse({
+                        'status': 'error',
+                        'message': 'Invalid preprocessing steps provided'
+                    }, status=400)
+
             # Create a directory to store models if it doesn't exist
             upload_dir = os.path.join('/shared/media', 'models')
             os.makedirs(upload_dir, exist_ok=True)
@@ -138,7 +148,14 @@ class UploadModelView(View):
                 notes=notes,
                 filepath=file_path
             )
-            
+
+            objects = []
+            if(selected_steps):
+                for x in selected_steps:
+                    objects.append(PreprocessingModelMap(preprocessing_step_id_id = int(x), model_id_id = model.model_id))
+
+                PreprocessingModelMap.objects.bulk_create(objects)
+                
             logger.info(f"PredictionModel '{model_name}' uploaded successfully with ID {model.model_id}.")
             return JsonResponse({
                 'status': 'success',
