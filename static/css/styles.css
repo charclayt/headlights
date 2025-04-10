@@ -6,23 +6,72 @@
   --border-radius: 0.375rem;
   --box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
   --transition: all 0.2s ease-in-out;
+  
+  /* Light theme variables (default) */
+  --body-bg: #f5f7fa;
+  --body-color: #495057;
+  --card-bg: #ffffff;
+  --card-border: #ddd;
+  --heading-color: #333;
+  --heading-border: #ddd;
+  --container-bg: #f9f9f9;
+  --navbar-bg: #f8f9fa;
+  --navbar-color: rgba(0, 0, 0, 0.55);
+  --navbar-active: #000;
+  --pre-bg: #f1f1f1;
+  --input-bg: #ffffff;
+  --input-border: #ddd;
+  --table-head-bg: #f8f9fa;
+  --table-border: #dee2e6;
+  --list-item-hover: #f8f9fa;
+  --list-item-active-bg: #0d6efd;
+  --list-item-active-color: #fff;
+  --footer-bg: #444444;
+  --footer-color: #ffffff;
+  --footer-border: #606060;
+}
+
+/* Dark theme variables */
+[data-theme="dark"] {
+  --body-bg: #121212;
+  --body-color: #e0e0e0;
+  --card-bg: #1e1e1e;
+  --card-border: #333;
+  --heading-color: #ffffff;
+  --heading-border: #444;
+  --container-bg: #1e1e1e;
+  --navbar-bg: #1e1e1e;
+  --navbar-color: rgba(255, 255, 255, 0.85);
+  --navbar-active: #ffffff;
+  --pre-bg: #2d2d2d;
+  --input-bg: #2d2d2d;
+  --input-border: #444;
+  --table-head-bg: #2d2d2d;
+  --table-border: #444;
+  --list-item-hover: #2d2d2d;
+  --list-item-active-bg: #0d6efd;
+  --list-item-active-color: #fff;
+  --footer-bg: #1e1e1e;
+  --footer-color: #ffffff;
+  --footer-border: #444;
 }
 
 body {
   font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   line-height: 1.6;
-  background-color: #f5f7fa;
-  color: #495057;
+  background-color: var(--body-bg);
+  color: var(--body-color);
   margin: 0;
-  padding: 0; /* Removed padding to allow full-width elements */
+  padding: 0; 
   font-size: 1.2rem;
-  width: 100%; /* Ensure body takes full width */
-  overflow-x: hidden; /* Prevent horizontal scrolling */
+  width: 100%; 
+  overflow-x: hidden; 
+  transition: var(--transition);
 }
 
 h1 {
-  color: #333;
-  border-bottom: 1px solid #ddd;
+  color: var(--heading-color);
+  border-bottom: 1px solid var(--heading-border);
   padding-bottom: 10px;
 }
 
@@ -35,8 +84,8 @@ h1 {
 
 /* Original .container class styling - kept for backward compatibility */
 .container:not(.mt-3):not(.container-fluid) {
-  background-color: #f9f9f9;
-  border: 1px solid #ddd;
+  background-color: var(--container-bg);
+  border: 1px solid var(--card-border);
   padding: 15px;
   border-radius: 5px;
   margin-top: 20px;
@@ -57,10 +106,34 @@ button:hover {
 }
 
 pre {
-  background-color: #f1f1f1;
+  background-color: var(--pre-bg);
   padding: 10px;
   border-radius: 5px;
   overflow-x: auto;
+  color: inherit;
+}
+
+code {
+  background-color: rgba(0, 0, 0, 0.05);
+  padding: 0.2em 0.4em;
+  border-radius: 3px;
+  color: inherit;
+}
+
+/* More specific styles for pre elements to ensure proper contrast */
+[data-theme="dark"] pre {
+  background-color: #2d2d2d;
+  color: #e0e0e0;
+  border: 1px solid #444;
+}
+
+[data-theme="dark"] code {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #e0e0e0;
+}
+
+[data-theme="dark"] pre code {
+  background-color: transparent;
 }
 
 .form-group {
@@ -76,9 +149,10 @@ label {
 input[type="text"], textarea {
   width: 100%;
   padding: 8px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--input-border);
   border-radius: 4px;
   box-sizing: border-box;
+  background-color: var(--input-bg);
 }
 
 .success-message, .error-message, .warning-message {
@@ -104,11 +178,6 @@ input[type="text"], textarea {
 }
 
 /* Custom navbar styling */
-.navbar-brand {
-  font-weight: 700;
-  letter-spacing: 0.5px;
-}
-
 .navbar {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   width: 100% !important; /* Force full width */
@@ -116,22 +185,74 @@ input[type="text"], textarea {
   right: 0;
   padding-left: 0;
   padding-right: 0;
+  background-color: var(--navbar-bg);
+  color: var(--navbar-color);
+  transition: var(--transition);
+}
+
+/* Navbar dark mode specific styles */
+[data-theme="dark"] .navbar {
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.navbar-brand {
+  font-weight: 700;
+  letter-spacing: 0.5px;
 }
 
 .navbar > .container-fluid {
-  padding-left: 1rem; /* Add some padding inside navbar */
+  padding-left: 1rem; 
   padding-right: 1rem;
+}
+
+.navbar .nav-link.active {
+  color: var(--navbar-active);
+}
+
+/* Dark mode toggle container */
+.theme-toggle-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 15px;
+}
+
+/* Dark mode toggle styling */
+.form-check-input.dark-mode-toggle {
+  cursor: pointer;
+  height: 1.25rem;
+  width: 2.5rem;
+  margin-top: 0;
+  vertical-align: middle;
+}
+
+.form-check-label {
+  cursor: pointer;
+}
+
+/* Ensure proper alignment in the navbar */
+.navbar-nav .theme-toggle-container .form-check {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Mobile menu specific alignment */
+@media (max-width: 991.98px) {
+  .navbar-nav .theme-toggle-container {
+    justify-content: flex-start;
+    padding-left: 0.5rem;
+  }
 }
 
 /* Card enhancements */
 .card {
-  transition: var(--transition);
   border-radius: var(--border-radius);
   overflow: hidden;
-}
-
-.card:hover {
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  transition: var(--transition);
 }
 
 .card-header {
@@ -163,15 +284,99 @@ input[type="text"], textarea {
 }
 
 .table thead th {
-  background-color: var(--light-bg);
-  border-bottom: 2px solid #dee2e6;
+  background-color: var(--table-head-bg);
+  border-bottom: 2px solid var(--table-border);
   padding: 12px;
   font-weight: 600;
+  color: var(--heading-color);
 }
 
-.table tbody td {
+.table tbody td,
+.table tbody th {
   padding: 12px;
   vertical-align: middle;
+  color: var(--body-color);
+}
+
+.table-striped > tbody > tr:nth-of-type(odd) > * {
+  color: var(--body-color);
+}
+
+.table-hover > tbody > tr:hover > * {
+  color: var(--body-color);
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="dark"] .table-hover > tbody > tr:hover > * {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .table {
+  color: var(--body-color);
+}
+
+[data-theme="dark"] .table td,
+[data-theme="dark"] .table th {
+  border-color: var(--table-border);
+  color: var(--body-color);
+}
+
+[data-theme="dark"] .table-striped > tbody > tr:nth-of-type(odd) > * {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: var(--body-color);
+}
+
+/* Ensure text in dashboard entries is readable */
+.card-body table td, 
+.card-body table th {
+  color: var(--body-color) !important;
+}
+
+/* Finance dashboard specific enhancements */
+.finance-item {
+  color: var(--body-color) !important;
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius);
+  margin-bottom: 1rem;
+  padding: 1rem;
+  transition: var(--transition);
+}
+
+[data-theme="dark"] .finance-item {
+  border-color: var(--card-border);
+}
+
+/* Improve contrast for any element that might contain entries */
+.entry-list li,
+.entry-item,
+.data-entry {
+  color: var(--body-color);
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius);
+  margin-bottom: 0.5rem;
+  padding: 0.75rem;
+}
+
+/* Fix specific badge colors in entries to ensure visibility */
+[data-theme="dark"] .entry-list .badge,
+[data-theme="dark"] .table .badge {
+  color: #ffffff;
+}
+
+/* General improvements for text readability */
+p, span, div, td, th, li {
+  color: var(--body-color);
+}
+
+[data-theme="dark"] p,
+[data-theme="dark"] span,
+[data-theme="dark"] div,
+[data-theme="dark"] td, 
+[data-theme="dark"] th,
+[data-theme="dark"] li {
+  color: var(--body-color);
 }
 
 /* Badge styling */
@@ -205,27 +410,410 @@ input[type="text"], textarea {
   border: none;
 }
 
-/* Animation for hover effects */
-@keyframes pulse {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.02);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
-.card:hover {
-  animation: pulse 0.5s ease-in-out;
-}
-
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .container {
     padding-left: 10px;
     padding-right: 10px;
   }
+}
+
+/* Footer styling */
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+.footer {
+  background-color: var(--footer-bg);
+  color: var(--footer-color);
+  font-weight: 600;
+  border-top: 1px solid var(--footer-border);
+}
+
+.footer p {
+  margin-bottom: 0;
+  font-size: 1.1rem;
+}
+
+/* Form controls in dark mode */
+[data-theme="dark"] .form-control {
+  background-color: var(--input-bg);
+  border-color: var(--input-border);
+  color: var(--body-color);
+}
+
+[data-theme="dark"] .form-control:focus {
+  background-color: var(--input-bg);
+  color: var(--body-color);
+}
+
+/* List group items in dark mode */
+[data-theme="dark"] .list-group-item {
+  background-color: var(--card-bg);
+  border-color: var(--card-border);
+  color: var(--body-color);
+}
+
+[data-theme="dark"] .list-group-item:hover:not(.active) {
+  background-color: var(--list-item-hover);
+}
+
+[data-theme="dark"] .list-group-item.active {
+  background-color: var(--list-item-active-bg);
+  border-color: var(--list-item-active-bg);
+  color: var(--list-item-active-color);
+}
+
+/* Dropdown menus in dark mode */
+[data-theme="dark"] .dropdown-menu {
+  background-color: var(--card-bg);
+  border-color: var(--card-border);
+}
+
+[data-theme="dark"] .dropdown-item {
+  color: var(--body-color);
+}
+
+[data-theme="dark"] .dropdown-item:hover, 
+[data-theme="dark"] .dropdown-item:focus {
+  background-color: var(--list-item-hover);
+  color: var(--body-color);
+}
+
+/* Dark mode for the toggle itself */
+[data-theme="dark"] .form-check-input {
+  background-color: var(--input-bg);
+  border-color: var(--input-border);
+}
+
+/* Table styling for dark mode */
+[data-theme="dark"] .table {
+  color: var(--body-color);
+}
+
+[data-theme="dark"] .table td,
+[data-theme="dark"] .table th {
+  border-color: var(--table-border);
+}
+
+/* Bootstrap navbar in dark mode */
+[data-theme="dark"] .navbar-light .navbar-nav .nav-link {
+  color: var(--navbar-color);
+}
+
+[data-theme="dark"] .navbar-light .navbar-nav .nav-link.active {
+  color: var(--navbar-active);
+}
+
+[data-theme="dark"] .navbar-light .navbar-brand {
+  color: var(--navbar-active);
+}
+
+[data-theme="dark"] .navbar-toggler-icon {
+  filter: invert(1);
+}
+
+/* Dark mode toggle styling */
+.form-check-input:checked {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.form-check-input:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.form-check-label i {
+  font-size: 1.2rem;
+  vertical-align: middle;
+}
+
+/* Smooth transitions for all theme changes */
+.card, .navbar, .form-control, .btn, .table, .list-group-item, .dropdown-menu {
+  transition: var(--transition);
+}
+
+/* Navbar dark mode overrides */
+[data-theme="dark"] .navbar {
+  background-color: var(--navbar-bg) !important;
+}
+
+[data-theme="dark"] .navbar .navbar-brand {
+  color: var(--navbar-active);
+}
+
+[data-theme="dark"] .navbar .nav-link {
+  color: var(--navbar-color);
+}
+
+[data-theme="dark"] .navbar .nav-link.active,
+[data-theme="dark"] .navbar .nav-link.fw-bold {
+  color: var(--navbar-active);
+}
+
+/* Dark mode button adjustments */
+[data-theme="dark"] .btn-outline-primary {
+  color: #6ea8fe;
+  border-color: #6ea8fe;
+}
+
+[data-theme="dark"] .btn-outline-primary:hover {
+  background-color: rgba(13, 110, 253, 0.2);
+  color: #ffffff;
+}
+
+/* Alert colors in dark mode */
+[data-theme="dark"] .alert-success {
+  background-color: rgba(25, 135, 84, 0.2);
+  color: #75b798;
+}
+
+[data-theme="dark"] .alert-danger {
+  background-color: rgba(220, 53, 69, 0.2);
+  color: #ea868f;
+}
+
+[data-theme="dark"] .alert-warning {
+  background-color: rgba(255, 193, 7, 0.2);
+  color: #ffda6a;
+}
+
+[data-theme="dark"] .alert-info {
+  background-color: rgba(13, 202, 240, 0.2);
+  color: #6edff6;
+}
+
+/* Better card contrast in dark mode */
+[data-theme="dark"] .card {
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="dark"] .card-header {
+  background-color: #252525;
+  border-bottom-color: #333;
+  color: var(--heading-color);
+}
+
+/* Improve dropdown menu styling */
+[data-theme="dark"] .dropdown-menu {
+  box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .dropdown-divider {
+  border-color: var(--card-border);
+}
+
+/* Specific dark mode styles for boxed elements, alerts, pre-formatted text, and other container elements */
+[data-theme="dark"] pre {
+  background-color: var(--pre-bg);
+  color: #e0e0e0;
+  border: 1px solid #444;
+}
+
+[data-theme="dark"] code {
+  color: #e0e0e0;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Fix boxed content in dark mode */
+[data-theme="dark"] .bg-light {
+  background-color: #2d2d2d !important;
+  color: var(--body-color);
+}
+
+/* Fix success/error/warning messages in dark mode */
+[data-theme="dark"] .success-message {
+  background-color: rgba(25, 135, 84, 0.2);
+  color: #75b798;
+  border: 1px solid rgba(25, 135, 84, 0.4);
+}
+
+[data-theme="dark"] .error-message {
+  background-color: rgba(220, 53, 69, 0.2);
+  color: #ea868f;
+  border: 1px solid rgba(220, 53, 69, 0.4);
+}
+
+[data-theme="dark"] .warning-message {
+  background-color: rgba(255, 193, 7, 0.2);
+  color: #ffda6a;
+  border: 1px solid rgba(255, 193, 7, 0.4);
+}
+
+/* Bootstrap colors for dark mode */
+[data-theme="dark"] .text-muted {
+  color: #9ca3af !important;
+}
+
+[data-theme="dark"] .text-primary {
+  color: #6ea8fe !important;
+}
+
+[data-theme="dark"] .text-success {
+  color: #75b798 !important;
+}
+
+[data-theme="dark"] .text-danger {
+  color: #ea868f !important;
+}
+
+[data-theme="dark"] .text-warning {
+  color: #ffda6a !important;
+}
+
+/* Badges in dark mode */
+[data-theme="dark"] .badge.bg-success {
+  background-color: rgba(25, 135, 84, 0.8) !important;
+  color: #ffffff;
+}
+
+[data-theme="dark"] .badge.bg-primary {
+  background-color: rgba(13, 110, 253, 0.8) !important;
+  color: #ffffff;
+}
+
+[data-theme="dark"] .badge.bg-danger {
+  background-color: rgba(220, 53, 69, 0.8) !important;
+  color: #ffffff;
+}
+
+/* Modal styling for dark mode */
+[data-theme="dark"] .modal-content {
+  background-color: var(--card-bg);
+  border-color: var(--card-border);
+  color: var(--body-color);
+}
+
+[data-theme="dark"] .modal-header {
+  border-bottom-color: var(--card-border);
+}
+
+[data-theme="dark"] .modal-footer {
+  border-top-color: var(--card-border);
+}
+
+/* Confirmation box and other alerts */
+[data-theme="dark"] #confirmationBox,
+[data-theme="dark"] #errorMessage {
+  color: var(--body-color);
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+}
+
+/* Card with light background */
+[data-theme="dark"] .card.bg-light {
+  background-color: #2d2d2d !important;
+}
+
+[data-theme="dark"] .card.bg-light .text-primary {
+  color: #6ea8fe !important;
+}
+
+/* Specific styling for modelResult in ML dashboard */
+#modelResult {
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: monospace;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  background-color: var(--pre-bg);
+  color: var(--body-color);
+  padding: 15px;
+  border-radius: 5px;
+  border: 1px solid var(--card-border);
+}
+
+[data-theme="dark"] #modelResult {
+  color: #e0e0e0;
+  background-color: #1a1a1a;
+  border-color: #444;
+}
+
+/* Styling for code blocks and model-related content */
+[data-theme="dark"] .container h2 {
+  color: #ffffff;
+}
+
+/* Input and textarea styling for dark mode in ML forms */
+[data-theme="dark"] input[type="text"], 
+[data-theme="dark"] textarea,
+[data-theme="dark"] input[type="file"] {
+  color: #e0e0e0;
+  background-color: var(--input-bg);
+  border-color: var(--input-border);
+}
+
+/* Improve contrast for file inputs */
+[data-theme="dark"] input[type="file"]::file-selector-button {
+  background-color: #444;
+  color: #e0e0e0;
+  border-color: #555;
+}
+
+/* Code block text in inline code under the "Upload New Model" section */
+[data-theme="dark"] .container code {
+  color: #ea868f;
+}
+
+/* Fix card-body text and content in dark mode */
+[data-theme="dark"] .card-body {
+  color: var(--body-color);
+}
+
+[data-theme="dark"] .card-body h1,
+[data-theme="dark"] .card-body h2,
+[data-theme="dark"] .card-body h3,
+[data-theme="dark"] .card-body h4,
+[data-theme="dark"] .card-body h5,
+[data-theme="dark"] .card-body h6 {
+  color: var(--heading-color);
+}
+
+[data-theme="dark"] .card-body p,
+[data-theme="dark"] .card-body ul,
+[data-theme="dark"] .card-body ol,
+[data-theme="dark"] .card-body li,
+[data-theme="dark"] .card-body span,
+[data-theme="dark"] .card-body div {
+  color: var(--body-color);
+}
+
+[data-theme="dark"] .card-body strong,
+[data-theme="dark"] .card-body b {
+  color: #ffffff;
+}
+
+/* Ensure text elements in boxed content change color */
+[data-theme="dark"] div.container *:not(pre):not(code):not(button):not(.btn):not(a) {
+  color: var(--body-color);
+}
+
+[data-theme="dark"] div.container h1,
+[data-theme="dark"] div.container h2,
+[data-theme="dark"] div.container h3,
+[data-theme="dark"] div.container h4,
+[data-theme="dark"] div.container h5,
+[data-theme="dark"] div.container h6 {
+  color: var(--heading-color);
+}
+
+[data-theme="dark"] div.container strong,
+[data-theme="dark"] div.container b {
+  color: #ffffff;
+}
+
+/* Fix specifically for the home page card-body */
+[data-theme="dark"] .card-body ul li,
+[data-theme="dark"] .card-body ol li {
+  color: var(--body-color);
+}
+
+/* Fix any black text in pre elements or other boxed content */
+[data-theme="dark"] pre,
+[data-theme="dark"] .code-block,
+[data-theme="dark"] .code-sample {
+  color: #e0e0e0;
+  background-color: #1a1a1a;
 }
