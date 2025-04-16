@@ -45,10 +45,11 @@ class ModelListTestCase(TestCase):
 
     def test_get_model_success(self):
         response = self.client.get(self.url)
+        data = response.json()
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual('test_model', response.data['models_list']['name'])
-        self.assertEqual('create_days_between_col', response.data['models_list']['preprocessingSteps'])
+        self.assertEqual('test_model', data['models_list']['name'])
+        self.assertEqual('create_days_between_col', data['models_list']['preprocessingSteps'])
 
 
 class ModelPredictTestCase(TestCase):
