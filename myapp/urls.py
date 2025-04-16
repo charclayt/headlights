@@ -3,7 +3,7 @@ URL configuration for desd project.
 """
 from django.urls import path
 
-from myapp.views.CustomerDashBoardView import *
+from myapp.views.CustomerDashBoardView import CustomerDashboardView, ClaimUploadView, PredictionFeedbackView
 from myapp.views.IndexView import IndexView
 from myapp.views.MLDashboardView import MLDashboardView, UploadModelView
 from myapp.views.AccountManagementView import AccountCreationView, AccountContactDetailsView
