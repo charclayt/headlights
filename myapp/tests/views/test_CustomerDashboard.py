@@ -178,6 +178,11 @@ class CustomerDashboardTest(BaseViewTest, TestCase):
 
         BaseViewTest._test_post_view_response(self, status=ErrorCodes.BAD_REQUEST, payload=form_data)
 
+    def test_settlement_post(self):
+        form_data = {'settlement_value': 150}
+
+        BaseViewTest._test_post_view_response(self, status=ErrorCodes.OK, payload=form_data)
+
 class CustomerUploadTest(BaseViewTest, TestCase):
     
     URL = Views.CUSTOMER_UPLOAD
