@@ -22,7 +22,6 @@ logger = logging.getLogger(__name__)
 
 
 class UploadedClaimsForm(forms.Form):
-    # uploaded_claims = forms.ModelChoiceField(queryset=Claim.objects.all(), widget=forms.Select(attrs={'class': 'form-control'}))
     uploaded_claims = forms.ModelChoiceField(
         queryset=Claim.objects.all(),
         widget=forms.Select(attrs={'class': 'form-control'})
