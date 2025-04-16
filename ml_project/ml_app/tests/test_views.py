@@ -48,8 +48,8 @@ class ModelListTestCase(TestCase):
         data = response.json()
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual('test_model', data['models_list']['name'])
-        self.assertEqual('create_days_between_col', data['models_list']['preprocessingSteps'])
+        self.assertEqual('test_model', data['models'][0]['name'])
+        self.assertEqual(['create_days_between_col'], data['models'][0]['preprocessingSteps'])
 
 
 class ModelPredictTestCase(TestCase):
@@ -142,3 +142,8 @@ class ModelUploadTestCase(TestCase):
         self.assertTrue(PredictionModel.objects.filter(model_name='TestModel').exists())
         mock_makedirs.assert_called_once_with('/shared/media/models', exist_ok=True)
         mock_file_open.assert_called_once()  
+        
+        # Tidy up
+        model = PredictionModel.objects.filter(model_name='TestModel').get()
+        PreprocessingModelMap.objects.filter(model_id=model).delete()
+        model.delete()
