@@ -3,7 +3,6 @@ import logging
 import numpy as np
 import os
 import pickle
-import traceback
 
 from django.conf import settings
 
@@ -31,7 +30,7 @@ class MLModel(ABC):
                 pipeline = pickle.load(file)
             return pipeline
         except Exception as e:
-            raise ModelLoadError(f"{self.model_row.model_id}: {traceback.print_exc()}") from e
+            raise ModelLoadError(f"Failed to load model: {self.model_row.model_id}") from e
     
     @abstractmethod
     def preprocess_data(self, data):
