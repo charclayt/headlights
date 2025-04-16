@@ -13,7 +13,7 @@ from ml_app.models import PredictionModel, PreprocessingStep, PreprocessingModel
 class ModelListTestCase(TestCase):
     def setUp(self):
         self.client = APIClient()
-        self.url = 'api/models/'
+        self.url = '/api/models/'
 
         filepath = '/shared/media/models/limited_model.pkl'
         if os.getenv('GITHUB_ACTIONS') == 'true':
@@ -107,7 +107,7 @@ class ModelUploadTestCase(TestCase):
     
     def setUp(self):
         self.client = APIClient()
-        self.url = 'api/upload-model/'
+        self.url = '/api/upload-model/'
 
         self.test_file = SimpleUploadedFile(
             "test_model.pkl", b"fake-model-content", content_type="application/octet-stream"
