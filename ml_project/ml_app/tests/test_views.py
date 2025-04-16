@@ -51,6 +51,17 @@ class ModelListTestCase(TestCase):
         self.assertEqual('test_model', data['models'][0]['name'])
         self.assertEqual(['create_days_between_col'], data['models'][0]['preprocessingSteps'])
 
+    def test_no_models_found(self):
+
+        PreprocessingModelMap.objects.all().delete()
+        PredictionModel.objects.all().delete()
+
+        response = self.client.get(self.url)
+        data = response.json()
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual('no models found', data['message'])
+
 
 class ModelPredictTestCase(TestCase):
     
@@ -121,6 +132,23 @@ class ModelUploadTestCase(TestCase):
 
         logging.disable(logging.ERROR)
 
+    def test_invalid_preprocessing_ids(self):
+         
+        data = {
+            'model_name': 'TestModel',
+            'notes': 'test notes',
+            'selected_steps': [10000, 20000]
+        }
+
+        response = self.client.post(self.url, data={
+            **data,
+            'model_file': self.test_file
+        })
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()['message'], 'Invalid preprocessing steps provided')
+        self.assertFalse(PredictionModel.objects.filter(model_name='TestModel').exists())
+
     @patch('builtins.open', new_callable=mock_open)
     @patch('os.makedirs')
     def test_model_upload_success(self, mock_makedirs, mock_file_open):
@@ -147,3 +175,19 @@ class ModelUploadTestCase(TestCase):
         model = PredictionModel.objects.filter(model_name='TestModel').get()
         PreprocessingModelMap.objects.filter(model_id=model).delete()
         model.delete()
+
+    def test_missing_model_file(self):
+         
+        data = {
+            'model_name': 'TestModel',
+            'notes': 'test notes',
+            'selected_steps': [self.preprocessingStep.preprocessing_step_id]
+        }
+
+        response = self.client.post(self.url, data={
+            **data,
+        })
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()['message'], 'No model file provided')
+        self.assertFalse(PredictionModel.objects.filter(model_name='TestModel').exists())
