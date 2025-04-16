@@ -30,15 +30,73 @@
         <form method="post" action="{% url 'customer_dashboard' %}">
             {% csrf_token %}
             {{ uploaded_claims_form.as_p }}
-            <button id="submit-prediction" type="submit" name="submitPredictionForm">Make Prediction</button>
+            <button id="submit-prediction" type="submit" class="btn btn-primary text-center" name="submitPredictionForm">Make Prediction</button>
         </form>
-        {% if uploaded_record %}
-            <div>
-                <p>Predicted Settlement: {{ uploaded_record.predicted_settlement }}</p>
-                <button id="submit-prediction-feedback" class="btn btn-primary" type="button" name="submit-prediction-feedback">Leave Feedback</button>
+    </div>
+    {% if uploaded_record %}
+        <div class="container mt-5">
+            <!-- Prediction Card -->
+            <div class="card shadow-lg border-info mb-4">
+                <div class="card-header bg-info text-white">
+                    Settlement Prediction
+                </div>
+                <div class="card-body">
+                    {% if uploaded_record.user_settlement %}
+                        <p class="card-text">
+                            <span class="fw-bold">Claim ID: {{ uploaded_record.claim_id.claim_id }}</span>
+                            <span class="fw-bold">Selected Model: {{ uploaded_record.model_id.model_name }}</span>
+                        </p>
+                        <p class="card-text">
+                            <span class="fw-bold"> Our Prediction: £{{ uploaded_record.predicted_range.center }}</span>
+                            <span class="fw-bold"> Your Decision: £{{ uploaded_record.user_settlement }}</span>
+                        </p>
+                    {% elif uploaded_record.predicted_range %}
+                        <p class="card-text">
+                            <span class="fw-bold">Claim ID: {{ uploaded_record.claim_id.claim_id }}</span>
+                            <span class="fw-bold">Selected Model: {{ uploaded_record.model_id.model_name }}</span>
+                        </p>
+                        <p class="card-text">
+                            Based on the provided information, our model estimates the claim settlement to be:
+                            <span class="fw-bold text-primary">£{{ uploaded_record.predicted_range.center }}</span>.
+                        </p>
+                        <p class="text-muted">
+                            To account for potential uncertainty in prediction, the estimated range is:
+                            <span class="fw-bold">£{{ uploaded_record.predicted_range.lower }} – £{{ uploaded_record.predicted_range.upper }}</span>
+                            (±5%).
+                        </p>
+                        <!-- User Input Form -->
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-light">
+                                <strong>Enter Your Chosen Settlement Value</strong>
+                            </div>
+                            <div class="card-body">
+                                <form method="post">
+                                    {% csrf_token %}
+                                    {{ settlement_form.as_p }}
+                                    
+                                    <div class="card-body text-center mt-3">
+                                        <button type="submit" class="btn btn-success px-4">Submit</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    {% else %}
+                        <p class="text-danger">No prediction available for this record.</p>
+                    {% endif %}
+                </div>
+
+        </div>
+        {% if uploaded_record.user_settlement %}
+            <div class="card shadow-lg border-success mb-4">
+                <div class="card-header bg-success text-white">
+                    Got feedback? Please leave it here
+                </div>
+                <div class="card-body text-center">
+                    <button id="submit-prediction-feedback" class="btn btn-primary" type="button" name="submit-prediction-feedback">Leave Feedback</button>
+                </div>
             </div>
         {% endif %}
-    </div>
+    {% endif %}
     <div class="container">
         <h2>Previously Uploaded Records</h2>
         <table class="table">

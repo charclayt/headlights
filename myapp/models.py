@@ -1,16 +1,3 @@
-# This is an auto-generated Django model module.
-
-# Remember to migrate to the database using the following:
-#   manage.py makemigrations <app_name>
-#   manage.py migrate <app_name>
-
-# If this doesn't work you may need to reset your migrations
-#   delete all files in the migrations folder except __init__.py
-#   run python manage.py migrate --fake <app_name> zero
-
-# Changes made to the database can turned into models using the following:
-#   python manage.py inspectdb > models.py
-
 # DO NOT REORDER MODELS WITHOUT THEN RERUNNING manage populate_tablelookup.py
 
 from django.contrib.auth.models import User, Group
@@ -401,7 +388,8 @@ class UploadedRecord(models.Model):
     claim_id = models.ForeignKey(Claim, models.PROTECT, db_column='ClaimID', blank=True, null=True)  
     feedback_id = models.ForeignKey(Feedback, models.PROTECT, db_column='FeedbackID', blank=True, null=True)  
     model_id = models.ForeignKey(PredictionModel, models.PROTECT, db_column='ModelID', blank=True, null=True)  
-    predicted_settlement = models.FloatField(db_column='PredictedSettlement', blank=True, null=True)  
+    predicted_settlement = models.FloatField(db_column='PredictedSettlement', blank=True, null=True)
+    user_settlement = models.FloatField(db_column='UserSettlement', blank=True, null=True)
     upload_date = models.DateField(db_column='UploadDate', blank=True, null=True)
 
     class Meta:
@@ -412,7 +400,7 @@ class UploadedRecord(models.Model):
         """
         This function returns an UploadedRecord in a neat string format.
         """
-        return f"{self.user_id} | {self.claim_id} | {self.feedback_id} | {self.model_id} | {self.predicted_settlement} | {self.upload_date}"
+        return f"{self.user_id} | {self.claim_id} | {self.feedback_id} | {self.model_id} | {self.predicted_settlement} | {self.user_settlement} | {self.upload_date}"
 
 
     @staticmethod
