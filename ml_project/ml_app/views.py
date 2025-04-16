@@ -63,7 +63,8 @@ class ModelListView(View):
                     'id': model.model_id,
                     'name': model.model_name,
                     'notes': model.notes,
-                    'filepath': model.filepath
+                    'filepath': model.filepath,
+                    'preprocessingSteps': ''
                 }
                 for model in models
             ]
