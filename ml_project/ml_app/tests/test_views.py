@@ -6,7 +6,7 @@ import logging
 import os
 from rest_framework.test import APIClient
 from rest_framework import status
-from unittest.mock import patch
+from unittest.mock import patch, mock_open, MagicMock
 
 from ml_app.models import PredictionModel, PreprocessingStep, PreprocessingModelMap
 
@@ -34,7 +34,7 @@ class ModelListTestCase(TestCase):
         PreprocessingModelMap.objects.create(
             preprocessing_model_map_id = 1,
             preprocessing_step_id=step,
-            model_id=self.prediction_model
+            model_id=self.model
         )
 
         logging.disable(logging.ERROR)
@@ -120,7 +120,11 @@ class ModelUploadTestCase(TestCase):
 
         logging.disable(logging.ERROR)
 
-    def test_model_upload_success(self):
+    @patch('builtins.open', new_callable=mock_open)
+    @patch('os.makedirs')
+    def test_model_upload_success(self, mock_makedirs, mock_file_open):
+        self.test_file.chunks = MagicMock(return_value=[b"fake-model-content"])
+
         data = {
             'model_name': 'TestModel',
             'notes': 'test notes',
@@ -135,3 +139,5 @@ class ModelUploadTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['status'], 'success')
         self.assertTrue(PredictionModel.objects.filter(model_name='TestModel').exists())
+        mock_makedirs.assert_called_once_with('/shared/media/models', exist_ok=True)
+        mock_file_open.assert_called_once()  
