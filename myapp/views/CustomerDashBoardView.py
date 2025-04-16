@@ -24,13 +24,24 @@ logger = logging.getLogger(__name__)
 class UploadedClaimsForm(forms.Form):
     uploaded_claims = forms.ModelChoiceField(
         queryset=Claim.objects.all(),
-        widget=forms.Select(attrs={'class': 'form-control'})
+        widget=forms.Select(
+            attrs={
+                'class': 'form-select',
+                'style': 'width: 100%; padding: 0.5rem; font-size: 1rem;'
+            }
+        ),
+        empty_label="Select a claim..."
     )
 
     model = forms.ModelChoiceField(
-        # This currently shows all info from db row. Look at how to get just name without breaking FE
         queryset = PredictionModel.objects.all(),
-        widget=forms.Select(attrs={'class': 'form-control'})
+        widget=forms.Select(
+            attrs={
+                'class': 'form-select',
+                'style': 'width: 100%; padding: 0.5rem; font-size: 1rem;'
+            }
+        ),
+        empty_label="Select a prediction model..."
     )
 
 class FeedbackForm(BSModalModelForm):

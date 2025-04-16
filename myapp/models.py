@@ -79,7 +79,7 @@ class Claim(models.Model):
         """
         This function returns a Claim in a neat string format.
         """
-        return f"{self.claim_id} | {self.accident_type} | {self.format_date(self.accident_date)} | {self.format_date(self.claim_date)}"
+        return f"{self.claim_id} | {self.accident_type} | {self.format_date(self.accident_date)} → {self.format_date(self.claim_date)}"
     
     # will have to change this function
     def create_claim_from_series(datarow: pd.Series):
@@ -346,7 +346,8 @@ class PredictionModel(models.Model):
         """
         This function returns a PredictionModel in a neat string format.
         """
-        return f"{self.model_name} | {self.notes} | {self.filepath} | {self.price_per_prediction}"
+        price_str = f"${self.price_per_prediction:.2f}" if self.price_per_prediction is not None else "N/A"
+        return f"{self.model_name} ({self.model_type}) – {price_str}"
 
 
 class OperationLookup(models.Model):
