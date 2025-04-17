@@ -77,7 +77,8 @@ class ModelListView(View):
             if not models_list:
                 return JsonResponse({
                     'status': 'success',
-                    'message': 'no models found'
+                    'message': 'no models found',
+                    'models': []
                 })
             
             logger.info(f"Successfully retrieved {len(models_list)} models from the database.")
