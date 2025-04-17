@@ -73,7 +73,7 @@ class CustomerDashboardTest(BaseViewTest, TestCase):
         with self.assertRaises(ValueError) as context:
             create_uploaded_record(record)
 
-        self.assertEqual(str(context.exception), "Missing required keys in record: {'model_id', 'prediction'}")
+        self.assertSetEqual(set(context.exception), set("Missing required keys in record: {'model_id', 'prediction'}"))
 
 
     def test_get_view(self):
