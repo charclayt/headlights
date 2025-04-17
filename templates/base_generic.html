@@ -14,20 +14,18 @@
     <link rel="stylesheet" href="{% static 'css/styles.css' %}" />
   </head>
   <body>
-    <div class="container-fluid">
-      <div class="row">
-        <div class="col-md-4">
-          {% block sidebar %}
-            <nav class="navbar navbar-light bg-light flex-column p-4">
-              <ul class="navbar-nav">
+    <div class="w-100 min-vh-100 d-flex">
+      <div class="col-md-3 col-lg-2 bg-light">
+        {% block sidebar %}
+          <nav class="navbar navbar-light flex-column">
+            <ul class="navbar-nav">
               {% if user.is_authenticated %}
                 <li class="nav-item">
                   <span class="nav-link">User: {{ user.get_username }}</span>
                 </li>
-
                 <li class="nav-item mb-3">
                   <span class="nav-link">
-                    User Group: 
+                    User Group:
                     {% for group in user.groups.all %}
                       {{ group.name }}{% if not forloop.last %}, {% endif %}
                     {% endfor %}
@@ -38,9 +36,9 @@
                     {% csrf_token %}
                     <button type="submit" class="btn btn-danger btn-lg w-100">Logout</button>
                   </form>
-                  <li class="nav-item mb-3">
-                    <a class="btn btn-primary btn-lg w-100" href="{% url 'contact_details' %}">Contact Details</a>
-                  </li>
+                </li>
+                <li class="nav-item mb-3">
+                  <a class="btn btn-primary btn-lg w-100" href="{% url 'contact_details' %}">Contact Details</a>
                 </li>
               {% else %}
                 <li class="nav-item mb-3">
@@ -50,23 +48,24 @@
                   <a class="btn btn-primary btn-lg w-100" href="{% url 'account_creation' %}">Sign Up</a>
                 </li>
               {% endif %}
-                <li class="nav-item mb-3">
-                  <a class="btn btn-primary btn-lg w-100" href="{% url 'index' %}">Home</a>
-                </li>
-                <li class="nav-item mb-3">
-                  <a class="btn btn-primary btn-lg w-100" href="{% url 'customer_dashboard' %}">User Dashboard</a>
-                </li>
-                <li class="nav-item mb-3">
-                  <a class="btn btn-primary btn-lg w-100" href="{% url 'ml_dashboard' %}">ML Dashboard</a>
-                </li>
-                <li class="nav-item mb-3">
-                  <a class="btn btn-primary btn-lg w-100" href="{% url 'finance_dashboard' %}">Finance</a>
-                </li>
-              </ul>
-            </nav>
-          {% endblock %}
-        </div>
-        <div class="col-md-8">{% block content %}{% endblock %}</div>
+              <li class="nav-item mb-3">
+                <a class="btn btn-primary btn-lg w-100" href="{% url 'index' %}">Home</a>
+              </li>
+              <li class="nav-item mb-3">
+                <a class="btn btn-primary btn-lg w-100" href="{% url 'customer_dashboard' %}">User Dashboard</a>
+              </li>
+              <li class="nav-item mb-3">
+                <a class="btn btn-primary btn-lg w-100" href="{% url 'ml_dashboard' %}">ML Dashboard</a>
+              </li>
+              <li class="nav-item mb-3">
+                <a class="btn btn-primary btn-lg w-100" href="{% url 'finance_dashboard' %}">Finance</a>
+              </li>
+            </ul>
+          </nav>
+        {% endblock %}
+      </div>
+      <div class="col-md-9 col-lg-10 p-4 ms-3">
+        {% block content %}{% endblock %}
       </div>
     </div>
   </body>

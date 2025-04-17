@@ -104,6 +104,7 @@
                 <tr>
                     <th>Claim Details</th>
                     <th>Predicted Settlement</th>
+                    <th>User Settlement</th>
                     <th>Upload Date</th>
                 </tr>
             </thead>
@@ -112,6 +113,7 @@
                     <tr>
                         <td>{{ record.claim_id }}</td>
                         <td>{{ record.predicted_settlement }}</td>
+                        <td>{{ record.user_settlement }}</td>
                         <td>{{ record.upload_date }}</td>
                     </tr>
                 {% endfor %}

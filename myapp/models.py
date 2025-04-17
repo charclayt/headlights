@@ -58,7 +58,7 @@ class Claim(models.Model):
 
     def format_date(self, date_int):
         try:
-            return datetime.strptime(str(date_int), "%d%m%Y").strftime("%B %d, %Y")
+            return datetime.strptime(str(date_int), "%Y%j").strftime("%B %d, %Y")
         except ValueError:
             return date_int
 
