@@ -1,6 +1,19 @@
 <!doctype html>
 <html lang="en" class="h-100">
   <head>
+    <!-- Prevent flash of incorrect theme on reload: place this script as the first element in <head> -->
+    <script>
+      (function() {
+        try {
+          var theme = localStorage.getItem('theme');
+          if (theme === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+          } else if (theme === 'light') {
+            document.documentElement.setAttribute('data-theme', 'light');
+          }
+        } catch(e) {}
+      })();
+    </script>
     {% block title %}
       <title>Headlights</title>
     {% endblock %}
@@ -25,9 +38,7 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav me-auto">
-            <li class="nav-item">
-              <a class="nav-link {% if request.path == '/' %}active fw-bold{% endif %}" href="{% url 'index' %}">Home</a>
-            </li>
+            <!-- Home link removed as Headlights brand logo serves the same purpose -->
             <li class="nav-item">
               <a class="nav-link {% if 'customer_dashboard' in request.path %}active fw-bold{% endif %}" href="{% url 'customer_dashboard' %}">User Dashboard</a>
             </li>
@@ -152,8 +163,8 @@
         if (savedTheme === 'dark' || (savedTheme === null && prefersDarkMode)) {
           document.documentElement.setAttribute('data-theme', 'dark');
           darkModeToggle.checked = true;
-          iconLabel.classList.remove('bi-moon-stars');
-          iconLabel.classList.add('bi-sun');
+          iconLabel.classList.remove('bi-sun');
+          iconLabel.classList.add('bi-moon-stars');
         }
         
         // Theme toggle functionality
@@ -161,13 +172,13 @@
           if (darkModeToggle.checked) {
             document.documentElement.setAttribute('data-theme', 'dark');
             localStorage.setItem('theme', 'dark');
-            iconLabel.classList.remove('bi-moon-stars');
-            iconLabel.classList.add('bi-sun');
+            iconLabel.classList.remove('bi-sun');
+            iconLabel.classList.add('bi-moon-stars');
           } else {
             document.documentElement.setAttribute('data-theme', 'light');
             localStorage.setItem('theme', 'light');
-            iconLabel.classList.remove('bi-sun');
-            iconLabel.classList.add('bi-moon-stars');
+            iconLabel.classList.remove('bi-moon-stars');
+            iconLabel.classList.add('bi-sun');
           }
           
           // Close the navbar on mobile after toggling dark mode

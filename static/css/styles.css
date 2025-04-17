@@ -319,6 +319,25 @@ input[type="text"], textarea {
 
 [data-theme="dark"] .table {
   color: var(--body-color);
+  background-color: #181a1b;
+  border-color: var(--table-border);
+}
+
+[data-theme="dark"] .table td,
+[data-theme="dark"] .table th {
+  background-color: #23272b;
+  color: #e0e0e0;
+  border-color: #444;
+}
+
+[data-theme="dark"] .table-striped > tbody > tr:nth-of-type(odd) > * {
+  background-color: #202225;
+  color: #e0e0e0;
+}
+
+[data-theme="dark"] .table-hover > tbody > tr:hover > * {
+  background-color: #23272b;
+  color: #fff;
 }
 
 [data-theme="dark"] .table td,
@@ -515,11 +534,56 @@ html {
 /* Table styling for dark mode */
 [data-theme="dark"] .table {
   color: var(--body-color);
+  background-color: #181a1b;
+  border-color: var(--table-border);
 }
-
 [data-theme="dark"] .table td,
 [data-theme="dark"] .table th {
-  border-color: var(--table-border);
+  background-color: #23272b;
+  color: #e0e0e0;
+  border-color: #444;
+}
+[data-theme="dark"] .table-striped > tbody > tr:nth-of-type(odd) > * {
+  background-color: #202225;
+  color: #e0e0e0;
+}
+[data-theme="dark"] .table-hover > tbody > tr:hover > * {
+  background-color: #23272b;
+  color: #fff;
+}
+
+/* Form styling for dark mode */
+[data-theme="dark"] input,
+[data-theme="dark"] select,
+[data-theme="dark"] textarea,
+[data-theme="dark"] .form-control {
+  background-color: #23272b;
+  color: #e0e0e0;
+  border-color: #444;
+}
+[data-theme="dark"] input:focus,
+[data-theme="dark"] select:focus,
+[data-theme="dark"] textarea:focus,
+[data-theme="dark"] .form-control:focus {
+  background-color: #23272b;
+  color: #fff;
+  border-color: #6ea8fe;
+}
+
+/* Table data cell improvements */
+[data-theme="dark"] td, [data-theme="dark"] th {
+  background-color: #23272b;
+  color: #e0e0e0;
+  border-color: #444;
+}
+[data-theme="dark"] td {
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+/* Table styling for dark mode */
+[data-theme="dark"] .table {
+  color: var(--body-color);
 }
 
 /* Bootstrap navbar in dark mode */
@@ -841,4 +905,40 @@ html {
 [data-theme="dark"] .code-sample {
   color: #e0e0e0;
   background-color: #1a1a1a;
+}
+
+/* Fix placeholder text color in dark mode */
+[data-theme="dark"] input::-webkit-input-placeholder,
+[data-theme="dark"] textarea::-webkit-input-placeholder {
+  color: #adb5bd;
+  opacity: 1;
+}
+
+[data-theme="dark"] input::-moz-placeholder,
+[data-theme="dark"] textarea::-moz-placeholder {
+  color: #adb5bd;
+  opacity: 1;
+}
+
+[data-theme="dark"] input:-ms-input-placeholder,
+[data-theme="dark"] textarea:-ms-input-placeholder {
+  color: #adb5bd;
+  opacity: 1;
+}
+
+[data-theme="dark"] input::-ms-input-placeholder,
+[data-theme="dark"] textarea::-ms-input-placeholder {
+  color: #adb5bd;
+  opacity: 1;
+}
+
+[data-theme="dark"] input::placeholder,
+[data-theme="dark"] textarea::placeholder {
+  color: #adb5bd;
+  opacity: 1;
+}
+
+/* Ensure the form control text is visible in dark mode */
+[data-theme="dark"] .form-control {
+  color: var(--body-color);
 }
