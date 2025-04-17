@@ -382,3 +382,32 @@ class PredictionFeedbackTest(BaseViewTest, TestCase):
 
             # Delete the feedback from the database
             f.delete()
+
+class CustomerPreprocessingTest(BaseViewTest, TestCase):
+    URL = Views.CUSTOMER_PREPROCESSING
+    TEMPLATE = Templates.CUSTOMER_PREPROCESSING
+    
+    def test_get_view(self):
+        BaseViewTest.test_get_view(self)
+        
+    def test_preprocess_upload(self):
+        invalid_file = SimpleUploadedFile("test.txt", b"file_content", content_type="text/plain")
+        payload = {'claims_file': invalid_file}
+        response = BaseViewTest._test_post_view_response(self, payload=payload)
+        context = response.context.pop()
+        self.assertEqual(context["status"], "error")
+        
+        with open('myapp/tests/data/InvalidTestClaimData.csv', "rb") as f:
+            data = f.read()
+        valid_file = SimpleUploadedFile("test.csv", data)
+        payload = {'claims_file': valid_file}
+        response = BaseViewTest._test_post_view_response(self, payload=payload)
+        context = response.context.pop()
+        self.assertEqual(context["status"], "confirmationRequired")
+        
+        with open('myapp/tests/data/TestClaimData.csv', "rb") as f:
+            data = f.read()
+        valid_file = SimpleUploadedFile("test.csv", data)
+        payload = {'claims_file': valid_file}
+        response = BaseViewTest._test_post_view_response(self, payload=payload)
+        self.assertEqual(response.get('Content-Disposition'), "attachment; filename=ProcessedClaims.csv")

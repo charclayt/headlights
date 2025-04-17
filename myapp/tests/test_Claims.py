@@ -105,3 +105,37 @@ class TestClaims(TestCase):
         
         #check if settlement value was correctly assigned
         self.assertEqual(claims[0].settlement_value, 520)
+
+    def test_preprocessing(self):
+        #create dataframe with valid columns
+        df = pd.DataFrame(columns=['SettlementValue', 'AccidentType', 'InjuryPrognosis', 
+                                   'SpecialHealthExpenses', 'SpecialReduction', 'SpecialOverage', 
+                                   'GeneralRest', 'SpecialAdditionalInjury', 'SpecialEarningsLoss',	
+                                   'SpecialUsageLoss', 'SpecialMedications', 'SpecialAssetDamage',
+                                   'SpecialRehabilitation', 'SpecialFixes', 'GeneralFixed',	
+                                   'GeneralUplift', 'SpecialLoanerVehicle', 'SpecialTripCosts',	
+                                   'SpecialJourneyExpenses', 'SpecialTherapy', 'ExceptionalCircumstances',
+                                   'MinorPsychologicalInjury', 'DominantInjury', 'Whiplash',
+                                   'VehicleType', 'WeatherConditions', 'AccidentDate',	
+                                   'ClaimDate', 'VehicleAge', 'DriverAge',
+                                   'NumberOfPassengers', 'AccidentDescription', 'InjuryDescription',	
+                                   'PoliceReportFiled', 'WitnessPresent', 'Gender'
+                                   ])
+        
+        #insert a row of normal data into the dataframe
+        df.loc[0] = [520, 'Rear end', "E. 5 months", 0, 0, 0, 0, 0, 0, 0, 
+                     0, 0, 0, 0, 520, 0, 0, 0, 0, 0, 
+                     'No', 'Yes', 'Arms', 1, 'Motorcycle', 
+                     'Rainy', '2023-11-10  11:22:25', '2024-06-11  11:22:25', 13, 33, 
+                     4, 'Side collision at an intersection.',
+                     'Whiplash and minor bruises.', 1, 1, 'Male'
+                     ]
+        
+        claimsResult = Claim.apply_preprocessing(df, False)
+        self.assertTrue(claimsResult.success)
+        
+        claims: list[Claim] = Claim.create_claims_from_dataframe(claimsResult.payload)
+        self.assertEqual(claims[0].injury_prognosis, 5)
+        self.assertEqual(claims[0].exceptional_circumstances, 0)
+        self.assertEqual(claims[0].accident_date, 2023314)
+        self.assertEqual(claims[0].claim_date, 2024163)

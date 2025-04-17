@@ -119,6 +119,71 @@ class Claim(models.Model):
             result.add_error_message("Column Name Error")
             
         return result
+    
+    @staticmethod
+    def apply_preprocessing(df: pd.DataFrame, ignore_validation: bool) -> SimpleResultWithPayload:
+        result = SimpleResultWithPayload()
+        
+        claimValidationResult = SimpleResult()
+        if not ignore_validation:
+            claimValidationResult = Claim.validate_columns(df)
+            
+        if not claimValidationResult.success:
+            result.add_messages_from_result_and_mark_unsuccessful_if_error_found(claimValidationResult)
+            return result
+        
+        pascal_cols = []
+        for col in df.columns:
+            pascal_cols.append(CaseConversion.to_pascal(col))
+        df.columns = pascal_cols
+        
+        # Replace np.nan values with None
+        df.fillna('', inplace=True)
+        df.replace('', None, inplace=True)
+        
+        if "InjuryPrognosis" in df.columns:
+            # Turn injury prognosis into an integer
+            i = 0
+            for cellData in df["InjuryPrognosis"]:
+                if cellData:
+                    months = int(''.join(c for c in str(cellData) if c.isdigit()))
+                    df.at[i, "InjuryPrognosis"] = months
+                i += 1
+        
+        # convert yes/no columns into 1/0
+        binaryCols = ['ExceptionalCircumstances', 'MinorPsychologicalInjury', 'Whiplash', 'PoliceReportFiled', 'WitnessPresent']
+        for col in binaryCols:
+            if col in df.columns:
+                i = 0
+                for cellData in df[col]:
+                    val = 1 if (str(cellData).lower() == "yes" or str(cellData).lower() == "true" or str(cellData) == "1") else 0
+                    df.at[i, col] = val
+                    i += 1
+        
+        # convert dates to julian dates
+        for rowIndex, rowData in df.iterrows():
+            if "AccidentDate" in df.columns:
+                accidentDate = rowData["AccidentDate"]
+                if accidentDate and type(accidentDate) is str:
+                    accidentDate = accidentDate[:10]
+                    accidentDate = datetime.strptime(accidentDate, '%Y-%m-%d')
+                    accidentJulianDay = accidentDate.strftime('%j')
+                    accidentJulianDate = int(f"{accidentDate.year}{accidentJulianDay}")
+                    df.at[rowIndex, "AccidentDate"] = accidentJulianDate
+                
+            if "ClaimDate" in df.columns:
+                claimDate = rowData["ClaimDate"]
+                if claimDate and type(claimDate) is str:
+                    claimDate = claimDate[:10]
+                    claimDate = datetime.strptime(claimDate, '%Y-%m-%d')
+                    claimJulianDay = claimDate.strftime('%j')
+                    claimJulianDate = int(f"{claimDate.year}{claimJulianDay}")
+                    df.at[rowIndex, "ClaimDate"] = claimJulianDate
+         
+        df.convert_dtypes()
+        
+        result.payload = df
+        return result
 
 
 class ContactInfo(models.Model):
@@ -404,10 +469,14 @@ class UploadedRecord(models.Model):
 
 
     @staticmethod
-    def upload_claims_from_file(file, user: UserProfile, ignore_validation: bool) -> SimpleResultWithPayload:
+    def upload_claims_from_file(file, user: UserProfile, ignore_validation: bool, preprocess: bool = False) -> SimpleResultWithPayload:
         result = SimpleResultWithPayload()
         
         csv = pd.read_csv(file)
+        
+        # Replace empty values with None
+        csv.fillna('', inplace=True)
+        csv.replace('', None, inplace=True)
         
         claimValidationResult = SimpleResult()
         if not ignore_validation:
@@ -416,6 +485,13 @@ class UploadedRecord(models.Model):
         if not claimValidationResult.success:
             result.add_messages_from_result_and_mark_unsuccessful_if_error_found(claimValidationResult)
             return result
+        
+        if preprocess:
+            preprocessResult = Claim.apply_preprocessing(csv, ignore_validation)
+            result.add_messages_from_result_and_mark_unsuccessful_if_error_found(preprocessResult)     
+            if not result.success:
+                return result
+            csv = preprocessResult.payload
             
         claims: list[Claim] = Claim.create_claims_from_dataframe(csv)
         uploadedRecords = []

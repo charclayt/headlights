@@ -13,9 +13,10 @@ from bootstrap_modal_forms.generic import BSModalCreateView
 
 import logging
 import requests
+import pandas as pd
 
 from myapp.models import Claim, UploadedRecord, Feedback, UserProfile, PredictionModel
-from myapp.utility.SimpleResults import SimpleResult
+from myapp.utility.SimpleResults import SimpleResult, SimpleResultWithPayload
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -267,12 +268,13 @@ class ClaimUploadView(View):
     def post(self, request: HttpRequest, ignore_validation: int = 0) -> JsonResponse:
         result = SimpleResult()
         file = request.FILES['claims_file']
+        preprocess = request.POST.get('preprocess')
         
         if not file.name.endswith(".csv"):
             result.add_error_message_and_mark_unsuccessful("Invalid file type")
         
         if result.success:
-            uploadResult = UploadedRecord.upload_claims_from_file(file, None, True if ignore_validation == 1 else False)  
+            uploadResult = UploadedRecord.upload_claims_from_file(file, None, True if ignore_validation == 1 else False, preprocess)  
             result.add_messages_from_result_and_mark_unsuccessful_if_error_found(uploadResult)
             
         status = "success"
@@ -287,6 +289,53 @@ class ClaimUploadView(View):
                 'status': status,
                 'message': '\n\n'.join([message.text for message in result.messages])
             })
+
+
+@method_decorator(login_required, name="dispatch")
+class ProcessClaimsFileView(View):
+    """
+    This class handles applying preprocessing to customer claim files.
+    """
+    
+    template_name = "claims_preprocessing.html"
+    
+    def get(self, request: HttpRequest) -> HttpResponseRedirect:
+        return render(request, self.template_name)
+
+    def post(self, request: HttpRequest, ignore_validation: int = 0):
+        result = SimpleResultWithPayload()
+        file = request.FILES['claims_file']
+        
+        if not file.name.endswith(".csv"):
+            result.add_error_message_and_mark_unsuccessful("Invalid file type")
+        
+        if result.success:
+            df = pd.read_csv(file)
+            upload_result = Claim.apply_preprocessing(df, True if ignore_validation == 1 else False)  
+            result.add_messages_from_result_and_mark_unsuccessful_if_error_found(upload_result)
+            result.payload = upload_result.payload
+            
+        status = "success"
+        if not result.success:
+            status = "error"
+            for message in result.get_error_messages():
+                if message.text == "Column Name Error":
+                    status = "confirmationRequired"
+                    result.messages.remove(message)
+        
+        if status != "success":
+            context = {
+                "status": status,
+                "messages": result.get_error_messages()
+            }
+            return render(request, self.template_name, context)
+        
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename=ProcessedClaims.csv'
+        result.payload.to_csv(response, index=False)
+        
+        return response
+
 
 @method_decorator(login_required, name="dispatch")
 class PredictionFeedbackView(BSModalCreateView):
