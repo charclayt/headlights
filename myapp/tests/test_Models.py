@@ -126,7 +126,7 @@ class TestModels(TestCase):
 
     def test_model_claim(self):
         claim = Claim.objects.get(claim_id=1)
-        self.assertTrue(claim.__str__().startswith(str(claim.settlement_value)))
+        self.assertTrue(claim.__str__().startswith(str(claim.claim_id)))
         self.assertTrue(claim.settlement_value, TestData.VALUE)
 
     def test_model_contact_info(self):
@@ -176,7 +176,7 @@ class TestModels(TestCase):
 
     def test_model_training_dataset(self):
         training_dataset = TrainingDataset.objects.get(training_dataset_id=1)
-        self.assertTrue(training_dataset.__str__().startswith(str(training_dataset.claim_id.settlement_value)))
+        self.assertTrue(training_dataset.__str__().startswith(str(training_dataset.claim_id.claim_id)))
         self.assertTrue(training_dataset.claim_id.settlement_value, TestData.VALUE)
 
     def test_model_uploaded_record(self):

@@ -1,23 +1,13 @@
-# This is an auto-generated Django model module.
-
-# Remember to migrate to the database using the following:
-#   manage.py makemigrations <app_name>
-#   manage.py migrate <app_name>
-
-# If this doesn't work you may need to reset your migrations
-#   delete all files in the migrations folder except __init__.py
-#   run python manage.py migrate --fake <app_name> zero
-
-# Changes made to the database can turned into models using the following:
-#   python manage.py inspectdb > models.py
-
 # DO NOT REORDER MODELS WITHOUT THEN RERUNNING manage populate_tablelookup.py
 
 from django.contrib.auth.models import User, Group
 from django.db import models, transaction
-from datetime import date
+
+
 from .utility.SimpleResults import SimpleResult, SimpleResultWithPayload
 from .utility import CaseConversion
+
+from datetime import date, datetime
 import pandas as pd
 
 import logging
@@ -66,17 +56,17 @@ class Claim(models.Model):
         managed = True
         db_table = 'Claim'
 
+    def format_date(self, date_int):
+        try:
+            return datetime.strptime(str(date_int), "%Y%j").strftime("%B %d, %Y")
+        except ValueError:
+            return date_int
+
     def __str__(self) -> str:
         """
         This function returns a Claim in a neat string format.
         """
-        return f"""{self.settlement_value} | {self.accident_type} | {self.injury_prognosis} | {self.special_health_expenses} |
-                 {self.special_reduction} | {self.special_overage} | {self.general_rest} | {self.special_additional_injury} |
-                 {self.special_earnings_loss} | {self.special_usage_loss} | {self.special_medications} | {self.special_asset_damage} |
-                 {self.special_rehabilitation} | {self.special_fixes} | {self.general_fixed} | {self.general_uplift} | {self.special_loaner_vehicle} |
-                 {self.special_trip_costs} | {self.special_journey_expenses} | {self.special_therapy} | {self.exceptional_circumstances} | {self.minor_psychological_injury} |
-                 {self.dominant_injury} | {self.whiplash} | {self.vehicle_type} | {self.weather_conditions} | {self.accident_date} | {self.claim_date} | {self.vehicle_age} |
-                 {self.driver_age} | {self.number_of_passengers} | {self.accident_description} | {self.injury_description} | {self.police_report_filed} | {self.witness_present} | {self.gender}"""
+        return f"{self.claim_id} | {self.accident_type} | {self.format_date(self.accident_date)} → {self.format_date(self.claim_date)}"
     
     # will have to change this function
     def create_claim_from_series(datarow: pd.Series):
@@ -343,7 +333,8 @@ class PredictionModel(models.Model):
         """
         This function returns a PredictionModel in a neat string format.
         """
-        return f"{self.model_name} | {self.notes} | {self.filepath} | {self.price_per_prediction}"
+        price_str = f"${self.price_per_prediction:.2f}" if self.price_per_prediction is not None else "N/A"
+        return f"{self.model_name} ({self.model_type}) – {price_str}"
 
 
 class OperationLookup(models.Model):
@@ -397,7 +388,8 @@ class UploadedRecord(models.Model):
     claim_id = models.ForeignKey(Claim, models.PROTECT, db_column='ClaimID', blank=True, null=True)  
     feedback_id = models.ForeignKey(Feedback, models.PROTECT, db_column='FeedbackID', blank=True, null=True)  
     model_id = models.ForeignKey(PredictionModel, models.PROTECT, db_column='ModelID', blank=True, null=True)  
-    predicted_settlement = models.FloatField(db_column='PredictedSettlement', blank=True, null=True)  
+    predicted_settlement = models.FloatField(db_column='PredictedSettlement', blank=True, null=True)
+    user_settlement = models.FloatField(db_column='UserSettlement', blank=True, null=True)
     upload_date = models.DateField(db_column='UploadDate', blank=True, null=True)
 
     class Meta:
@@ -408,7 +400,7 @@ class UploadedRecord(models.Model):
         """
         This function returns an UploadedRecord in a neat string format.
         """
-        return f"{self.user_id} | {self.claim_id} | {self.feedback_id} | {self.model_id} | {self.predicted_settlement} | {self.upload_date}"
+        return f"{self.user_id} | {self.claim_id} | {self.feedback_id} | {self.model_id} | {self.predicted_settlement} | {self.user_settlement} | {self.upload_date}"
 
 
     @staticmethod
