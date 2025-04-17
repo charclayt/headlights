@@ -1,23 +1,13 @@
-# This is an auto-generated Django model module.
-
-# Remember to migrate to the database using the following:
-#   manage.py makemigrations <app_name>
-#   manage.py migrate <app_name>
-
-# If this doesn't work you may need to reset your migrations
-#   delete all files in the migrations folder except __init__.py
-#   run python manage.py migrate --fake <app_name> zero
-
-# Changes made to the database can turned into models using the following:
-#   python manage.py inspectdb > models.py
-
 # DO NOT REORDER MODELS WITHOUT THEN RERUNNING manage populate_tablelookup.py
 
 from django.contrib.auth.models import User, Group
 from django.db import models, transaction
-from datetime import date
+
+
 from .utility.SimpleResults import SimpleResult, SimpleResultWithPayload
 from .utility import CaseConversion
+
+from datetime import date, datetime
 import pandas as pd
 
 import logging
@@ -66,17 +56,17 @@ class Claim(models.Model):
         managed = True
         db_table = 'Claim'
 
+    def format_date(self, date_int):
+        try:
+            return datetime.strptime(str(date_int), "%Y%j").strftime("%B %d, %Y")
+        except ValueError:
+            return date_int
+
     def __str__(self) -> str:
         """
         This function returns a Claim in a neat string format.
         """
-        return f"""{self.settlement_value} | {self.accident_type} | {self.injury_prognosis} | {self.special_health_expenses} |
-                 {self.special_reduction} | {self.special_overage} | {self.general_rest} | {self.special_additional_injury} |
-                 {self.special_earnings_loss} | {self.special_usage_loss} | {self.special_medications} | {self.special_asset_damage} |
-                 {self.special_rehabilitation} | {self.special_fixes} | {self.general_fixed} | {self.general_uplift} | {self.special_loaner_vehicle} |
-                 {self.special_trip_costs} | {self.special_journey_expenses} | {self.special_therapy} | {self.exceptional_circumstances} | {self.minor_psychological_injury} |
-                 {self.dominant_injury} | {self.whiplash} | {self.vehicle_type} | {self.weather_conditions} | {self.accident_date} | {self.claim_date} | {self.vehicle_age} |
-                 {self.driver_age} | {self.number_of_passengers} | {self.accident_description} | {self.injury_description} | {self.police_report_filed} | {self.witness_present} | {self.gender}"""
+        return f"{self.claim_id} | {self.accident_type} | {self.format_date(self.accident_date)} → {self.format_date(self.claim_date)}"
     
     # will have to change this function
     def create_claim_from_series(datarow: pd.Series):
@@ -128,6 +118,71 @@ class Claim(models.Model):
         if len(missing_columns) > 0 or len(excess_columns) > 0:
             result.add_error_message("Column Name Error")
             
+        return result
+    
+    @staticmethod
+    def apply_preprocessing(df: pd.DataFrame, ignore_validation: bool) -> SimpleResultWithPayload:
+        result = SimpleResultWithPayload()
+        
+        claimValidationResult = SimpleResult()
+        if not ignore_validation:
+            claimValidationResult = Claim.validate_columns(df)
+            
+        if not claimValidationResult.success:
+            result.add_messages_from_result_and_mark_unsuccessful_if_error_found(claimValidationResult)
+            return result
+        
+        pascal_cols = []
+        for col in df.columns:
+            pascal_cols.append(CaseConversion.to_pascal(col))
+        df.columns = pascal_cols
+        
+        # Replace np.nan values with None
+        df.fillna('', inplace=True)
+        df.replace('', None, inplace=True)
+        
+        if "InjuryPrognosis" in df.columns:
+            # Turn injury prognosis into an integer
+            i = 0
+            for cellData in df["InjuryPrognosis"]:
+                if cellData:
+                    months = int(''.join(c for c in str(cellData) if c.isdigit()))
+                    df.at[i, "InjuryPrognosis"] = months
+                i += 1
+        
+        # convert yes/no columns into 1/0
+        binaryCols = ['ExceptionalCircumstances', 'MinorPsychologicalInjury', 'Whiplash', 'PoliceReportFiled', 'WitnessPresent']
+        for col in binaryCols:
+            if col in df.columns:
+                i = 0
+                for cellData in df[col]:
+                    val = 1 if (str(cellData).lower() == "yes" or str(cellData).lower() == "true" or str(cellData) == "1") else 0
+                    df.at[i, col] = val
+                    i += 1
+        
+        # convert dates to julian dates
+        for rowIndex, rowData in df.iterrows():
+            if "AccidentDate" in df.columns:
+                accidentDate = rowData["AccidentDate"]
+                if accidentDate and type(accidentDate) is str:
+                    accidentDate = accidentDate[:10]
+                    accidentDate = datetime.strptime(accidentDate, '%Y-%m-%d')
+                    accidentJulianDay = accidentDate.strftime('%j')
+                    accidentJulianDate = int(f"{accidentDate.year}{accidentJulianDay}")
+                    df.at[rowIndex, "AccidentDate"] = accidentJulianDate
+                
+            if "ClaimDate" in df.columns:
+                claimDate = rowData["ClaimDate"]
+                if claimDate and type(claimDate) is str:
+                    claimDate = claimDate[:10]
+                    claimDate = datetime.strptime(claimDate, '%Y-%m-%d')
+                    claimJulianDay = claimDate.strftime('%j')
+                    claimJulianDate = int(f"{claimDate.year}{claimJulianDay}")
+                    df.at[rowIndex, "ClaimDate"] = claimJulianDate
+         
+        df.convert_dtypes()
+        
+        result.payload = df
         return result
 
 
@@ -343,7 +398,8 @@ class PredictionModel(models.Model):
         """
         This function returns a PredictionModel in a neat string format.
         """
-        return f"{self.model_name} | {self.notes} | {self.filepath} | {self.price_per_prediction}"
+        price_str = f"${self.price_per_prediction:.2f}" if self.price_per_prediction is not None else "N/A"
+        return f"{self.model_name} ({self.model_type}) – {price_str}"
 
 
 class OperationLookup(models.Model):
@@ -397,7 +453,8 @@ class UploadedRecord(models.Model):
     claim_id = models.ForeignKey(Claim, models.PROTECT, db_column='ClaimID', blank=True, null=True)  
     feedback_id = models.ForeignKey(Feedback, models.PROTECT, db_column='FeedbackID', blank=True, null=True)  
     model_id = models.ForeignKey(PredictionModel, models.PROTECT, db_column='ModelID', blank=True, null=True)  
-    predicted_settlement = models.FloatField(db_column='PredictedSettlement', blank=True, null=True)  
+    predicted_settlement = models.FloatField(db_column='PredictedSettlement', blank=True, null=True)
+    user_settlement = models.FloatField(db_column='UserSettlement', blank=True, null=True)
     upload_date = models.DateField(db_column='UploadDate', blank=True, null=True)
 
     class Meta:
@@ -408,14 +465,18 @@ class UploadedRecord(models.Model):
         """
         This function returns an UploadedRecord in a neat string format.
         """
-        return f"{self.user_id} | {self.claim_id} | {self.feedback_id} | {self.model_id} | {self.predicted_settlement} | {self.upload_date}"
+        return f"{self.user_id} | {self.claim_id} | {self.feedback_id} | {self.model_id} | {self.predicted_settlement} | {self.user_settlement} | {self.upload_date}"
 
 
     @staticmethod
-    def upload_claims_from_file(file, user: UserProfile, ignore_validation: bool) -> SimpleResultWithPayload:
+    def upload_claims_from_file(file, user: UserProfile, ignore_validation: bool, preprocess: bool = False) -> SimpleResultWithPayload:
         result = SimpleResultWithPayload()
         
         csv = pd.read_csv(file)
+        
+        # Replace empty values with None
+        csv.fillna('', inplace=True)
+        csv.replace('', None, inplace=True)
         
         claimValidationResult = SimpleResult()
         if not ignore_validation:
@@ -424,6 +485,13 @@ class UploadedRecord(models.Model):
         if not claimValidationResult.success:
             result.add_messages_from_result_and_mark_unsuccessful_if_error_found(claimValidationResult)
             return result
+        
+        if preprocess:
+            preprocessResult = Claim.apply_preprocessing(csv, ignore_validation)
+            result.add_messages_from_result_and_mark_unsuccessful_if_error_found(preprocessResult)     
+            if not result.success:
+                return result
+            csv = preprocessResult.payload
             
         claims: list[Claim] = Claim.create_claims_from_dataframe(csv)
         uploadedRecords = []

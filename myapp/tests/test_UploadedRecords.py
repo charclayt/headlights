@@ -15,7 +15,7 @@ class TestUploadedRecords(TestCase):
         settlement_value = df['SettlementValue'][0]
             
         with open('myapp/tests/data/TestClaimData.csv') as f:
-            result = UploadedRecord.upload_claims_from_file(f, None, False)
+            result = UploadedRecord.upload_claims_from_file(f, None, False, True)
             
         self.assertNotEqual(result, None)
         self.assertTrue(result.success, "Data upload was unsuccessful")      

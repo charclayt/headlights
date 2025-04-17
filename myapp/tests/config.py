@@ -1,4 +1,5 @@
 from datetime import datetime
+import pytz
 
 class ErrorCodes:
     OK = 200
@@ -14,6 +15,7 @@ class Views:
     MACHINE_LEARNING = "ml_dashboard"
     CUSTOMER_DASHBOARD = "customer_dashboard"
     CUSTOMER_UPLOAD = "upload_claims"
+    CUSTOMER_PREPROCESSING = "claims_preprocessing"
     ACCOUNT_CREATION = "account_creation"
     CONTACT_DETAILS = "contact_details"
     PREDICTION_FEEDBACK = "prediction_feedback"
@@ -34,6 +36,7 @@ class Templates:
     PREDICTION_FEEDBACK = "forms/prediction_feedback_form.html"
     COMPANY_DETAILS = "company_details.html"
     COMPANY_USER_MANAGEMENT = "company_manage_users.html"
+    CUSTOMER_PREPROCESSING = "claims_preprocessing.html"
     
     ACCOUNT_CREATION = "registration/account_creation.html"
     LOGGED_OUT = "registration/logged_out.html"
@@ -51,7 +54,7 @@ class TestData:
     NAME = "test name"
     PASSWORD = "$password123"
     VALUE = 8000
-    PAST_DATE = datetime(year = 2020, month = 1, day = 1)
-    PAST_DATETIME = datetime(year = 2020, month = 1, day = 1, hour = 0, minute = 0, second = 0)
+    PAST_DATE = datetime(year = 2020, month = 1, day = 1, tzinfo=pytz.UTC)
+    PAST_DATETIME = datetime(year = 2020, month = 1, day = 1, hour = 0, minute = 0, second = 0, tzinfo=pytz.UTC)
     YEAR = 2020
     RATING = 5
