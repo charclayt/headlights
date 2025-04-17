@@ -26,9 +26,15 @@
   --list-item-hover: #f8f9fa;
   --list-item-active-bg: #0d6efd;
   --list-item-active-color: #fff;
-  --footer-bg: #444444;
+  --footer-bg: #212529;
   --footer-color: #ffffff;
-  --footer-border: #606060;
+  --footer-border: #343a40;
+  --footer-bg-light: #f0f2f5;
+  --footer-color-light: #595959;
+  --footer-border-light: #e0e0e0;
+  --footer-bg-dark: #1e1e1e;
+  --footer-color-dark: #b0b0b0;
+  --footer-border-dark: #444;
 }
 
 /* Dark theme variables */
@@ -424,16 +430,35 @@ html {
   min-height: 100%;
 }
 
+/* Base footer styling for all themes */
 .footer {
-  background-color: var(--footer-bg);
-  color: var(--footer-color);
+  background-color: var(--footer-bg-light) !important; /* Light mode background */
+  color: var(--footer-color-light) !important; /* Light mode text color */
   font-weight: 600;
-  border-top: 1px solid var(--footer-border);
+  border-top: 1px solid var(--footer-border-light);
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+  padding-top: 0.8rem;
+  padding-bottom: 0.8rem;
 }
 
+/* Ensure footer text has appropriate color in light mode */
 .footer p {
   margin-bottom: 0;
   font-size: 1.1rem;
+  letter-spacing: 0.5px;
+  color: var(--footer-color-light) !important;
+}
+
+/* Override for dark mode */
+[data-theme="dark"] .footer {
+  background-color: var(--footer-bg-dark) !important;
+  color: var(--footer-color-dark) !important;
+  border-top: 1px solid var(--footer-border-dark);
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="dark"] .footer p {
+  color: var(--footer-color-dark) !important;
 }
 
 /* Form controls in dark mode */
