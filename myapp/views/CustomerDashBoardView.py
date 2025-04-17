@@ -324,7 +324,6 @@ class ProcessClaimsFileView(View):
                     result.messages.remove(message)
         
         if status != "success":
-            logger.warning("here")
             context = {
                 "status": status,
                 "messages": result.get_error_messages()

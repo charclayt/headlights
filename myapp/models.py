@@ -9,7 +9,6 @@ from .utility import CaseConversion
 
 from datetime import date, datetime
 import pandas as pd
-import datetime
 
 import logging
 logger = logging.getLogger(__name__)
@@ -167,7 +166,7 @@ class Claim(models.Model):
                 accidentDate = rowData["AccidentDate"]
                 if accidentDate and type(accidentDate) is str:
                     accidentDate = accidentDate[:10]
-                    accidentDate = datetime.datetime.strptime(accidentDate, '%Y-%m-%d')
+                    accidentDate = datetime.strptime(accidentDate, '%Y-%m-%d')
                     accidentJulianDay = accidentDate.strftime('%j')
                     accidentJulianDate = int(f"{accidentDate.year}{accidentJulianDay}")
                     df.at[rowIndex, "AccidentDate"] = accidentJulianDate
@@ -176,7 +175,7 @@ class Claim(models.Model):
                 claimDate = rowData["ClaimDate"]
                 if claimDate and type(claimDate) is str:
                     claimDate = claimDate[:10]
-                    claimDate = datetime.datetime.strptime(claimDate, '%Y-%m-%d')
+                    claimDate = datetime.strptime(claimDate, '%Y-%m-%d')
                     claimJulianDay = claimDate.strftime('%j')
                     claimJulianDate = int(f"{claimDate.year}{claimJulianDay}")
                     df.at[rowIndex, "ClaimDate"] = claimJulianDate
