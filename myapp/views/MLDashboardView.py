@@ -32,6 +32,11 @@ class MLDashboardView(View):
             ml_service_url = getattr(settings, 'ML_SERVICE_URL', 'http://ml-service:8001')
             response = requests.get(f"{ml_service_url}/api/models/")
             data = response.json()
+
+            for x in data['models']:
+                if isinstance(x['preprocessingSteps'], list):
+                    x['preprocessingSteps'] = ", ".join(x['preprocessingSteps'])
+
             context = {
                 'success': True,
                 'models': data['models'],
@@ -94,9 +99,8 @@ class UploadModelView(View):
             # Create multipart form data request
             files = {'model_file': (model_file.name, model_file, model_file.content_type)}
             data = {k: v for k, v in request.POST.items()}
-            data.pop('preprocessingSteps', None)
-
-            selected_steps = request.POST.getlist("preprocessingSteps")
+            data.pop('dataProcessingOptions[]', None)
+            selected_steps = request.POST.getlist("dataProcessingOptions[]")
             data["selected_steps"] = selected_steps
             
             # Send request to ML service
