@@ -24,6 +24,15 @@ class MLDashboardPageTest(BaseViewTest, TestCase):
 
     @patch('myapp.views.MLDashboardView.requests.get')
     def test_get_view(self, mock_get):
+        self.URL = Views.MACHINE_LEARNING
+        mock_response = {
+            'models': [
+                {'name': 'Model 1', 'preprocessingSteps': ['step1', 'step2']},
+                {'name': 'Model 2', 'preprocessingSteps': ['step3']}
+            ]
+        }
+        mock_get.return_value.json.return_value = mock_response
+
         self.TEMPLATE = Templates.LOGIN
         self.client.logout()
 
@@ -35,6 +44,12 @@ class MLDashboardPageTest(BaseViewTest, TestCase):
 
         # Test getting page when logged in returns the machine learning template
         BaseViewTest.test_get_view(self)
+
+        response = self.client.get(path=reverse(self.URL))
+
+        # test that the view formats the preprocessing steps correctly
+        self.assertIn("step1, step2", response.content.decode())
+        self.assertIn("step3", response.content.decode())
     
 
     def test_unauthenticated_model_upload(self):
