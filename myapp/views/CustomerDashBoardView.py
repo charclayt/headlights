@@ -13,26 +13,56 @@ from bootstrap_modal_forms.generic import BSModalCreateView
 
 import logging
 import requests
+import pandas as pd
 
 from myapp.models import Claim, UploadedRecord, Feedback, UserProfile, PredictionModel
-from myapp.utility.SimpleResults import SimpleResult
+from myapp.utility.SimpleResults import SimpleResult, SimpleResultWithPayload
 
 # Configure logging
 logger = logging.getLogger(__name__)
-
-
 class UploadedClaimsForm(forms.Form):
-    # uploaded_claims = forms.ModelChoiceField(queryset=Claim.objects.all(), widget=forms.Select(attrs={'class': 'form-control'}))
     uploaded_claims = forms.ModelChoiceField(
         queryset=Claim.objects.all(),
-        widget=forms.Select(attrs={'class': 'form-control'})
+        widget=forms.Select(
+            attrs={
+                'class': 'form-select',
+                'style': 'width: 100%; padding: 0.5rem; font-size: 1rem;'
+            }
+        ),
+        empty_label="Select a claim..."
     )
 
     model = forms.ModelChoiceField(
-        # This currently shows all info from db row. Look at how to get just name without breaking FE
         queryset = PredictionModel.objects.all(),
-        widget=forms.Select(attrs={'class': 'form-control'})
+        widget=forms.Select(
+            attrs={
+                'class': 'form-select',
+                'style': 'width: 100%; padding: 0.5rem; font-size: 1rem;'
+            }
+        ),
+        empty_label="Select a prediction model..."
     )
+
+class SettlementForm(forms.Form):
+    user_settlement = forms.DecimalField(
+        label="Your Settlement Decision (£)",
+        max_digits=10, decimal_places=2,
+        required=True,
+        widget=forms.NumberInput(
+            attrs={
+                'class': 'form-control',
+                'step': 'any',
+                'inputmode': 'decimal',
+            }),
+    )
+
+    def __init__(self, *args, **kwargs):
+        predicted_settlement = kwargs.pop('predicted_settlement', None)
+
+        super().__init__(*args, **kwargs)
+
+        if predicted_settlement is not None:
+            self.fields['user_settlement'].initial = round(predicted_settlement)
 
 class FeedbackForm(BSModalModelForm):
     rating_choices = [(i, str(i)) for i in range(1, 6)] # 1 to 5 rating choices
@@ -48,7 +78,7 @@ class FeedbackForm(BSModalModelForm):
 def create_uploaded_record(record: dict) -> UploadedRecord:
 
     try:
-        required_keys = {'user', 'claim', 'prediction'}
+        required_keys = {'user', 'claim', 'prediction', 'model_id'}
         if not all(key in record for key in required_keys):
             missing_keys = required_keys - record.keys()
             raise ValueError(f"Missing required keys in record: {missing_keys}")
@@ -57,10 +87,13 @@ def create_uploaded_record(record: dict) -> UploadedRecord:
                         user_id = record['user'],
                         claim_id = record['claim'],
                         predicted_settlement = record['prediction'],
+                        model_id = record['model_id'],
                         upload_date = timezone.now()
         )
         uploaded_record.save()
+
         return uploaded_record
+
     except ValueError as e:
         logger.error("Invalid input data for UploadedRecord: %s", str(e))
         raise
@@ -135,11 +168,12 @@ class CustomerDashboardView(View):
             render: the customer.html template.
         """
         current_user = get_object_or_404(UserProfile, auth_id = self.request.user.id)
+        user_uploaded_records = UploadedRecord.objects.filter(user_id=current_user)
 
         num_claims = Claim.objects.all().count()
         uploaded_claims_form = UploadedClaimsForm()
-        user_uploaded_records = UploadedRecord.objects.filter(user_id=current_user)
-        
+        settlement_form = SettlementForm()
+
         uploaded_record_id = request.session.get('uploaded_record_id', None)
         uploaded_record = None
         if uploaded_record_id:
@@ -150,11 +184,21 @@ class CustomerDashboardView(View):
                 # Remove invalid session key
                 del request.session['uploaded_record_id']
 
+        if uploaded_record and isinstance(uploaded_record.predicted_settlement, (int, float)):
+            settlement_form = SettlementForm(None, predicted_settlement=uploaded_record.predicted_settlement)
+
+            uploaded_record.predicted_range = {
+                'center': round(uploaded_record.predicted_settlement, 2),
+                'lower': round(uploaded_record.predicted_settlement * 0.95, 2),
+                'upper': round(uploaded_record.predicted_settlement * 1.05, 2)
+            }
+
         context = {
             'num_claims': num_claims,
             'uploaded_claims_form': uploaded_claims_form,
             'user_uploaded_records': user_uploaded_records,
-            'uploaded_record': uploaded_record
+            'uploaded_record': uploaded_record,
+            'settlement_form': settlement_form,
         }
 
         logger.info(f"{request.user} accessed the customer dashboard.")
@@ -173,29 +217,45 @@ class CustomerDashboardView(View):
             HttpResponseRedirect: the customer dashboard page, with the prediction result.
 
         """
-        form = UploadedClaimsForm(request.POST)
+        uploaded_claim_form = UploadedClaimsForm(request.POST)
         current_user = get_object_or_404(UserProfile, auth_id = self.request.user.id)
 
-        if not form.is_valid():
-            return HttpResponse("Invalid form submission", status=400)
-        else:
-            selected_claim = form.cleaned_data['uploaded_claims']
-            selected_model = form.cleaned_data['model']
+        if 'uploaded_claims' in request.POST:
+            if uploaded_claim_form.is_valid():
+                selected_claim = uploaded_claim_form.cleaned_data['uploaded_claims']
+                selected_model = uploaded_claim_form.cleaned_data['model']
 
-            predicted_settlement = get_claim_prediction(selected_claim, selected_model)
+                predicted_settlement = get_claim_prediction(selected_claim, selected_model)
 
-            if predicted_settlement is not None:
-                uploaded_record = create_uploaded_record({
-                    'user': current_user, 
-                    'claim': selected_claim, 
-                    'prediction': predicted_settlement
-                    })
-                request.session['uploaded_record_id'] = uploaded_record.uploaded_record_id
-                return redirect("customer_dashboard")
+                if predicted_settlement is not None:
+                    uploaded_record = create_uploaded_record({
+                        'user': current_user,
+                        'claim': selected_claim,
+                        'model_id': selected_model,
+                        'prediction': predicted_settlement,
+                        })
+                    request.session['uploaded_record_id'] = uploaded_record.uploaded_record_id
+
+                else:
+                    return HttpResponseBadRequest(JsonResponse({"error": "Prediction value is missing"}))
             else:
+                return HttpResponse("Invalid uploaded claims form submission", status=400)
 
-                return HttpResponseBadRequest(JsonResponse({"error": "Prediction value is missing"}))
+        if 'user_settlement' in request.POST:
+            uploaded_record_id = request.session.get('uploaded_record_id')
+            if uploaded_record_id:
+                uploaded_record = get_object_or_404(UploadedRecord, uploaded_record_id=uploaded_record_id)
+                settlement_form = SettlementForm(request.POST)
 
+                if settlement_form.is_valid():
+                    uploaded_record.user_settlement = settlement_form.cleaned_data['user_settlement']
+                    uploaded_record.save()
+                else:
+                    return HttpResponse("Invalid settlement form submission", status=400)
+            else:
+                return HttpResponse("No uploaded record found in session", status=400)
+
+        return redirect("customer_dashboard")
 
 @method_decorator(login_required, name="dispatch")
 class ClaimUploadView(View):
@@ -208,12 +268,13 @@ class ClaimUploadView(View):
     def post(self, request: HttpRequest, ignore_validation: int = 0) -> JsonResponse:
         result = SimpleResult()
         file = request.FILES['claims_file']
+        preprocess = request.POST.get('preprocess')
         
         if not file.name.endswith(".csv"):
             result.add_error_message_and_mark_unsuccessful("Invalid file type")
         
         if result.success:
-            uploadResult = UploadedRecord.upload_claims_from_file(file, None, True if ignore_validation == 1 else False)  
+            uploadResult = UploadedRecord.upload_claims_from_file(file, None, True if ignore_validation == 1 else False, preprocess)  
             result.add_messages_from_result_and_mark_unsuccessful_if_error_found(uploadResult)
             
         status = "success"
@@ -228,6 +289,53 @@ class ClaimUploadView(View):
                 'status': status,
                 'message': '\n\n'.join([message.text for message in result.messages])
             })
+
+
+@method_decorator(login_required, name="dispatch")
+class ProcessClaimsFileView(View):
+    """
+    This class handles applying preprocessing to customer claim files.
+    """
+    
+    template_name = "claims_preprocessing.html"
+    
+    def get(self, request: HttpRequest) -> HttpResponseRedirect:
+        return render(request, self.template_name)
+
+    def post(self, request: HttpRequest, ignore_validation: int = 0):
+        result = SimpleResultWithPayload()
+        file = request.FILES['claims_file']
+        
+        if not file.name.endswith(".csv"):
+            result.add_error_message_and_mark_unsuccessful("Invalid file type")
+        
+        if result.success:
+            df = pd.read_csv(file)
+            upload_result = Claim.apply_preprocessing(df, True if ignore_validation == 1 else False)  
+            result.add_messages_from_result_and_mark_unsuccessful_if_error_found(upload_result)
+            result.payload = upload_result.payload
+            
+        status = "success"
+        if not result.success:
+            status = "error"
+            for message in result.get_error_messages():
+                if message.text == "Column Name Error":
+                    status = "confirmationRequired"
+                    result.messages.remove(message)
+        
+        if status != "success":
+            context = {
+                "status": status,
+                "messages": result.get_error_messages()
+            }
+            return render(request, self.template_name, context)
+        
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename=ProcessedClaims.csv'
+        result.payload.to_csv(response, index=False)
+        
+        return response
+
 
 @method_decorator(login_required, name="dispatch")
 class PredictionFeedbackView(BSModalCreateView):
