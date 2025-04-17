@@ -5,8 +5,9 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import IntegrityError
 from django.forms.models import model_to_dict
 from django.test import RequestFactory, TestCase
-from unittest.mock import patch
+from django.urls import reverse
 
+from unittest.mock import patch
 import requests
 
 from myapp.tests.test_BaseView import BaseViewTest, USER_NAME, USER_PASSWORD
@@ -178,10 +179,78 @@ class CustomerDashboardTest(BaseViewTest, TestCase):
 
         BaseViewTest._test_post_view_response(self, status=ErrorCodes.BAD_REQUEST, payload=form_data)
 
-    def test_settlement_post(self):
-        form_data = {'settlement_value': 150}
+    def test_post_user_settlement_valid(self):
+        record = {
+            'user': self.user_profile,
+            'claim': self.claim,
+            'model_id': self.model,
+            'prediction': 100 # arbitrary value
+        }
 
-        BaseViewTest._test_post_view_response(self, status=ErrorCodes.OK, payload=form_data)
+        uploaded_record = create_uploaded_record(record)
+
+        session = self.client.session
+        session['uploaded_record_id'] = uploaded_record.uploaded_record_id
+        session.save()
+
+        response = self.client.post(
+            reverse(self.URL),
+            data={'user_settlement': 150}
+        )
+
+        uploaded_record.refresh_from_db()
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(uploaded_record.user_settlement, 150)
+
+        UploadedRecord.objects.filter(uploaded_record_id=uploaded_record.uploaded_record_id).delete()
+
+    def test_post_user_settlement_invalid_form(self):
+        record = {
+            'user': self.user_profile,
+            'claim': self.claim,
+            'model_id': self.model,
+            'prediction': 100 # arbitrary value
+        }
+
+        uploaded_record = create_uploaded_record(record)
+
+        session = self.client.session
+        session['uploaded_record_id'] = uploaded_record.uploaded_record_id
+        session.save()
+
+        response = self.client.post(
+            reverse(self.URL),
+            data={'user_settlement': ''}
+        )
+
+        uploaded_record.refresh_from_db()
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIsNone(uploaded_record.user_settlement)
+
+        UploadedRecord.objects.filter(uploaded_record_id=uploaded_record.uploaded_record_id).delete()
+
+    def test_post_user_settlement_missing_record_id(self):
+        response = self.client.post(
+            reverse(self.URL),
+            data={'user_settlement': 150}
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn(b"No uploaded record found in session", response.content)
+
+    def test_post_user_settlement_invalid_record_id(self):
+        session = self.client.session
+        session['uploaded_record_id'] = 9999  # Non-existent ID
+        session.save()
+
+        response = self.client.post(
+            reverse(self.URL),
+            data={'user_settlement': '150'}
+        )
+
+        self.assertEqual(response.status_code, 404)
 
 class CustomerUploadTest(BaseViewTest, TestCase):
     

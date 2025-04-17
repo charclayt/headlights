@@ -1,4 +1,5 @@
 from datetime import datetime
+import pytz
 
 class ErrorCodes:
     OK = 200
@@ -51,7 +52,7 @@ class TestData:
     NAME = "test name"
     PASSWORD = "$password123"
     VALUE = 8000
-    PAST_DATE = datetime(year = 2020, month = 1, day = 1)
-    PAST_DATETIME = datetime(year = 2020, month = 1, day = 1, hour = 0, minute = 0, second = 0)
+    PAST_DATE = datetime(year = 2020, month = 1, day = 1, tzinfo=pytz.UTC)
+    PAST_DATETIME = datetime(year = 2020, month = 1, day = 1, hour = 0, minute = 0, second = 0, tzinfo=pytz.UTC)
     YEAR = 2020
     RATING = 5

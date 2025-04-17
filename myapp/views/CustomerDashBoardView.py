@@ -244,7 +244,6 @@ class CustomerDashboardView(View):
             uploaded_record_id = request.session.get('uploaded_record_id')
             if uploaded_record_id:
                 uploaded_record = get_object_or_404(UploadedRecord, uploaded_record_id=uploaded_record_id)
-                logger.warning(f"Uploaded record: {uploaded_record}")
                 settlement_form = SettlementForm(request.POST)
 
                 if settlement_form.is_valid():
