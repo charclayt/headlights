@@ -39,7 +39,7 @@ class MLDashboardView(View):
 
             context = {
                 'success': True,
-                'models': data['models'],
+                'models': data.get('models', []),
             }
             return render(request, self.template_name, context=context)
         except Exception as e:
