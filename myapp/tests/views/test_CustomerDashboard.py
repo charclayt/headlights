@@ -7,8 +7,9 @@ from django.forms.models import model_to_dict
 from django.test import RequestFactory, TestCase
 from django.urls import reverse
 
-from unittest.mock import patch
+import logging
 import requests
+from unittest.mock import patch
 
 from myapp.tests.test_BaseView import BaseViewTest, USER_NAME, USER_PASSWORD
 from myapp.tests.config import Views, Templates, TestData, ErrorCodes
@@ -22,11 +23,15 @@ class CustomerDashboardTest(BaseViewTest, TestCase):
     TEMPLATE = Templates.CUSTOMER
 
     def setUp(self):
+        logging.disable(logging.ERROR)
         BaseViewTest.setUp(self)
 
         self.claim = Claim.objects.first()
         self.model = PredictionModel.objects.first()
 
+    def tearDown(self):
+        logging.disable(logging.NOTSET)
+        BaseViewTest.tearDown(self)
     
     @patch('myapp.models.UploadedRecord.objects.create')
     def test_create_uploaded_record_exception(self, mock_create):
@@ -73,7 +78,11 @@ class CustomerDashboardTest(BaseViewTest, TestCase):
         with self.assertRaises(ValueError) as context:
             create_uploaded_record(record)
 
-        self.assertSetEqual(set(context.exception), set("Missing required keys in record: {'model_id', 'prediction'}"))
+        error_message = context.exception.args[0]
+        keys_in_message = set(key.strip("'") for key in error_message.replace("Missing required keys in record: ", "").strip("{}").split(", "))
+        expected_keys = set(['model_id', 'prediction'])
+
+        self.assertSetEqual(keys_in_message, expected_keys)
 
 
     def test_get_view(self):
