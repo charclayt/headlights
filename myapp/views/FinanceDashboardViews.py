@@ -1,3 +1,4 @@
+from django import forms
 from django.shortcuts import render
 from django.views import View
 from django.http import HttpRequest, HttpResponse, JsonResponse
@@ -6,14 +7,52 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.utils.decorators import method_decorator
 from django.shortcuts import redirect
 
-import logging
+from datetime import datetime
 import json
+import logging
+import traceback
 
-from myapp.models import UserProfile
+from myapp.models import UserProfile, Company
 from myapp.utility.SimpleResults import SimpleResult
 
 # Configure logging
 logger = logging.getLogger(__name__)
+
+class InvoiceForm(forms.Form):
+    company = forms.ChoiceField(
+        label="Company To Invoice",
+        required=True
+    )
+
+    month = forms.ChoiceField(
+        label="Month",
+        required=True,
+        choices=[(str(i), datetime(2000, i, 1).strftime('%B')) for i in range(1, 13)]
+    )
+
+    year = forms.ChoiceField(
+        label="Year",
+        required=True,
+        choices=[(str(y), str(y)) for y in range(datetime.now().year - 5, datetime.now().year + 2)]
+    )
+
+    def __init__(self, *args, **kwargs):
+
+        super().__init__(*args, **kwargs)
+
+        try:
+            self.fields['company'].choices = [
+                (company.company_id, company.name) for company in Company.objects.all()
+            ]
+        except Exception as e:
+            logging.error(f"Cannot get companies from database: {traceback.format_exc()}")
+
+        try:
+            now = datetime.now()
+            self.fields['month'].initial = now.month
+            self.fields['year'].initial = now.year
+        except Exception as e:
+            logging.error(f"Failed to get current month/year: {traceback.format_exc()}")
 
 @method_decorator([login_required, permission_required("myapp.view_financereport")], name="dispatch")
 class FinanceDashboardView(View):
@@ -25,9 +64,14 @@ class FinanceDashboardView(View):
 
     def get(self, request: HttpRequest) -> HttpResponse: 
         user_profile = UserProfile.objects.get(auth_id=request.user.id)
-        
-        context={
-            "is_company_owner": user_profile.is_company_owner
+
+        num_companies = Company.objects.all().count()
+        invoice_form = InvoiceForm()
+
+        context = {
+            'num_companies': num_companies,
+            'invoice_form': invoice_form,
+            'is_company_owner': user_profile.is_company_owner,
         }
         
         return render(request, self.template_name, context)
@@ -143,3 +187,23 @@ class CompanyManageEmployeesView(View):
         }
         
         return render(request, self.template_name, context=context)
+
+    class CompanyInvoiceView(View):
+        """
+        This class handles the displaying of invoices.
+        """
+
+        template_name = "company_invoice.html"
+
+        def get(self, request: HttpRequest) -> HttpResponse:
+            return self.__render_company_invoice_page(request, SimpleResult())
+
+        def post(self, request: HttpRequest) -> JsonResponse:
+            pass
+
+        def _render_company_invoice_page(self, request, result: SimpleResult) -> HttpResponse:
+            context = {
+
+            }
+
+            return render(request, self.template_name, context=context)
