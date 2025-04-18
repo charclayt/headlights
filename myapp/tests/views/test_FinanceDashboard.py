@@ -19,9 +19,8 @@ class FinanceDashboardTest(BaseViewTest, TestCase):
         finance_group.permissions.add(finance_permission)
         finance_group.save()
         
-        return BaseViewTest.setUp(self)
+        BaseViewTest.setUp(self)
 
-    def test_get_view(self):
         self.client.logout()
         self.TEMPLATE = Templates.LOGIN
         BaseViewTest.test_get_view(self)
@@ -30,4 +29,15 @@ class FinanceDashboardTest(BaseViewTest, TestCase):
         UserProfile.create_account(unique_name, TestData.EMAIL, TestData.PASSWORD, UserProfile.GroupIDs.FINANCE_ID)
         self.client.login(username=unique_name, password=TestData.PASSWORD)
         self.TEMPLATE = Templates.FINANCE
+
+    def test_get_view(self):
         BaseViewTest.test_get_view(self)
+
+    def test_post_view(self):
+        payload = {
+            'company': 1,
+            'month': '4',
+            'year': '2025',
+        }
+
+        BaseViewTest._test_post_view_response(self, payload=payload)
