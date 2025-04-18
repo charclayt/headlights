@@ -43,19 +43,14 @@ class InvoiceForm(forms.Form):
 
         super().__init__(*args, **kwargs)
 
-        try:
-            self.fields['company'].choices = [
-                (company.company_id, company.name) for company in Company.objects.all()
-            ]
-        except Exception:
-            logging.error(f"Cannot get companies from database: {traceback.format_exc()}")
+        now = datetime.now()
 
-        try:
-            now = datetime.now()
-            self.fields['month'].initial = now.month
-            self.fields['year'].initial = now.year
-        except Exception:
-            logging.error(f"Failed to get current month/year: {traceback.format_exc()}")
+        self.fields['company'].choices = [
+            (company.company_id, company.name) for company in Company.objects.all()
+        ]
+
+        self.fields['month'].initial = now.month
+        self.fields['year'].initial = now.year
 
 @method_decorator([login_required, permission_required("myapp.view_financereport")], name="dispatch")
 class FinanceDashboardView(View):
