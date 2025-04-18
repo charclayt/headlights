@@ -63,7 +63,7 @@ class FinanceDashboardView(View):
     def get(self, request: HttpRequest) -> HttpResponse:
         user_profile = UserProfile.objects.get(auth_id=request.user.id)
 
-        invoices = 0
+        invoices = None
 
         if request.user.is_superuser:
             invoices = FinanceReport.objects.all().order_by('-created_at')
@@ -72,8 +72,10 @@ class FinanceDashboardView(View):
 
         invoice_form = InvoiceForm()
 
+        num_invoices = invoices.count() if invoices != None else 0
+
         context = {
-            'num_invoices': invoices.count(),
+            'num_invoices': num_invoices,
             'invoice_form': invoice_form,
             'is_company_owner': user_profile.is_company_owner,
             'is_admin': request.user.is_superuser,
