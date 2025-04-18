@@ -3,6 +3,7 @@ from django.urls import reverse
 from django.contrib.auth.models import Group, Permission
 
 import logging
+from unittest.mock import patch
 
 from myapp.tests.test_BaseView import BaseViewTest
 from myapp.tests.config import Views, Templates, TestData
@@ -50,13 +51,18 @@ class FinanceDashboardTest(BaseViewTest, TestCase):
     def test_post_view_failure_no_content(self):
         BaseViewTest._test_post_view_response(self, status=400)
 
-    def test_post_view_failure_bad_company(self):
+    @patch("myapp.views.FinanceDashboardViews.generate_invoice")
+    def test_generate_invoice_exception(self, mock_generate_invoice):
+        mock_generate_invoice.side_effect = Exception("Simulated failure")
+
         payload= {
-            'company': 999,
+            'company': 1,
             'month': '4',
             'year': '2025',
         }
-        BaseViewTest._test_post_view_response(self, status=400, payload=payload)
+
+        response = BaseViewTest._test_post_view_response(self, status=500, payload=payload)
+        self.assertIn("An exception occurred", response.content.decode())
 
     def test_invoice_download_success(self):
         response = self.client.get(reverse('invoice_download', args=[1]))

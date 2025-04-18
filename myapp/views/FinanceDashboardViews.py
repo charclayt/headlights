@@ -85,7 +85,11 @@ class FinanceDashboardView(View):
             month = uploaded_invoice_form.cleaned_data['month']
             year = uploaded_invoice_form.cleaned_data['year']
 
-            generate_invoice(company, month, year, current_user)
+            try:
+                generate_invoice(company, month, year, current_user)
+            except Exception:
+                logger.error(f"An exception occurred while trying to create the invoice for {company}: {traceback.format_exc()}")
+                return HttpResponse(content=f"An exception occurred while trying to create the invoice for {company}, please try again later.", status=500)
 
         else:
             return HttpResponse("Invalid invoice generation submission", status=400)
@@ -93,40 +97,36 @@ class FinanceDashboardView(View):
         return redirect("finance_dashboard")
 
 def generate_invoice(company, month, year, user):
-    try:
-        company_obj = Company.objects.filter(company_id=company).first()
-        company_users = UserProfile.objects.filter(company_id=company)
-        uploaded_records = UploadedRecord.objects.filter(
-            user_id__in=company_users,
-            upload_date__year=year,
-            upload_date__month=month
-        )
+    company_obj = Company.objects.filter(company_id=company).first()
+    company_users = UserProfile.objects.filter(company_id=company)
+    uploaded_records = UploadedRecord.objects.filter(
+        user_id__in=company_users,
+        upload_date__year=year,
+        upload_date__month=month
+    )
 
-        uploaded_records_count = uploaded_records.count()
-        logger.info(f"Company: {company}, has {uploaded_records_count} in the period {(month, year)}.")
+    uploaded_records_count = uploaded_records.count()
+    logger.info(f"Company: {company}, has {uploaded_records_count} in the period {(month, year)}.")
 
-        # Placeholder cost value, this could be set for each company.
-        cost_per_prediction = 10
-        total_cost = uploaded_records_count * cost_per_prediction
+    # Placeholder cost value, this could be set for each company.
+    cost_per_prediction = 10
+    total_cost = uploaded_records_count * cost_per_prediction
 
-        # Placeholder invoice text, this could be formatted for printing as a proper invoice.
-        invoice_text = f"Company: {company}, has {uploaded_records_count} predictions in the period {(month, year)} costing {cost_per_prediction} per prediction for a total of {total_cost}."
+    # Placeholder invoice text, this could be formatted for printing as a proper invoice.
+    invoice_text = f"Company: {company}, has {uploaded_records_count} predictions in the period {(month, year)} costing {cost_per_prediction} per prediction for a total of {total_cost}."
 
-        report = FinanceReport.objects.create(
-            company_id=company_obj,
-            year=year,
-            month=month,
-            cost_incurred=total_cost,
-            generated_invoice=invoice_text,
-            user_id=user,
-            created_at=timezone.now()
-        )
+    report = FinanceReport.objects.create(
+        company_id=company_obj,
+        year=year,
+        month=month,
+        cost_incurred=total_cost,
+        generated_invoice=invoice_text,
+        user_id=user,
+        created_at=timezone.now()
+    )
 
-        return report
+    return report
 
-    except Exception:
-        logger.error(f"An exception occurred while trying to create the invoice for {company}: {traceback.format_exc()}")
-        return HttpResponse(content=f"An exception occurred while trying to create the invoice for {company}, please try again later.", status=400)
 
 def download_invoice(request, invoice_id):
     try:
