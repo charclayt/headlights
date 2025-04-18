@@ -1,8 +1,7 @@
 from django import forms
-from django.core.files.storage import default_storage
 from django.shortcuts import render
 from django.views import View
-from django.http import HttpRequest, HttpResponse, JsonResponse, FileResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.db.models import Q
 from django.contrib.auth.decorators import login_required, permission_required
 from django.utils import timezone
@@ -48,14 +47,14 @@ class InvoiceForm(forms.Form):
             self.fields['company'].choices = [
                 (company.company_id, company.name) for company in Company.objects.all()
             ]
-        except Exception as e:
+        except Exception:
             logging.error(f"Cannot get companies from database: {traceback.format_exc()}")
 
         try:
             now = datetime.now()
             self.fields['month'].initial = now.month
             self.fields['year'].initial = now.year
-        except Exception as e:
+        except Exception:
             logging.error(f"Failed to get current month/year: {traceback.format_exc()}")
 
 @method_decorator([login_required, permission_required("myapp.view_financereport")], name="dispatch")
@@ -150,7 +149,7 @@ def download_invoice(request, invoice_id):
         p.save()
 
         return response
-    except:
+    except Exception:
         logger.error(f"Failed to download invoice {invoice_id}, error: {traceback.format_exc()}")
         return HttpResponse(content=f"Failed to download invoice {invoice_id}, please try again later.", status=400)
 
