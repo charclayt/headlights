@@ -60,17 +60,23 @@ class FinanceDashboardView(View):
 
     template_name = "finance.html"
 
-    def get(self, request: HttpRequest) -> HttpResponse: 
+    def get(self, request: HttpRequest) -> HttpResponse:
         user_profile = UserProfile.objects.get(auth_id=request.user.id)
 
-        num_companies = Company.objects.all().count()
-        invoices = FinanceReport.objects.all().order_by('-created_at')
+        invoices = None
+
+        if request.user.is_superuser:
+            invoices = FinanceReport.objects.all().order_by('-created_at')
+        elif user_profile.company_id != None:
+            invoices = FinanceReport.objects.filter(company_id=user_profile.company_id).order_by('-created_at')
+
         invoice_form = InvoiceForm()
 
         context = {
-            'num_companies': num_companies,
+            'num_invoices': invoices.count(),
             'invoice_form': invoice_form,
             'is_company_owner': user_profile.is_company_owner,
+            'is_admin': request.user.is_superuser,
             'invoices': invoices
         }
         
