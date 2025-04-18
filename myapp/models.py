@@ -328,11 +328,13 @@ class UserProfile(models.Model):
 
 class FinanceReport(models.Model):
     finance_report_id = models.AutoField(db_column='FinanceReportID', primary_key=True)
+    company_id = models.ForeignKey(Company, models.PROTECT, db_column='CompanyID', blank=False, null=False)
     user_id = models.ForeignKey(UserProfile, models.PROTECT, db_column='UserID', blank=True, null=True) 
     year = models.IntegerField(db_column='Year', blank=True, null=True)  
     month = models.IntegerField(db_column='Month', blank=True, null=True)
     cost_incurred = models.FloatField(db_column='CostIncurred', blank=True, null=True)
     generated_invoice = models.CharField(db_column='GeneratedInvoice', max_length=255, blank=True, null=True)
+    created_at = models.DateTimeField(db_column='CreatedAt', blank=False, null=False)
     
     class Meta:
         managed = True

@@ -1,18 +1,22 @@
 from django import forms
+from django.core.files.storage import default_storage
 from django.shortcuts import render
 from django.views import View
-from django.http import HttpRequest, HttpResponse, JsonResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse, FileResponse
 from django.db.models import Q
 from django.contrib.auth.decorators import login_required, permission_required
+from django.utils import timezone
 from django.utils.decorators import method_decorator
-from django.shortcuts import redirect
+from django.shortcuts import get_object_or_404, redirect
 
 from datetime import datetime
 import json
 import logging
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
 import traceback
 
-from myapp.models import UserProfile, Company
+from myapp.models import UserProfile, Company, FinanceReport, UploadedRecord
 from myapp.utility.SimpleResults import SimpleResult
 
 # Configure logging
@@ -66,17 +70,91 @@ class FinanceDashboardView(View):
         user_profile = UserProfile.objects.get(auth_id=request.user.id)
 
         num_companies = Company.objects.all().count()
+        invoices = FinanceReport.objects.all().order_by('-created_at')
         invoice_form = InvoiceForm()
 
         context = {
             'num_companies': num_companies,
             'invoice_form': invoice_form,
             'is_company_owner': user_profile.is_company_owner,
+            'invoices': invoices
         }
         
         return render(request, self.template_name, context)
     
-    
+    def post(self, request: HttpRequest) -> HttpResponse:
+        uploaded_invoice_form = InvoiceForm(request.POST)
+        current_user = get_object_or_404(UserProfile, auth_id = self.request.user.id)
+
+        if uploaded_invoice_form.is_valid():
+            company = uploaded_invoice_form.cleaned_data['company']
+            month = uploaded_invoice_form.cleaned_data['month']
+            year = uploaded_invoice_form.cleaned_data['year']
+
+            generate_invoice(company, month, year, current_user)
+
+        else:
+            return HttpResponse("Invalid invoice generation submission", status=400)
+        
+        return redirect("finance_dashboard")
+
+def generate_invoice(company, month, year, user):
+    try:
+        company_obj = Company.objects.filter(company_id=company).first()
+        company_users = UserProfile.objects.filter(company_id=company)
+        uploaded_records = UploadedRecord.objects.filter(
+            user_id__in=company_users,
+            upload_date__year=year,
+            upload_date__month=month
+        )
+
+        uploaded_records_count = uploaded_records.count()
+        logger.info(f"Company: {company}, has {uploaded_records_count} in the period {(month, year)}.")
+
+        # Placeholder cost value, this could be set for each company.
+        cost_per_prediction = 10
+        total_cost = uploaded_records_count * cost_per_prediction
+
+        # Placeholder invoice text, this could be formatted for printing as a proper invoice.
+        invoice_text = f"Company: {company}, has {uploaded_records_count} predictions in the period {(month, year)} costing {cost_per_prediction} per prediction for a total of {total_cost}."
+
+        report = FinanceReport.objects.create(
+            company_id=company_obj,
+            year=year,
+            month=month,
+            cost_incurred=total_cost,
+            generated_invoice=invoice_text,
+            user_id=user,
+            created_at=timezone.now()
+        )
+
+        return report
+
+    except Exception:
+        logger.error(f"An exception occurred while trying to create the invoice for {company}: {traceback.format_exc()}")
+        return HttpResponse(content=f"An exception occurred while trying to create the invoice for {company}, please try again later.", status=400)
+
+def download_invoice(request, invoice_id):
+    try:
+        invoice = get_object_or_404(FinanceReport, finance_report_id=invoice_id)
+        invoice_content = invoice.generated_invoice
+
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = f"attachment; filename=invoice_{invoice_id}.pdf"
+
+        p = canvas.Canvas(response, pagesize=letter)
+        _, height = letter
+
+        p.drawString(10, height-10, invoice_content)
+        p.showPage()
+        p.save()
+
+        return response
+    except:
+        logger.error(f"Failed to download invoice {invoice_id}, error: {traceback.format_exc()}")
+        return HttpResponse(content=f"Failed to download invoice {invoice_id}, please try again later.", status=400)
+
+
 @method_decorator([login_required, permission_required("myapp.view_financereport")], name="dispatch")   
 class CompanyDetailsView(View):
     """
@@ -187,23 +265,3 @@ class CompanyManageEmployeesView(View):
         }
         
         return render(request, self.template_name, context=context)
-
-    class CompanyInvoiceView(View):
-        """
-        This class handles the displaying of invoices.
-        """
-
-        template_name = "company_invoice.html"
-
-        def get(self, request: HttpRequest) -> HttpResponse:
-            return self.__render_company_invoice_page(request, SimpleResult())
-
-        def post(self, request: HttpRequest) -> JsonResponse:
-            pass
-
-        def _render_company_invoice_page(self, request, result: SimpleResult) -> HttpResponse:
-            context = {
-
-            }
-
-            return render(request, self.template_name, context=context)

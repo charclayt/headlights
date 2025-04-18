@@ -7,7 +7,7 @@ from myapp.views.CustomerDashBoardView import CustomerDashboardView, ClaimUpload
 from myapp.views.IndexView import IndexView
 from myapp.views.MLDashboardView import MLDashboardView, UploadModelView
 from myapp.views.AccountManagementView import AccountCreationView, AccountContactDetailsView
-from myapp.views.FinanceDashboardViews import FinanceDashboardView, CompanyDetailsView, CompanyManageEmployeesView
+from myapp.views.FinanceDashboardViews import FinanceDashboardView, CompanyDetailsView, CompanyManageEmployeesView, download_invoice
 
 
 urlpatterns = [
@@ -30,6 +30,7 @@ urlpatterns = [
     path("finance/", FinanceDashboardView.as_view(), name="finance_dashboard"),
     path("finance/company-details/", CompanyDetailsView.as_view(), name="company_details"),
     path("finance/manage-employees/", CompanyManageEmployeesView.as_view(), name="company_manage_employees"),
+    path("finance/invoice-download/<int:invoice_id>/", download_invoice, name="invoice_download"),
     
     # ML-related API endpoints
     path("api/upload-model/", UploadModelView.as_view(), name="upload_model"),
