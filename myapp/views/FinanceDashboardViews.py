@@ -63,7 +63,7 @@ class FinanceDashboardView(View):
     def get(self, request: HttpRequest) -> HttpResponse:
         user_profile = UserProfile.objects.get(auth_id=request.user.id)
 
-        invoices = None
+        invoices = 0
 
         if request.user.is_superuser:
             invoices = FinanceReport.objects.all().order_by('-created_at')
