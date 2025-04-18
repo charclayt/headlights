@@ -175,8 +175,8 @@
           <tbody>
             {% for record in user_uploaded_records %}
               <tr>
-                <td>{{ record.claim_id }}</td>
-                <td><span class="badge bg-success">{{ record.predicted_settlement }}</span></td>
+                <td>{{ record.claim_id.claim_id }}</td>
+                <td>{% if record.predicted_settlement %}£{{ record.predicted_settlement }}{% else %}-{% endif %}</td>
                 <td>{% if record.user_settlement %}£{{ record.user_settlement }}{% else %}-{% endif %}</td>
                 <td>{% if record.model_id %}{{ record.model_id.model_name }}{% else %}-{% endif %}</td>
                 <td>{{ record.upload_date|date:"F d, Y" }}</td>
