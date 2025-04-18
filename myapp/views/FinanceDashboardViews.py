@@ -138,7 +138,7 @@ def download_invoice(request, invoice_id):
         invoice = get_object_or_404(FinanceReport, finance_report_id=invoice_id)
         invoice_content = invoice.generated_invoice
 
-        response = HttpResponse(content_type='application/pdf')
+        response = HttpResponse(content_type='application/pdf', status=200)
         response['Content-Disposition'] = f"attachment; filename=invoice_{invoice_id}.pdf"
 
         p = canvas.Canvas(response, pagesize=letter)

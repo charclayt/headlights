@@ -1,5 +1,8 @@
 from django.test import TestCase
+from django.urls import reverse
 from django.contrib.auth.models import Group, Permission
+
+import logging
 
 from myapp.tests.test_BaseView import BaseViewTest
 from myapp.tests.config import Views, Templates, TestData
@@ -11,6 +14,8 @@ class FinanceDashboardTest(BaseViewTest, TestCase):
     TEMPLATE = Templates.FINANCE
 
     def setUp(self):
+        logging.disable(logging.ERROR)
+
         end_user_group = Group.objects.create(pk=UserProfile.GroupIDs.END_USER_ID, name="end user")
         end_user_group.save()
         
@@ -33,7 +38,7 @@ class FinanceDashboardTest(BaseViewTest, TestCase):
     def test_get_view(self):
         BaseViewTest.test_get_view(self)
 
-    def test_post_view(self):
+    def test_post_view_success(self):
         payload = {
             'company': 1,
             'month': '4',
@@ -41,3 +46,20 @@ class FinanceDashboardTest(BaseViewTest, TestCase):
         }
 
         BaseViewTest._test_post_view_response(self, payload=payload)
+
+    def test_post_view_failure(self):
+        BaseViewTest._test_post_view_response(self, status=400)
+
+    def test_invoice_download_success(self):
+        response = self.client.get(reverse('invoice_download', args=[1]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Type'], 'application/pdf')
+        self.assertIn('attachment; filename=invoice_1.pdf', response['Content-Disposition'])
+
+        self.assertTrue(response.content.startswith(b'%PDF'))
+
+    def test_invoice_download_failure(self):
+        response = self.client.get(reverse('invoice_download', args=[999]))
+
+        self.assertContains(response, 'Failed to download invoice', status_code=400)
