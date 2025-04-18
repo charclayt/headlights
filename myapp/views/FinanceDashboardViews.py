@@ -67,7 +67,7 @@ class FinanceDashboardView(View):
 
         if request.user.is_superuser:
             invoices = FinanceReport.objects.all().order_by('-created_at')
-        elif user_profile.company_id != None:
+        elif user_profile.company_id is not None:
             invoices = FinanceReport.objects.filter(company_id=user_profile.company_id).order_by('-created_at')
 
         invoice_form = InvoiceForm()
