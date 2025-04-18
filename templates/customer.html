@@ -1,214 +1,274 @@
 {% extends "base_generic.html" %}
 {% load static %}
 
+{% block title %}
+  <title>User Dashboard | Headlights</title>
+{% endblock %}
+
 {% block content %}
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.js"></script>
-    <script src="{% static 'js/bootstrap5.modal.forms.min.js' %}"></script>
+  <div class="row mb-4">
+    <div class="col">
+      <h1 class="h3 mb-0 text-gray-800">
+        <i class="bi bi-speedometer2 me-2"></i>User Dashboard
+      </h1>
+      <p class="text-muted">Manage your claims and predictions</p>
+    </div>
+    <div class="col-auto">
+      <div class="card border-0 mb-0">
+        <div class="card-body py-2">
+          <div class="row align-items-center">
+            <div class="col-auto">
+              <i class="bi bi-file-text display-6 text-primary"></i>
+            </div>
+            <div class="col">
+              <div class="small text-muted">Total Claims</div>
+              <div class="fs-4 fw-bold">{{ num_claims }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-    <h1>Customer Dashboard</h1>
-    <ul>
-        <li><strong>Claims:</strong> {{ num_claims }}</li>
-    </ul>
-    <a class="btn btn-primary btn-lg w-100 m-2" href="{% url 'claims_preprocessing' %}">Format Claims File</a>
-    <div class="container">
-        <h2>Upload Claims</h2>
-        <form id="uploadClaimsForm" method="POST" enctype="multipart/form-data">
+  <!-- Format Claims File Button -->
+  <div class="mb-3">
+    <a class="btn btn-primary btn-lg w-100" href="{% url 'claims_preprocessing' %}">
+      <i class="bi bi-file-earmark-spreadsheet me-2"></i>Format Claims File
+    </a>
+  </div>
+
+  <div class="row">
+    <!-- Upload Claims Card -->
+    <div class="col-lg-6 mb-4">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-header bg-primary bg-gradient text-white">
+          <h5 class="card-title mb-0">
+            <i class="bi bi-cloud-upload me-2"></i>Upload Claims
+          </h5>
+        </div>
+        <div class="card-body">
+          <form id="uploadClaimsForm" method="POST" enctype="multipart/form-data" class="mb-3">
             {% csrf_token %}
-            <div class="form-group">
-                <label for="claimsFile">Claims Data File (.csv):</label>
-                <input type="file" id="claimsFile" name="claims_file" accept=".csv" onchange="resetMessages();" required>
+            <div class="mb-3">
+              <label for="claimsFile" class="form-label">Claims Data File (.csv):</label>
+              <input class="form-control" type="file" id="claimsFile" name="claims_file" accept=".csv" onchange="resetMessages();" required>
+              <div class="form-text">Upload your claims data in CSV format</div>
             </div>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="preprocess" name="preprocess">
-                <label for="preprocess" class="form-check-label">Automatically Format Claims</label>
+            <div class="form-check mb-3">
+              <input class="form-check-input" type="checkbox" id="preprocess" name="preprocess">
+              <label for="preprocess" class="form-check-label">Automatically Format Claims</label>
             </div>
-            <input id="claimUploadSubmit" type="submit" text="Upload"></input>
-        </form>
-        <div id="errorMessage" style="white-space: pre-line" class="error-message"></div>
-        <div id="confirmationBox" class="warning-message">
+            <button id="claimUploadSubmit" type="submit" class="btn btn-primary">
+              <i class="bi bi-upload me-1"></i>Upload
+            </button>
+          </form>
+          <div id="errorMessage" style="white-space: pre-line; display: none;" class="alert alert-danger" role="alert"></div>
+          <div id="confirmationBox" class="alert alert-warning" role="alert" style="display: none;">
             <div id="confirmationMessage" style="white-space: pre-line"></div>
-            <input id="confirmIgnoreValidation" type="button" value="Upload Anyway">
+            <button id="confirmIgnoreValidation" type="button" class="btn btn-warning mt-2">
+              <i class="bi bi-exclamation-triangle me-1"></i>Upload Anyway
+            </button>
+          </div>
         </div>
+      </div>
     </div>
-    <div class="container">
-        <h2>Uploaded Claims</h2>
-        <form method="post" action="{% url 'customer_dashboard' %}">
+
+    <!-- Make Prediction Card -->
+    <div class="col-lg-6 mb-4">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-header bg-primary bg-gradient text-white">
+          <h5 class="card-title mb-0">
+            <i class="bi bi-graph-up-arrow me-2"></i>Make Prediction
+          </h5>
+        </div>
+        <div class="card-body">
+          <form method="post" action="{% url 'customer_dashboard' %}" class="mb-3">
             {% csrf_token %}
-            {{ uploaded_claims_form.as_p }}
-            <button id="submit-prediction" type="submit" class="btn btn-primary text-center" name="submitPredictionForm">Make Prediction</button>
-        </form>
-    </div>
-    {% if uploaded_record %}
-        <div class="container mt-5">
-            <!-- Prediction Card -->
-            <div class="card shadow-lg border-info mb-4">
-                <div class="card-header bg-info text-white">
-                    Settlement Prediction
-                </div>
-                <div class="card-body">
-                    {% if uploaded_record.user_settlement %}
-                        <p class="card-text">
-                            <span class="fw-bold">Claim ID: {{ uploaded_record.claim_id.claim_id }}</span>
-                            <span class="fw-bold">Selected Model: {{ uploaded_record.model_id.model_name }}</span>
-                        </p>
-                        <p class="card-text">
-                            <span class="fw-bold"> Our Prediction: £{{ uploaded_record.predicted_range.center }}</span>
-                            <span class="fw-bold"> Your Decision: £{{ uploaded_record.user_settlement }}</span>
-                        </p>
-                    {% elif uploaded_record.predicted_range %}
-                        <p class="card-text">
-                            <span class="fw-bold">Claim ID: {{ uploaded_record.claim_id.claim_id }}</span>
-                            <span class="fw-bold">Selected Model: {{ uploaded_record.model_id.model_name }}</span>
-                        </p>
-                        <p class="card-text">
-                            Based on the provided information, our model estimates the claim settlement to be:
-                            <span class="fw-bold text-primary">£{{ uploaded_record.predicted_range.center }}</span>.
-                        </p>
-                        <p class="text-muted">
-                            To account for potential uncertainty in prediction, the estimated range is:
-                            <span class="fw-bold">£{{ uploaded_record.predicted_range.lower }} – £{{ uploaded_record.predicted_range.upper }}</span>
-                            (±5%).
-                        </p>
-                        <!-- User Input Form -->
-                        <div class="card shadow-sm">
-                            <div class="card-header bg-light">
-                                <strong>Enter Your Chosen Settlement Value</strong>
-                            </div>
-                            <div class="card-body">
-                                <form method="post">
-                                    {% csrf_token %}
-                                    {{ settlement_form.as_p }}
-                                    
-                                    <div class="card-body text-center mt-3">
-                                        <button type="submit" class="btn btn-success px-4">Submit</button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    {% else %}
-                        <p class="text-danger">No prediction available for this record.</p>
-                    {% endif %}
-                </div>
-
-        </div>
-        {% if uploaded_record.user_settlement %}
-            <div class="card shadow-lg border-success mb-4">
-                <div class="card-header bg-success text-white">
-                    Got feedback? Please leave it here
-                </div>
-                <div class="card-body text-center">
-                    <button id="submit-prediction-feedback" class="btn btn-primary" type="button" name="submit-prediction-feedback">Leave Feedback</button>
-                </div>
+            <div class="mb-3">
+              {{ uploaded_claims_form.as_p }}
             </div>
-        {% endif %}
-    {% endif %}
-    <div class="container">
-        <h2>Previously Uploaded Records</h2>
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Claim Details</th>
-                    <th>Predicted Settlement</th>
-                    <th>User Settlement</th>
-                    <th>Upload Date</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for record in user_uploaded_records %}
-                    <tr>
-                        <td>{{ record.claim_id }}</td>
-                        <td>{{ record.predicted_settlement }}</td>
-                        <td>{{ record.user_settlement }}</td>
-                        <td>{{ record.upload_date }}</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+            <button id="submit-prediction" type="submit" name="submitPredictionForm" class="btn btn-success">
+              <i class="bi bi-lightning-charge me-1"></i>Generate Prediction
+            </button>
+          </form>
 
-    <div class="modal fade" tabindex="-1" role="dialog" id="modal">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content"></div>
+          {% if uploaded_record %}
+            <!-- Enhanced Prediction Card -->
+            <div class="mt-4 p-3 rounded border">
+              <h6 class="mb-2">Prediction Results:</h6>
+              {% if uploaded_record.user_settlement %}
+                <div class="mb-2">
+                  <span class="fw-bold">Claim ID:</span> {{ uploaded_record.claim_id.claim_id }}<br>
+                  <span class="fw-bold">Selected Model:</span> {{ uploaded_record.model_id.model_name }}
+                </div>
+                <div class="mb-2">
+                  <span class="fw-bold">Our Prediction:</span> £{{ uploaded_record.predicted_range.center }}<br>
+                  <span class="fw-bold">Your Decision:</span> £{{ uploaded_record.user_settlement }}
+                </div>
+              {% elif uploaded_record.predicted_range %}
+                <div class="mb-2">
+                  <span class="fw-bold">Claim ID:</span> {{ uploaded_record.claim_id.claim_id }}<br>
+                  <span class="fw-bold">Selected Model:</span> {{ uploaded_record.model_id.model_name }}
+                </div>
+                <div class="mb-2">
+                  Based on the provided information, our model estimates the claim settlement to be:
+                  <span class="fw-bold text-primary">£{{ uploaded_record.predicted_range.center }}</span>.
+                </div>
+                <div class="text-muted mb-2">
+                  To account for potential uncertainty in prediction, the estimated range is:
+                  <span class="fw-bold">£{{ uploaded_record.predicted_range.lower }} – £{{ uploaded_record.predicted_range.upper }}</span> (±5%).
+                </div>
+                <!-- User Input Form -->
+                <div class="card shadow-sm mb-2">
+                  <div class="card-header bg-light">
+                    <strong>Enter Your Chosen Settlement Value</strong>
+                  </div>
+                  <div class="card-body">
+                    <form method="post">
+                      {% csrf_token %}
+                      {{ settlement_form.as_p }}
+                      <div class="card-body text-center mt-3">
+                        <button type="submit" class="btn btn-success px-4">Submit</button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              {% else %}
+                <p class="text-danger">No prediction available for this record.</p>
+              {% endif %}
+              {% if uploaded_record.user_settlement %}
+                <div class="card shadow-lg border-success mb-4 mt-3">
+                  <div class="card-header bg-success text-white">
+                    Got feedback? Please leave it here
+                  </div>
+                  <div class="card-body text-center">
+                    <button id="submit-prediction-feedback" class="btn btn-primary" type="button" name="submit-prediction-feedback" data-form-url="{% url 'prediction_feedback' %}">Leave Feedback</button>
+                  </div>
+                </div>
+              {% endif %}
+            </div>
+          {% endif %}
         </div>
+      </div>
     </div>
+  </div>
 
-    <script>
-        document.getElementById('uploadClaimsForm').addEventListener('submit', async (event) => {
-            event.preventDefault();
-            
-            const form = event.target;
-            const formData = new FormData(form);
-            document.getElementById("claimUploadSubmit").disabled = true;
+  <!-- Previously Uploaded Records -->
+  <div class="card shadow-sm border-0 mb-4">
+    <div class="card-header bg-primary bg-gradient text-white">
+      <h5 class="card-title mb-0">
+        <i class="bi bi-clock-history me-2"></i>Previously Uploaded Records
+      </h5>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th scope="col">Claim ID</th>
+              <th scope="col">Predicted Settlement</th>
+              <th scope="col">User Settlement</th>
+              <th scope="col">Model Name</th>
+              <th scope="col">Upload Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for record in user_uploaded_records %}
+              <tr>
+                <td>{{ record.claim_id.claim_id }}</td>
+                <td>{% if record.predicted_settlement %}£{{ record.predicted_settlement }}{% else %}-{% endif %}</td>
+                <td>{% if record.user_settlement %}£{{ record.user_settlement }}{% else %}-{% endif %}</td>
+                <td>{% if record.model_id %}{{ record.model_id.model_name }}{% else %}-{% endif %}</td>
+                <td>{{ record.upload_date|date:"F d, Y" }}</td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="5" class="text-center py-3 text-muted">
+                  <i class="bi bi-info-circle me-2"></i>No records found
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 
-            const response = await fetch('./record-upload/', {
-                method: 'POST',
-                body: formData
-            });
-            
-            const result = await response.json();
-            
-            if (result.status === 'success') {
-                location.reload();
+  <!-- Modal for feedback -->
+  <div class="modal fade" tabindex="-1" role="dialog" id="modal">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content"></div>
+    </div>
+  </div>
 
-            } else if (result.status == 'confirmationRequired') {
-                const confirmBox = document.getElementById('confirmationBox');
-                const confirmMessage = document.getElementById('confirmationMessage');
-                confirmMessage.textContent = result.message + "\n\nSome data may be missing if this file is uploaded";
-                confirmBox.style.display = 'block';
-            } else {
-                const errorMessage = document.getElementById('errorMessage');
-                errorMessage.textContent = result.message;
-                errorMessage.style.display = 'block';
-            }
+  <!-- External Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.js"></script>
+  <script src="{% static 'js/bootstrap5.modal.forms.min.js' %}"></script>
+  <script src="{% static 'js/customer-dashboard.js' %}"></script>
+{% endblock %}
+
+{% block extra_js %}
+  <script>
+    // AJAX upload logic for claims upload
+    document.getElementById('uploadClaimsForm').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const form = event.target;
+      const formData = new FormData(form);
+      document.getElementById("claimUploadSubmit").disabled = true;
+      const response = await fetch('./record-upload/', {
+        method: 'POST',
+        body: formData
+      });
+      const result = await response.json();
+      if (result.status === 'success') {
+        location.reload();
+      } else if (result.status == 'confirmationRequired') {
+        const confirmBox = document.getElementById('confirmationBox');
+        const confirmMessage = document.getElementById('confirmationMessage');
+        confirmMessage.textContent = result.message + "\n\nSome data may be missing if this file is uploaded";
+        confirmBox.style.display = 'block';
+      } else {
+        const errorMessage = document.getElementById('errorMessage');
+        errorMessage.textContent = result.message;
+        errorMessage.style.display = 'block';
+      }
+    });
+    function resetMessages() {
+      const errorMessage = document.getElementById('errorMessage');
+      errorMessage.style.display = 'none';
+      const confirmBox = document.getElementById('confirmationBox');
+      confirmBox.style.display = 'none';
+      document.getElementById("claimUploadSubmit").disabled = false;
+    };
+    document.getElementById('confirmIgnoreValidation').addEventListener('click', async (event) => {
+      event.preventDefault();
+      const form = document.forms.uploadClaimsForm;
+      const formData = new FormData(form);
+      document.getElementById("confirmIgnoreValidation").disabled = true;
+      const response = await fetch('./record-upload/1/', {
+        method: 'POST',
+        body: formData
+      });
+      const result = await response.json();
+      if (result.status === 'success') {
+        location.reload();
+      } else {
+        resetMessages();
+        const errorMessage = document.getElementById('errorMessage');
+        errorMessage.textContent = result.message;
+        errorMessage.style.display = 'block';
+        document.getElementById("claimUploadSubmit").disabled = true;
+      }
+      document.getElementById("confirmIgnoreValidation").disabled = false;
+    });
+    // Initialize the feedback modal with the correct URL
+    document.addEventListener('DOMContentLoaded', (e) => {
+      const formElement = document.getElementById('submit-prediction-feedback');
+      if (formElement) {
+        modalForm(formElement, {
+          formURL: "{% url 'prediction_feedback' %}"
         });
-
-        function resetMessages() {
-            const errorMessage = document.getElementById('errorMessage');
-            errorMessage.style.display = 'none';
-            const confirmBox = document.getElementById('confirmationBox');
-            confirmBox.style.display = 'none';
-
-            document.getElementById("claimUploadSubmit").disabled = false;
-        };
-
-        document.getElementById('confirmIgnoreValidation').addEventListener('click', async (event) => {
-            event.preventDefault();
-            
-            const form = document.forms.uploadClaimsForm;
-            const formData = new FormData(form);
-            document.getElementById("confirmIgnoreValidation").disabled = true;
-
-            const response = await fetch('./record-upload/1/', {
-                method: 'POST',
-                body: formData
-            });
-            
-            const result = await response.json();
-            
-            if (result.status === 'success') {
-                location.reload();
-
-            } else {
-                resetMessages();
-                
-                const errorMessage = document.getElementById('errorMessage');
-                errorMessage.textContent = result.message;
-                errorMessage.style.display = 'block';
-                document.getElementById("claimUploadSubmit").disabled = true;
-            }
-
-            document.getElementById("confirmIgnoreValidation").disabled = false;
-        });
-
-        // Opens the modal form for submitting feedback
-        document.addEventListener('DOMContentLoaded', (e) => {
-            const formElement = document.getElementById('submit-prediction-feedback');
-            if (formElement) {
-                modalForm(formElement, {
-                    formURL: "{% url 'prediction_feedback' %}",
-                });
-            }
-        })
-    </script>
-    
+      }
+    });
+  </script>
 {% endblock %}
