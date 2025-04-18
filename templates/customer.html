@@ -142,7 +142,7 @@
                     Got feedback? Please leave it here
                   </div>
                   <div class="card-body text-center">
-                    <button id="submit-prediction-feedback" class="btn btn-primary" type="button" name="submit-prediction-feedback">Leave Feedback</button>
+                    <button id="submit-prediction-feedback" class="btn btn-primary" type="button" name="submit-prediction-feedback" data-form-url="{% url 'prediction_feedback' %}">Leave Feedback</button>
                   </div>
                 </div>
               {% endif %}
@@ -209,15 +209,6 @@
 
 {% block extra_js %}
   <script>
-    // Any additional page-specific JavaScript that needs template variables
-    {% if submit_prediction_feedback_url %}
-      document.addEventListener('DOMContentLoaded', () => {
-        const feedbackButton = document.getElementById('submit-prediction-feedback');
-        if (feedbackButton) {
-          feedbackButton.dataset.formUrl = "{% url 'prediction_feedback' %}";
-        }
-      });
-    {% endif %}
     // AJAX upload logic for claims upload
     document.getElementById('uploadClaimsForm').addEventListener('submit', async (event) => {
       event.preventDefault();
@@ -270,12 +261,12 @@
       }
       document.getElementById("confirmIgnoreValidation").disabled = false;
     });
-    // Opens the modal form for submitting feedback
+    // Initialize the feedback modal with the correct URL
     document.addEventListener('DOMContentLoaded', (e) => {
       const formElement = document.getElementById('submit-prediction-feedback');
       if (formElement) {
         modalForm(formElement, {
-          formURL: "{% url 'prediction_feedback' %}",
+          formURL: "{% url 'prediction_feedback' %}"
         });
       }
     });
