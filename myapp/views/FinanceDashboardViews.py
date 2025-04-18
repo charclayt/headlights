@@ -2,7 +2,7 @@ from django import forms
 from django.shortcuts import render
 from django.views import View
 from django.http import HttpRequest, HttpResponse, JsonResponse
-from django.db.models import Q
+from django.db.models import Q, Sum, F
 from django.contrib.auth.decorators import login_required, permission_required
 from django.utils import timezone
 from django.utils.decorators import method_decorator
@@ -99,21 +99,17 @@ class FinanceDashboardView(View):
 def generate_invoice(company, month, year, user):
     company_obj = Company.objects.filter(company_id=company).first()
     company_users = UserProfile.objects.filter(company_id=company)
-    uploaded_records = UploadedRecord.objects.filter(
+
+    total_cost = UploadedRecord.objects.filter(
         user_id__in=company_users,
         upload_date__year=year,
         upload_date__month=month
-    )
-
-    uploaded_records_count = uploaded_records.count()
-    logger.info(f"Company: {company}, has {uploaded_records_count} in the period {(month, year)}.")
-
-    # Placeholder cost value, this could be set for each company.
-    cost_per_prediction = 10
-    total_cost = uploaded_records_count * cost_per_prediction
+        ).aggregate(
+            total=Sum(F('model_id__price_per_prediction'))
+        )['total'] or 0
 
     # Placeholder invoice text, this could be formatted for printing as a proper invoice.
-    invoice_text = f"Company: {company}, has {uploaded_records_count} predictions in the period {(month, year)} costing {cost_per_prediction} per prediction for a total of {total_cost}."
+    invoice_text = f"Company: {company}, (MONTH,YEAR): {(month, year)} costing {total_cost}."
 
     report = FinanceReport.objects.create(
         company_id=company_obj,
