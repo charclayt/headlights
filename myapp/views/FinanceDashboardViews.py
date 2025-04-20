@@ -22,8 +22,19 @@ from myapp.utility.SimpleResults import SimpleResult
 logger = logging.getLogger(__name__)
 
 class InvoiceForm(forms.Form):
-    company = forms.ChoiceField(
-        label="Company To Invoice",
+    INVOICE_TYPE_CHOICES = [
+        ('company', 'Company'),
+        ('individual', 'Individual'),
+    ]
+
+    invoice_type = forms.ChoiceField(
+        label="Invoice Type",
+        required=True,
+        choices=INVOICE_TYPE_CHOICES
+    )
+
+    entity = forms.ChoiceField(
+        label="Company/Individual",
         required=True
     )
 
@@ -45,9 +56,17 @@ class InvoiceForm(forms.Form):
 
         now = datetime.now()
 
-        self.fields['company'].choices = [
-            (company.company_id, company.name) for company in Company.objects.all()
-        ]
+        invoice_type = self.data.get('invoice_type') or self.initial.get('invoice_type') or 'company'
+
+        if invoice_type == 'individual':
+            self.fields['entity'].choices = [
+                (profile.user_profile_id, profile.auth_id.get_full_name() or profile.auth_id.username)
+                for profile in UserProfile.objects.filter(company_id__isnull=True).select_related('auth_id')
+            ]
+        else:
+            self.fields['entity'].choices = [
+                (company.company_id, company.name) for company in Company.objects.all()
+            ]
 
         self.fields['month'].initial = now.month
         self.fields['year'].initial = now.year
@@ -89,48 +108,74 @@ class FinanceDashboardView(View):
         current_user = get_object_or_404(UserProfile, auth_id = self.request.user.id)
 
         if uploaded_invoice_form.is_valid():
-            company = uploaded_invoice_form.cleaned_data['company']
+            invoice_type = uploaded_invoice_form.cleaned_data['invoice_type']
+            entity_id = uploaded_invoice_form.cleaned_data['entity']
             month = uploaded_invoice_form.cleaned_data['month']
             year = uploaded_invoice_form.cleaned_data['year']
 
             try:
-                generate_invoice(company, month, year, current_user)
+                generate_invoice(invoice_type, entity_id, month, year, current_user)
             except Exception:
-                logger.error(f"An exception occurred while trying to create the invoice for {company}: {traceback.format_exc()}")
-                return HttpResponse(content=f"An exception occurred while trying to create the invoice for {company}, please try again later.", status=500)
+                logger.error(f"An exception occurred while trying to create the invoice for {entity_id}: {traceback.format_exc()}")
+                return HttpResponse(content=f"An exception occurred while trying to create the invoice for {entity_id}, please try again later.", status=500)
 
         else:
             return HttpResponse("Invalid invoice generation submission", status=400)
         
         return redirect("finance_dashboard")
 
-def generate_invoice(company, month, year, user):
-    company_obj = Company.objects.filter(company_id=company).first()
-    company_users = UserProfile.objects.filter(company_id=company)
+def generate_invoice(invoice_type, entity_id, month, year, user):
+    if invoice_type == "company":
+        company_obj = Company.objects.filter(company_id=entity_id).first()
+        company_users = UserProfile.objects.filter(company_id=entity_id)
 
-    total_cost = UploadedRecord.objects.filter(
-        user_id__in=company_users,
-        upload_date__year=year,
-        upload_date__month=month
+        total_cost = UploadedRecord.objects.filter(
+            user_id__in=company_users,
+            upload_date__year=year,
+            upload_date__month=month
+            ).aggregate(
+                total=Sum(F('model_id__price_per_prediction'))
+            )['total'] or 0
+
+        # Placeholder invoice text, this could be formatted for printing as a proper invoice.
+        invoice_text = f"Company: {company_obj.name}, (MONTH,YEAR): {(month, year)} costing {total_cost}."
+
+        report = FinanceReport.objects.create(
+            company_id=company_obj,
+            year=year,
+            month=month,
+            cost_incurred=total_cost,
+            generated_invoice=invoice_text,
+            user_id=user,
+            created_at=timezone.now()
+        )
+    elif invoice_type == 'individual':
+        user_profile = UserProfile.objects.filter(user_profile_id=entity_id, company_id__isnull=True).select_related('auth_id').first()
+
+        if not user_profile:
+            raise ValueError("Invalid individual user selected.")
+
+        total_cost = UploadedRecord.objects.filter(
+            user_id=user_profile,
+            upload_date__year=year,
+            upload_date__month=month
         ).aggregate(
             total=Sum(F('model_id__price_per_prediction'))
         )['total'] or 0
 
-    # Placeholder invoice text, this could be formatted for printing as a proper invoice.
-    invoice_text = f"Company: {company}, (MONTH,YEAR): {(month, year)} costing {total_cost}."
+        invoice_text = f"Individual: {user_profile.auth_id.get_full_name() or user_profile.auth_id.username}, (MONTH,YEAR): {(month, year)} costing {total_cost}."
 
-    report = FinanceReport.objects.create(
-        company_id=company_obj,
-        year=year,
-        month=month,
-        cost_incurred=total_cost,
-        generated_invoice=invoice_text,
-        user_id=user,
-        created_at=timezone.now()
-    )
+        report = FinanceReport.objects.create(
+            user_profile_id=user_profile,
+            year=year,
+            month=month,
+            cost_incurred=total_cost,
+            generated_invoice=invoice_text,
+            user_id=user,
+            created_at=timezone.now()
+        )
 
     return report
-
 
 def download_invoice(request, invoice_id):
     try:
@@ -152,6 +197,18 @@ def download_invoice(request, invoice_id):
         logger.error(f"Failed to download invoice {invoice_id}, error: {traceback.format_exc()}")
         return HttpResponse(content=f"Failed to download invoice {invoice_id}, please try again later.", status=400)
 
+def load_entity_field(request: HttpRequest):
+    invoice_type = request.GET.get("invoice_type", "company")
+    form = InvoiceForm(initial={"invoice_type": invoice_type})
+
+    entity_field = form["entity"]
+    select_html = entity_field.as_widget(attrs={"class": "form-select"})
+    label_text = "Individual To Invoice" if invoice_type == "individual" else "Company To Invoice"
+
+    return JsonResponse({
+        "select_html": select_html,
+        "label": label_text,
+    })
 
 @method_decorator([login_required, permission_required("myapp.view_financereport")], name="dispatch")   
 class CompanyDetailsView(View):
