@@ -91,7 +91,7 @@ class FinanceDashboardView(View):
 
         invoice_form = InvoiceForm()
 
-        num_invoices = invoices.count() if invoices != None else 0
+        num_invoices = invoices.count() if invoices is not None else 0
 
         context = {
             'num_invoices': num_invoices,
