@@ -1,5 +1,6 @@
 from django.test import TestCase
 from django.urls import reverse
+from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, Permission
 
 import logging
@@ -7,7 +8,7 @@ from unittest.mock import patch
 
 from myapp.tests.test_BaseView import BaseViewTest
 from myapp.tests.config import Views, Templates, TestData
-from myapp.models import UserProfile
+from myapp.models import UserProfile, Company
 
 class FinanceDashboardTest(BaseViewTest, TestCase):
 
@@ -32,11 +33,24 @@ class FinanceDashboardTest(BaseViewTest, TestCase):
         BaseViewTest.test_get_view(self)
         
         unique_name = TestData.NAME+"FINANCE_DASHBOARD_GET_VIEW_TEST"
-        UserProfile.create_account(unique_name, TestData.EMAIL, TestData.PASSWORD, UserProfile.GroupIDs.FINANCE_ID)
+        company = Company.objects.get(company_id=1)
+        UserProfile.create_account(unique_name, TestData.EMAIL, TestData.PASSWORD, UserProfile.GroupIDs.FINANCE_ID, company=company)
         self.client.login(username=unique_name, password=TestData.PASSWORD)
         self.TEMPLATE = Templates.FINANCE
 
     def test_get_view(self):
+        BaseViewTest.test_get_view(self)
+
+        # Create superuser to hit superuser logic for invoices viewing.
+        User = get_user_model()
+        auth_id = User.objects.create_superuser(
+            username='admin',
+            email='admin@example.com',
+            password='superpassword'
+        )
+        UserProfile.objects.create(auth_id=auth_id)
+
+        self.client.login(username='admin', password='superpassword')
         BaseViewTest.test_get_view(self)
 
     def test_company_post_view_success(self):
