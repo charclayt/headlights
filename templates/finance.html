@@ -1,10 +1,182 @@
 {% extends "base_generic.html" %}
+{% load widget_tweaks %}
+
+{% block title %}
+  <title>Finance Dashboard | Headlights</title>
+{% endblock %}
 
 {% block content %}
-    <h1>Finance Dashboard</h1>
+<div class="row mb-4">
+  <div class="col">
+    <h1 class="h3 mb-0 text-gray-800">
+      <i class="bi bi-speedometer2 me-2"></i>Finance Dashboard
+    </h1>
+    <p class="text-muted">Manage companies and invoices</p>
+  </div>
+  <div class="col-auto">
+    <div class="card border-0 mb-0">
+      <div class="card-body py-2">
+        <div class="row align-items-center">
+          <div class="col-auto">
+            <i class="bi bi-file-text display-6 text-primary"></i>
+          </div>
+          <div class="col">
+            <div class="small text-muted">Total Invoices</div>
+            <div class="fs-4 fw-bold">{{ num_invoices }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
+<!-- Row: Buttons (Left) and Invoice Form (Right) -->
+<div class="row">
+  <!-- Buttons -->
+  <div class="col-md-4">
     {% if is_company_owner %}
-        <a class="btn btn-primary btn-lg w-100 m-2" href="{% url 'company_manage_employees' %}">Add Users to Your Company</a>
-        <a class="btn btn-primary btn-lg w-100 m-2" href="{% url 'company_details' %}">Edit Company Details</a>
+      <div class="mb-3">
+        <a class="btn btn-primary btn-lg w-100" href="{% url 'company_manage_employees' %}">
+          <i class="bi bi-people-fill me-2"></i>Manage Company Users
+        </a>
+      </div>
+      <div class="mb-3">
+        <a class="btn btn-primary btn-lg w-100" href="{% url 'company_details' %}">
+          <i class="bi bi-building me-2"></i>Company Details
+        </a>
+      </div>
     {% endif %}
+  </div>
+
+  <!-- Invoice Generator Form -->
+   {% if is_admin %}
+    <div class="col-md-8">
+      <div class="p-3 rounded border">
+        <div class="card shadow-sm">
+          <div class="card-header bg-light">
+            <strong>Invoice Generator</strong>
+          </div>
+          <div class="card-body">
+            <form method="post">
+              {% csrf_token %}
+              <div class="mb-3">
+                <label for="{{ invoice_form.invoice_type.id_for_label }}" class="form-label">Invoice Type</label>
+                {{ invoice_form.invoice_type|add_class:"form-select" }}
+                {% if invoice_form.invoice_type.errors %}
+                  <div class="text-danger small">{{ invoice_form.invoice_type.errors }}</div>
+                {% endif %}
+              </div>
+                <div class="mb-3" id="entity-field-wrapper">
+                  <label for="{{ invoice_form.entity.id_for_label }}" class="form-label" id="entity-label">
+                    {% if invoice_form.data.invoice_type == 'individual' %}
+                      Individual To Invoice
+                    {% else %}
+                      Company To Invoice
+                    {% endif %}
+                  </label>
+                  {{ invoice_form.entity|add_class:"form-select" }}
+                  {% if invoice_form.entity.errors %}
+                    <div class="text-danger small">{{ invoice_form.entity.errors }}</div>
+                  {% endif %}
+                </div>
+
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="{{ invoice_form.month.id_for_label }}" class="form-label">Month</label>
+                  {{ invoice_form.month|add_class:"form-select" }}
+                  {% if invoice_form.month.errors %}
+                    <div class="text-danger small">{{ invoice_form.month.errors }}</div>
+                  {% endif %}
+                </div>
+
+                <div class="col-md-6 mb-3">
+                  <label for="{{ invoice_form.year.id_for_label }}" class="form-label">Year</label>
+                  {{ invoice_form.year|add_class:"form-select" }}
+                  {% if invoice_form.year.errors %}
+                    <div class="text-danger small">{{ invoice_form.year.errors }}</div>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="text-end mt-4">
+                <button type="submit" class="btn btn-success px-4">Generate Invoice</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+</div>
+
+<!-- Previous Invoices table -->
+<div class="mt-5">
+  <div class="card shadow-sm">
+    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+      <strong>Previous Invoices</strong>
+      <form method="get" class="d-flex">
+        <input type="text" name="company_search" class="form-control form-control-sm me-2" placeholder="Filter by company name" value="{{ request.GET.company_search }}">
+        <button type="submit" class="btn btn-outline-secondary btn-sm mb-2">Search</button>
+      </form>
+    </div>
+    <div class="card-body table-responsive">
+      <table class="table table-hover align-middle">
+        <thead class="table-light text-center">
+          <tr>
+            <th>Invoice #</th>
+            <th>Company / Individual</th>
+            <th>Month</th>
+            <th>Year</th>
+            <th>Date Created</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody class="text-center">
+          {% for invoice in invoices %}
+          <tr>
+            <td>{{ invoice.finance_report_id }}</td>
+
+            {% if invoice.company_id %}
+              <td>{{ invoice.company_id.name }}</td>
+            {% else %}
+              <td>{{  invoice.user_profile_id.auth_id.username }}</td>
+            {% endif %}
+
+            <td>{{ invoice.month }}</td>
+            <td>{{ invoice.year }}</td>
+            <td>{{ invoice.created_at|date:"Y-m-d" }}</td>
+            <td>
+              <a href="{% url 'invoice_download' invoice.finance_report_id %}" class="btn btn-sm btn-outline-primary">Download</a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="6" class="text-center text-muted">No invoices found.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const invoiceTypeSelect = document.querySelector('[name="invoice_type"]');
+
+    invoiceTypeSelect.addEventListener('change', function () {
+      const selectedType = this.value;
+
+      fetch("{% url 'load_entity_field' %}?invoice_type=" + selectedType)
+        .then(response => response.json())
+        .then(data => {
+          document.getElementById("entity-label").textContent = data.label;
+          document.getElementById("entity-field-wrapper").querySelector("select").outerHTML = data.select_html;
+        })
+        .catch(error => {
+          console.error("Error updating entity field:", error);
+        });
+    });
+  });
+</script>
 {% endblock %}

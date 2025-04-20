@@ -74,7 +74,9 @@ class TestModels(TestCase):
                                      year = TestData.YEAR,
                                      month = 0,
                                      cost_incurred = 0,
-                                     generated_invoice = "")
+                                     generated_invoice = "This is a test invoice",
+                                     company_id = Company.objects.get(company_id = 1),
+                                     created_at = TestData.PAST_DATETIME)
         
         Feedback.objects.create(feedback_id = 1,
                                 user_id = UserProfile.objects.get(user_profile_id = 1),
