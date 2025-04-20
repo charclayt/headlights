@@ -41,7 +41,8 @@ class FinanceDashboardTest(BaseViewTest, TestCase):
 
     def test_post_view_success(self):
         payload = {
-            'company': 1,
+            'invoice_type': 'company',
+            'entity': 1,
             'month': '4',
             'year': '2025',
         }
@@ -56,7 +57,8 @@ class FinanceDashboardTest(BaseViewTest, TestCase):
         mock_generate_invoice.side_effect = Exception("Simulated failure")
 
         payload= {
-            'company': 1,
+            'invoice_type': 'company',
+            'entity': 1,
             'month': '4',
             'year': '2025',
         }
