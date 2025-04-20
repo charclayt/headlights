@@ -108,3 +108,7 @@ class FinanceDashboardTest(BaseViewTest, TestCase):
         response = self.client.get(reverse('invoice_download', args=[999]))
 
         self.assertContains(response, 'Failed to download invoice', status_code=400)
+
+    def test_load_entity_field(self):
+        response = self.client.get(reverse('load_entity_field'))
+        self.assertEqual(response.status_code, 200)
