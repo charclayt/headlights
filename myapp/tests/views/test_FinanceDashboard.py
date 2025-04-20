@@ -39,9 +39,24 @@ class FinanceDashboardTest(BaseViewTest, TestCase):
     def test_get_view(self):
         BaseViewTest.test_get_view(self)
 
-    def test_post_view_success(self):
+    def test_company_post_view_success(self):
         payload = {
             'invoice_type': 'company',
+            'entity': 1,
+            'month': '4',
+            'year': '2025',
+        }
+
+        BaseViewTest._test_post_view_response(self, payload=payload)
+
+    def test_individual_post_view_success(self):
+        user_profile = UserProfile.objects.filter(user_profile_id=1).first()
+        user_profile.company_id = None
+        user_profile.is_company_owner = False
+        user_profile.save()
+
+        payload = {
+            'invoice_type': 'individual',
             'entity': 1,
             'month': '4',
             'year': '2025',
