@@ -20,7 +20,14 @@ from django.views.generic import RedirectView
 from django.conf import settings
 from django.conf.urls.static import static
 
+from desd.settings import DEBUG, MEDIA_URL, MEDIA_ROOT
+from myapp.views.ErrorView import Error_400, Error_403, Error_404, Error_500
 from myapp.views.MLDashboardView import UploadModelView
+
+handler400 = Error_400.as_view()
+handler403 = Error_403.as_view()
+handler404 = Error_404.as_view()
+handler500 = Error_500.as_view()
 
 urlpatterns = [
     path("accounts/", include("django.contrib.auth.urls")),
@@ -38,5 +45,11 @@ urlpatterns = [
 ]
 
 # Add media URL to serve uploaded files
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+if DEBUG:
+    urlpatterns.extend([
+        path('400', handler400, name='400'),
+        path('403', handler403, name='403'),
+        path('404', handler404, name='404'),
+        path('500', handler500, name='500')]
+    )
+    urlpatterns += static(MEDIA_URL, document_root=MEDIA_ROOT)
