@@ -18,9 +18,9 @@ class Error_400(View):
 
     template_name = "errors/400.html"
 
-    def get(self, request: HttpRequest, exception: Exception = None) -> HttpResponse:
+    def dispatch(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
         """
-        Handles a GET request and returns a rendered template with a status code of 400.
+        Handles all HTTP request methods and returns a rendered template with a status code of 400.
 
         Args:
             request (HttpRequest): The incoming HTTP request.
@@ -29,7 +29,7 @@ class Error_400(View):
         Returns:
             HttpResponse: A rendered template with a status code of 400.
         """
-        return render(request, self.template_name, {"context": exception}, status=400)
+        return render(request, self.template_name, {"context": kwargs.get("exception")}, status=400)
 
 
 class Error_403(View):
@@ -42,9 +42,9 @@ class Error_403(View):
 
     template_name = "errors/403.html"
 
-    def get(self, request: HttpRequest, exception: Exception = None) -> HttpResponse:
+    def dispatch(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
         """
-        Handles a GET request and returns a rendered template with a status code of 403.
+        Handles all HTTP request methods and returns a rendered template with a status code of 403.
 
         Args:
             request (HttpRequest): The incoming HTTP request.
@@ -53,7 +53,7 @@ class Error_403(View):
         Returns:
             HttpResponse: A rendered template with a status code of 403.
         """
-        return render(request, self.template_name, {"context": exception}, status=403)
+        return render(request, self.template_name, {"context": kwargs.get("exception")}, status=403)
 
 
 class Error_404(View):
@@ -66,9 +66,9 @@ class Error_404(View):
 
     template_name = "errors/404.html"
 
-    def get(self, request: HttpRequest, exception: Exception = None) -> HttpResponse:
+    def dispatch(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
         """
-        Handles a GET request and returns a rendered template with a status code of 404.
+        Handles all HTTP request methods and returns a rendered template with a status code of 404.
 
         Args:
             request (HttpRequest): The incoming HTTP request.
@@ -77,7 +77,7 @@ class Error_404(View):
         Returns:
             HttpResponse: A rendered template with a status code of 404.
         """
-        return render(request, self.template_name, {"context": exception}, status=404)
+        return render(request, self.template_name, {"context": kwargs.get("exception")}, status=404)
 
 
 class Error_500(View):
@@ -90,9 +90,9 @@ class Error_500(View):
 
     template_name = "errors/500.html"
 
-    def get(self, request: HttpRequest, exception: Exception = None) -> HttpResponse:
+    def dispatch(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
         """
-        Handles a GET request and returns a rendered template with a status code of 500.
+        Handles all HTTP request methods and returns a rendered template with a status code of 500.
 
         Args:
             request (HttpRequest): The incoming HTTP request.
@@ -101,5 +101,5 @@ class Error_500(View):
         Returns:
             HttpResponse: A rendered template with a status code of 500.
         """
-        return render(request, self.template_name, {"context": exception}, status=500)
+        return render(request, self.template_name, {"context": kwargs.get("exception")}, status=500)
 
