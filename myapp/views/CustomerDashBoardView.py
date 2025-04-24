@@ -15,7 +15,7 @@ import logging
 import requests
 import pandas as pd
 
-from myapp.models import Claim, UploadedRecord, Feedback, UserProfile, PredictionModel
+from myapp.models import Claim, UploadedRecord, Feedback, UserProfile, PredictionModel, TrainingDataset
 from myapp.utility.SimpleResults import SimpleResult, SimpleResultWithPayload
 
 # Configure logging
@@ -266,16 +266,23 @@ class ClaimUploadView(View):
         return redirect("customer_dashboard")
     
     def post(self, request: HttpRequest, ignore_validation: int = 0) -> JsonResponse:
-        result = SimpleResult()
+        result = SimpleResultWithPayload()
         file = request.FILES['claims_file']
         preprocess = request.POST.get('preprocess')
+        add_to_training_data = request.POST.get('trainingData')
         
         if not file.name.endswith(".csv"):
             result.add_error_message_and_mark_unsuccessful("Invalid file type")
         
         if result.success:
-            uploadResult = UploadedRecord.upload_claims_from_file(file, None, True if ignore_validation == 1 else False, preprocess)  
-            result.add_messages_from_result_and_mark_unsuccessful_if_error_found(uploadResult)
+            upload_result = UploadedRecord.upload_claims_from_file(file, None, True if ignore_validation == 1 else False, preprocess)  
+            result.add_messages_from_result_and_mark_unsuccessful_if_error_found(upload_result)
+            result.payload = upload_result.payload
+            
+        if result.success and add_to_training_data:
+            claims = [uploaded_record.claim_id for uploaded_record in result.payload]
+            training_data_result = TrainingDataset.AddClaimsToTrainingData(claims)
+            result.add_messages_from_result_and_mark_unsuccessful_if_error_found(training_data_result)
             
         status = "success"
         if not result.success:
