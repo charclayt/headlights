@@ -16,7 +16,7 @@ import requests
 import pandas as pd
 
 from myapp.models import Claim, UploadedRecord, Feedback, UserProfile, PredictionModel, TrainingDataset
-from myapp.utility.SimpleResults import SimpleResult, SimpleResultWithPayload
+from myapp.utility.SimpleResults import SimpleResultWithPayload
 
 # Configure logging
 logger = logging.getLogger(__name__)
