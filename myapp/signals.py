@@ -49,7 +49,7 @@ def log_create_or_update(sender, instance, created, **kwargs):
                 successful=True
             )
     except Exception as e:
-        logging.warning(f"Failed to save logging to DB: {e}")
+        logging.info(f"Failed to save logging to DB: {e}")
     finally:
         set_in_signal(False)
 
@@ -81,6 +81,6 @@ def log_delete(sender, instance, **kwargs):
                 successful=True
             )
     except Exception as e:
-        logging.warning(f"Failed to save logging to DB: {e}")
+        logging.info(f"Failed to save logging to DB: {e}")
     finally:
         set_in_signal(False)
