@@ -8,7 +8,7 @@ class TestTrainingDataset(TestCase):
         claim.save()
         
         #insert into TrainingDataset
-        result = TrainingDataset.AddClaimsToTrainingData([claim])
+        result = TrainingDataset.add_claims_to_training_data([claim])
         
         self.assertTrue(result.success, "TrainingDataset insertion failed")
         

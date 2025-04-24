@@ -450,7 +450,7 @@ class TrainingDataset(models.Model):
         return f"{self.claim_id}"
     
     @staticmethod
-    def AddClaimsToTrainingData(claims: list[Claim]) -> SimpleResultWithPayload:
+    def add_claims_to_training_data(claims: list[Claim]) -> SimpleResultWithPayload:
         result = SimpleResultWithPayload()
         added_training_data: list[TrainingDataset] = []
         

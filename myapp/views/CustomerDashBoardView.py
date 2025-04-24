@@ -281,7 +281,7 @@ class ClaimUploadView(View):
             
         if result.success and add_to_training_data:
             claims = [uploaded_record.claim_id for uploaded_record in result.payload]
-            training_data_result = TrainingDataset.AddClaimsToTrainingData(claims)
+            training_data_result = TrainingDataset.add_claims_to_training_data(claims)
             result.add_messages_from_result_and_mark_unsuccessful_if_error_found(training_data_result)
             
         status = "success"
