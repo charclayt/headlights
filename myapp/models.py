@@ -448,7 +448,22 @@ class TrainingDataset(models.Model):
         This function returns a TrainingDataset in a neat string format.
         """
         return f"{self.claim_id}"
-
+    
+    @staticmethod
+    def AddClaimsToTrainingData(claims: list[Claim]) -> SimpleResultWithPayload:
+        result = SimpleResultWithPayload()
+        added_training_data: list[TrainingDataset] = []
+        
+        with transaction.atomic():
+            for claim in claims:
+                training_data = TrainingDataset()
+                training_data.claim_id = claim
+                training_data.save()
+                added_training_data.append(training_data)
+        
+        result.payload = added_training_data
+        return result
+                
 
 class UploadedRecord(models.Model):
     uploaded_record_id = models.AutoField(db_column='UploadedRecordID', primary_key=True)  
