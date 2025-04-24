@@ -32,7 +32,7 @@ class FinanceDashboardTest(BaseViewTest, TestCase):
         self.TEMPLATE = Templates.LOGIN
         BaseViewTest.test_get_view(self)
         
-        unique_name = TestData.NAME+"FINANCE_DASHBOARD_GET_VIEW_TEST"
+        unique_name = TestData.NAME+"FINANCE_DASHBOARD_SETUP"
         company = Company.objects.get(company_id=1)
         UserProfile.create_account(unique_name, TestData.EMAIL, TestData.PASSWORD, UserProfile.GroupIDs.FINANCE_ID, company=company)
         self.client.login(username=unique_name, password=TestData.PASSWORD)
@@ -51,6 +51,13 @@ class FinanceDashboardTest(BaseViewTest, TestCase):
         UserProfile.objects.create(auth_id=auth_id)
 
         self.client.login(username='admin', password='superpassword')
+        BaseViewTest.test_get_view(self)
+        
+        # Create individual user to hit non-company user logic for viewing invoices.
+        unique_name = TestData.NAME+"FINANCE_DASHBOARD_GET_VIEW_TEST"
+        UserProfile.create_account(unique_name, TestData.EMAIL, TestData.PASSWORD, UserProfile.GroupIDs.FINANCE_ID, company=None)
+        
+        self.client.login(username=unique_name, password=TestData.PASSWORD)
         BaseViewTest.test_get_view(self)
 
     def test_company_post_view_success(self):
