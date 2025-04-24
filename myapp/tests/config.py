@@ -12,7 +12,7 @@ class ErrorCodes:
 
 class Views:
     HOME = "index"
-    MACHINE_LEARNING = "ml_dashboard"
+    MACHINE_LEARNING = "engineer"
     CUSTOMER_DASHBOARD = "customer_dashboard"
     CUSTOMER_UPLOAD = "upload_claims"
     CUSTOMER_PREPROCESSING = "claims_preprocessing"
@@ -33,7 +33,7 @@ class Views:
 
 class Templates:
     HOME = "index.html"
-    MACHINE_LEARNING = "ml/ml.html"
+    MACHINE_LEARNING = "engineer.html"
     ML_UPLOAD_MODEL = "ml/upload_model.html"
     CUSTOMER = "customer.html"
     FINANCE = "finance.html"

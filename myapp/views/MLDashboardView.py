@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.views import View
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.utils.decorators import method_decorator
@@ -8,7 +8,7 @@ from django.conf import settings
 import logging
 import requests
 
-from myapp.models import PreprocessingStep
+from myapp.models import PreprocessingStep, UploadedRecord
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -19,7 +19,7 @@ class MLDashboardView(View):
     This class handles rendering the machine learning dashboard page.
     """
 
-    template_name = "ml/ml.html"
+    template_name = "engineer.html"
 
     def get(self, request: HttpRequest) -> HttpResponse:
         """
@@ -31,16 +31,35 @@ class MLDashboardView(View):
             # sends authenticated request to ML service, it just
             ml_service_url = getattr(settings, 'ML_SERVICE_URL', 'http://ml-service:8001')
             response = requests.get(f"{ml_service_url}/api/models/")
-            data = response.json()
+            response_data = response.json()
 
-            for x in data['models']:
+            logging.warning(response_data)
+
+            for x in response_data['models']:
                 if isinstance(x['preprocessingSteps'], list):
                     x['preprocessingSteps'] = ", ".join(x['preprocessingSteps'])
 
+            num_predictions = UploadedRecord.objects.all().count()
+
+            preprocessing_steps = PreprocessingStep.objects.all()
+        
+            preprocessing_data = []
+            for x in preprocessing_steps:
+                entry = {
+                    "id": x.preprocessing_step_id,
+                    "name": x.preprocess_name
+                }
+                preprocessing_data.append(entry)
+
+            # TODO: render success message similar to finance dash and investigate what 'success' does below.
+
             context = {
                 'success': True,
-                'models': data.get('models', []),
+                'models': response_data.get('models', []),
+                'preprocessing_steps': preprocessing_data,
+                'num_predictions': num_predictions,
             }
+
             return render(request, self.template_name, context=context)
         except Exception as e:
             logger.error(f"Error getting models from ML service: {str(e)}")
@@ -48,30 +67,6 @@ class MLDashboardView(View):
                 'status': 'error',
                 'message': f"Error communicating with ML service: {str(e)}"
             }, status=500)
-
-@method_decorator([login_required, permission_required("myapp.add_predictionmodel")], name="dispatch")  
-class UploadModelView(View):
-    """
-    This class proxies requests for uploading ML models to the ML service.
-    """
-    template_name = "ml/upload_model.html"
-
-    def get(self, request: HttpRequest) -> JsonResponse:
-        preprocessing_steps = PreprocessingStep.objects.all()
-        
-        data = []
-        for x in preprocessing_steps:
-            entry = {
-                "id": x.preprocessing_step_id,
-                "name": x.preprocess_name
-            }
-            data.append(entry)
-            
-        context = {
-            'preprocessing_steps': data
-        }
-
-        return render(request, self.template_name, context=context)
     
     def post(self, request: HttpRequest) -> JsonResponse:
         """
@@ -111,21 +106,15 @@ class UploadModelView(View):
             )
             
             if response.status_code == 200:
-                context = {
-                    'upload_success': True,
-                    'message': 'Model uploaded successfully!'
-                }
-                return render(request, self.template_name, context=context)
+                self.request.session['ml_upload_message'] = 'success'
             else:
-                context = {
-                    'error': True,
-                    'message': "test"
-                }
-                return JsonResponse(response.json(), status=response.status_code)
-            
+                self.request.session['ml_upload_message'] = 'failure'
+
+            return redirect("engineer")
+
         except Exception as e:
             logger.error(f"Error uploading model to ML service: {str(e)}")
             return JsonResponse({
                 'status': 'error',
                 'message': f"Error communicating with ML service: {str(e)}"
-            }, status=500)
+            }, status=500)    

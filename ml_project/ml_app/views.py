@@ -36,7 +36,7 @@ class MLDashboardView(View):
     """
     This class handles the rendering and processing of the machine learning dashboard page.
     """
-    template_name = "ml/ml.html"
+    template_name = "engineer.html"
 
     def get(self, request: HttpRequest) -> HttpResponse:
         """

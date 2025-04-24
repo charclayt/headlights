@@ -1,12 +1,11 @@
 from django import forms
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404, redirect
 from django.views import View
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.db.models import Q, Sum, F
 from django.contrib.auth.decorators import login_required, permission_required
 from django.utils import timezone
 from django.utils.decorators import method_decorator
-from django.shortcuts import get_object_or_404, redirect
 
 from datetime import datetime
 import json
