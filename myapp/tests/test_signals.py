@@ -87,21 +87,14 @@ class LoggingSignalsTest(TransactionTestCase):
 
         obj = Company.objects.create(name="test")
 
-        logger = logging.getLogger("myapp.signals")
-        logger.setLevel(logging.INFO)
-
         log_handler = logging.StreamHandler()
         log_handler.setLevel(logging.INFO)
-        logger.addHandler(log_handler)
 
-        try:
-            with self.assertLogs(logger, level="INFO") as log_context:
-                obj.delete()
+        with self.assertLogs("myapp.signals", level="INFO") as log_context:
+            obj.delete()
 
-            self.assertTrue(any("Failed to save logging to DB" in msg for msg in log_context.output),
-                            msg="Expected log message not found.")
-        finally:
-            logger.removeHandler(log_handler)
+        self.assertTrue(any("Failed to save logging to DB" in msg for msg in log_context.output),
+                        msg="Expected log message not found.")
 
     @patch("myapp.middleware.get_current_user")
     def test_log_create_signal_without_user(self, mock_get_current_user):
