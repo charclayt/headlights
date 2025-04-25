@@ -52,7 +52,7 @@ class EngineerDashboardPageTest(BaseViewTest, TestCase):
 
         self.assertEqual(response.status_code, ErrorCodes.REDIRECT)
 
-    @patch('myapp.views.EngineerDashBoardView.requests.post')
+    @patch('myapp.views.EngineerDashboardView.requests.post')
     def test_post_view_success(self, mock_post):
         mock_post.return_value.status_code = 200
 
