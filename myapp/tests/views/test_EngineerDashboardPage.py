@@ -1,15 +1,16 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
-from django.test import TestCase
+from django.contrib.contenttypes.models import ContentType
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import TestCase
+from django.urls import reverse
 
 from myapp.tests.test_BaseView import BaseViewTest
 from myapp.models import PredictionModel, UserProfile
 from myapp.tests.config import Views, Templates, TestData, ErrorCodes
-from django.urls import reverse
-from unittest.mock import patch
 
 import logging
+from unittest.mock import patch
 
 class EngineerDashboardPageTest(BaseViewTest, TestCase):
 
@@ -29,7 +30,12 @@ class EngineerDashboardPageTest(BaseViewTest, TestCase):
         )
         UserProfile.objects.create(auth_id=auth_id)
 
-        engineer_permission = Permission.objects.get(codename='add_predictionmodel')
+        content_type = ContentType.objects.get_for_model(PredictionModel)
+        engineer_permission, _ = Permission.objects.get_or_create(
+            codename='add_predictionmodel',
+            name='Can add prediction model',
+            content_type=content_type
+        )
         auth_id.user_permissions.add(engineer_permission)
 
         self.client.login(username='engineer', password='password')
