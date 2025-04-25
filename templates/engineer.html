@@ -155,7 +155,7 @@
                         <ul class="pagination mb-0">
                             {% if models.has_previous %}
                                 <li class="page-item">
-                                    <a class="page-link" href="?page_models={{ models.previous_page_number }}&view=models" aria-label="Previous">
+                                    <a class="page-link" href="?page_models={{ models.previous_page_number }}&view=models#modelsTableContainer" aria-label="Previous">
                                         <span aria-hidden="true">&laquo;</span>
                                     </a>
                                 </li>
@@ -167,13 +167,13 @@
                                     </li>
                                 {% else %}
                                     <li class="page-item">
-                                        <a class="page-link" href="?page_models={{ i }}&view=models">{{ i }}</a>
+                                        <a class="page-link" href="?page_models={{ i }}&view=models#modelsTableContainer">{{ i }}</a>
                                     </li>
                                 {% endif %}
                             {% endfor %}
                             {% if models.has_next %}
                                 <li class="page-item">
-                                    <a class="page-link" href="?page_models={{ models.next_page_number }}&view=models" aria-label="Next">
+                                    <a class="page-link" href="?page_models={{ models.next_page_number }}&view=models#modelsTableContainer" aria-label="Next">
                                         <span aria-hidden="true">&raquo;</span>
                                     </a>
                                 </li>
@@ -230,7 +230,7 @@
                         <ul class="pagination mb-0">
                             {% if uploaded_records.has_previous %}
                             <li class="page-item">
-                                <a class="page-link" href="?page_records={{ uploaded_records.previous_page_number }}&view=records" aria-label="Previous">
+                                <a class="page-link" href="?page_records={{ uploaded_records.previous_page_number }}&view=records#recordsTableContainer" aria-label="Previous">
                                     <span aria-hidden="true">&laquo;</span>
                                 </a>
                             </li>
@@ -242,13 +242,13 @@
                                 </li>
                                 {% else %}
                                 <li class="page-item">
-                                    <a class="page-link" href="?page_records={{ i }}&view=records">{{ i }}</a>
+                                    <a class="page-link" href="?page_records={{ i }}&view=records#recordsTableContainer">{{ i }}</a>
                                 </li>
                                 {% endif %}
                             {% endfor %}
                             {% if uploaded_records.has_next %}
                                 <li class="page-item">
-                                    <a class="page-link" href="?page_records={{ uploaded_records.next_page_number }}&view=records" aria-label="Next">
+                                    <a class="page-link" href="?page_records={{ uploaded_records.next_page_number }}&view=records#recordsTableContainer" aria-label="Next">
                                         <span aria-hidden="true">&raquo;</span>
                                     </a>
                                 </li>
