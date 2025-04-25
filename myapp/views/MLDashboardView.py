@@ -1,11 +1,12 @@
 from django import forms
-from django.contrib import messages
-from django.shortcuts import render, redirect
-from django.views import View
-from django.http import HttpRequest, HttpResponse, JsonResponse
-from django.utils.decorators import method_decorator
-from django.contrib.auth.decorators import login_required, permission_required
 from django.conf import settings
+from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib import messages
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.http import HttpRequest, HttpResponse, JsonResponse
+from django.shortcuts import render, redirect
+from django.utils.decorators import method_decorator
+from django.views import View
 
 import logging
 import requests
@@ -104,32 +105,37 @@ class MLDashboardView(View):
             response = requests.get(f"{ml_service_url}/api/models/")
             response_data = response.json()
 
+            # Build preprocessing data
             for x in response_data['models']:
                 if isinstance(x['preprocessing_steps'], list):
                     x['preprocessing_steps'] = ", ".join(x['preprocessing_steps'])
 
+            models_list = response_data.get('models', [])
+            paginator = Paginator(models_list, 10)
+            page = request.GET.get('page')
+
+            # Pagination for models table
+            try:
+                models = paginator.page(page)
+            except PageNotAnInteger:
+                models = paginator.page(1)
+            except EmptyPage:
+                models = paginator.page(paginator.num_pages)
+
             num_predictions = UploadedRecord.objects.all().count()
             preprocessing_steps = PreprocessingStep.objects.all()
             form = UploadModelForm(preprocessing_steps=preprocessing_steps)
-        
-            preprocessing_data = []
-            for i in preprocessing_steps:
-                entry = {
-                    "id": i.preprocessing_step_id,
-                    "name": i.preprocess_name
-                }
-                preprocessing_data.append(entry)
 
             context = {
                 'form': form,
                 'error': error,
                 'message': message,
-                'models': response_data.get('models', []),
-                'preprocessing_steps': preprocessing_data,
+                'models': models,
                 'num_predictions': num_predictions,
             }
 
             return render(request, self.template_name, context=context)
+
         except Exception as e:
             logger.error(f"Error getting models from ML service: {str(e)}")
             return JsonResponse({
