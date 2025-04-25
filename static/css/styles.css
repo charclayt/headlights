@@ -943,16 +943,13 @@ html {
   color: var(--body-color);
 }
 
-[data-theme="dark"] .form-label {
-  color: #dee2e6;
-}
-
-[data-theme="dark"] .form-label {
-  color: #dee2e6;
-}
-
 [data-theme="dark"] .input-group-text {
   background-color: #343a40;
   color: #f8f9fa;          
   border-color: #495057;
+}
+
+[data-theme="dark"] .page-link {
+  background-color: #343a40;
+  color: var(--body-color);
 }
