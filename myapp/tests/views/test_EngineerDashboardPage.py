@@ -1,8 +1,12 @@
+from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.messages.middleware import MessageMiddleware
+from django.contrib.sessions.middleware import SessionMiddleware
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
+from django.test.client import RequestFactory
 from django.urls import reverse
 
 from myapp.tests.test_BaseView import BaseViewTest
@@ -10,6 +14,7 @@ from myapp.models import PredictionModel, UserProfile
 from myapp.tests.config import Views, Templates, TestData, ErrorCodes
 
 import logging
+from requests.exceptions import RequestException
 from unittest.mock import patch
 
 class EngineerDashboardPageTest(BaseViewTest, TestCase):
@@ -41,11 +46,20 @@ class EngineerDashboardPageTest(BaseViewTest, TestCase):
         self.client.login(username='engineer', password='password')
         self.TEMPLATE = Templates.ENGINEER
 
+    def add_middleware(self, request):
+        middleware = SessionMiddleware(get_response=lambda r: r)
+        middleware.process_request(request)
+        request.session.save()
+
+        message_middleware = MessageMiddleware(get_response=lambda r: r)
+        message_middleware.process_request(request)
+        request.session.save()
+
     def tearDown(self):
         logging.disable(logging.NOTSET)
 
     @patch('myapp.views.EngineerDashboardView.requests.get')
-    def test_get_view(self, mock_get):
+    def test_get_view_with_messages(self, mock_get):
         mock_response_data = {
             'status': 'success',
             'models': [
@@ -62,9 +76,76 @@ class EngineerDashboardPageTest(BaseViewTest, TestCase):
         mock_get.return_value.status_code = 200
         mock_get.return_value.json.return_value = mock_response_data
 
+        factory = RequestFactory()
+        request = factory.get(reverse(self.URL))
+        request.user = self.client.session.get('auth_user_id')
+        self.add_middleware(request)
+
+        messages.success(request, 'Model loaded successfully.')
+        messages.error(request, 'Failed to upload model. Please try again.')
+
         response = self.client.get(reverse(self.URL))
 
         self.assertEqual(response.status_code, 200)
+
+    @patch('myapp.views.EngineerDashboardView.requests.get')
+    def test_page_not_an_integer(self, mock_get):
+        mock_response_data = {
+            'status': 'success',
+            'models': [
+                {
+                    'id': 1,
+                    'name': 'simple_model',
+                    'filepath': '/shared/media/models/simple.pkl',
+                    'price_per_prediction': 5.0,
+                    'preprocessing_steps': []
+                }
+            ]
+        }
+
+        mock_get.return_value.status_code = 200
+        mock_get.return_value.json.return_value = mock_response_data
+
+        response = self.client.get(reverse(self.URL), {'page_models': 'abc', 'page_records': 'abc'})
+
+        self.assertEqual(response.status_code, 200)
+
+    @patch('myapp.views.EngineerDashboardView.requests.get')
+    def test_empty_page(self, mock_get):
+        mock_response_data = {
+            'status': 'success',
+            'models': [
+                {
+                    'id': 1,
+                    'name': 'simple_model',
+                    'filepath': '/shared/media/models/simple.pkl',
+                    'price_per_prediction': 5.0,
+                    'preprocessing_steps': []
+                }
+            ]
+        }
+
+        mock_get.return_value.status_code = 200
+        mock_get.return_value.json.return_value = mock_response_data
+
+        response = self.client.get(reverse(self.URL), {'page_models': '999999', 'page_records': '999999'})
+
+        self.assertEqual(response.status_code, 200)
+
+    @patch('myapp.views.EngineerDashboardView.requests.get')
+    def test_get_view_bad_response_from_ml(self, mock_get):
+        mock_get.side_effect = RequestException("ML service down")
+
+        response = self.client.get(reverse(self.URL))
+
+        self.assertEqual(response.status_code, 500)
+        self.assertJSONEqual(
+        response.content.decode(),
+        {
+            'status': 'error',
+            'message': 'Error communicating with ML service: ML service down'
+        }
+    )
 
     def test_unauthenticated_model_upload(self):
         self.URL = Views.API_UPLOAD_MODEL
