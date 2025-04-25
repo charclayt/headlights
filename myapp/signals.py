@@ -55,7 +55,6 @@ def log_create_or_update(sender, instance, created, **kwargs):
 
 @receiver(post_delete)
 def log_delete(sender, instance, **kwargs):
-    print("SIGNAL FIRED")
     """Logs delete operations for all models."""
 
     # Don't write logs in tests or if a log is already being written.
