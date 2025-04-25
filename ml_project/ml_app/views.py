@@ -107,7 +107,8 @@ class UploadModelView(View):
             # Get model name and notes from the request
             model_name = request.POST.get('model_name')
             notes = request.POST.get('notes', '')
-            selected_steps = request.POST.getlist('selected_steps')
+            data_processing_options = request.POST.get('data_processing_options')
+            price_per_prediction = request.POST.get('price_per_prediction')
             
             # Check if model file was provided
             if 'model_file' not in request.FILES:
@@ -128,8 +129,8 @@ class UploadModelView(View):
                     'message': 'Invalid file format. Only .pkl files are allowed.'
                 }, status=400)
             
-            if(selected_steps):
-                preprocessingSteps = PreprocessingStep.objects.filter(preprocessing_step_id__in=selected_steps)
+            if(data_processing_options):
+                preprocessingSteps = PreprocessingStep.objects.filter(preprocessing_step_id__in=data_processing_options)
                 if(not preprocessingSteps):
                     logger.info("Preprocessing ids do not exist")
                     return JsonResponse({
@@ -151,12 +152,15 @@ class UploadModelView(View):
             model = PredictionModel.objects.create(
                 model_name=model_name,
                 notes=notes,
-                filepath=file_path
+                filepath=file_path,
+                price_per_prediction=price_per_prediction,
             )
 
+            logging.warning(data_processing_options)
+
             objects = []
-            if(selected_steps):
-                for x in selected_steps:
+            if(data_processing_options):
+                for x in data_processing_options:
                     objects.append(PreprocessingModelMap(preprocessing_step_id_id = int(x), model_id_id = model.model_id))
 
                 PreprocessingModelMap.objects.bulk_create(objects)
