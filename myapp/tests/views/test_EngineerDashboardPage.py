@@ -44,12 +44,25 @@ class EngineerDashboardPageTest(BaseViewTest, TestCase):
     def tearDown(self):
         logging.disable(logging.NOTSET)
 
-    def test_get_view(self):
-        response = self.client.get(reverse(self.URL))
+    @patch('myapp.views.EngineerDashboardView.requests.get')
+    def test_get_view(self, mock_get):
+        mock_response_data = {
+            'status': 'success',
+            'models': [
+                {
+                    'id': 1,
+                    'name': 'simple_model',
+                    'filepath': '/shared/media/models/simple.pkl',
+                    'price_per_prediction': 5.0,
+                    'preprocessing_steps': []
+                }
+            ]
+        }
 
-        if response.status_code != 200:
-            print(response.status_code)
-            print(response.content.decode())
+        mock_get.return_value.status_code = 200
+        mock_get.return_value.json.return_value = mock_response_data
+
+        response = self.client.get(reverse(self.URL))
 
         self.assertEqual(response.status_code, 200)
 
