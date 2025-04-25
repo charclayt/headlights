@@ -68,7 +68,8 @@ class ModelListView(View):
                     'name': model.model_name,
                     'notes': model.notes,
                     'filepath': model.filepath,
-                    'preprocessingSteps': [map_item.preprocessing_step_id.preprocess_name for map_item in model.preprocessing_steps]
+                    'price_per_prediction': model.price_per_prediction,
+                    'preprocessing_steps': [map_item.preprocessing_step_id.preprocess_name for map_item in model.preprocessing_steps]
                 }
                 for model in models
             ]
@@ -130,8 +131,8 @@ class UploadModelView(View):
                 }, status=400)
             
             if(data_processing_options):
-                preprocessingSteps = PreprocessingStep.objects.filter(preprocessing_step_id__in=data_processing_options)
-                if(not preprocessingSteps):
+                preprocessing_steps = PreprocessingStep.objects.filter(preprocessing_step_id__in=data_processing_options)
+                if(not preprocessing_steps):
                     logger.info("Preprocessing ids do not exist")
                     return JsonResponse({
                         'status': 'error',
@@ -155,8 +156,6 @@ class UploadModelView(View):
                 filepath=file_path,
                 price_per_prediction=price_per_prediction,
             )
-
-            logging.warning(data_processing_options)
 
             objects = []
             if(data_processing_options):

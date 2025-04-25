@@ -6,141 +6,142 @@
 {% endblock %}
 
 {% block content %}
-    
-<div class="row mb-4">
-    <div class="col">
-      <h1 class="h3 mb-0 text-gray-800">
-        <i class="bi bi-hammer me-2"></i>Engineer Dashboard
-      </h1>
-      <p class="text-muted">Upload and manage models</p>
-    </div>
-    <div class="col-auto">
-      <div class="card border-0 mb-0">
-        <div class="card-body py-2">
-          <div class="row align-items-center">
-            <div class="col-auto">
-              <i class="bi bi-file-text display-6 text-primary"></i>
-            </div>
-            <div class="col">
-              <div class="small text-muted">Total Predictions</div>
-              <div class="fs-4 fw-bold">{{ num_predictions }}</div>
-            </div>
-          </div>
+    <div class="row mb-4">
+        <div class="col">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="bi bi-hammer me-2"></i>Engineer Dashboard
+        </h1>
+        <p class="text-muted">Upload and manage models</p>
         </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Row: Buttons (Left) and Upload Model Form (Right) -->
-<div class="row">
-    <!-- Buttons -->
-    <div class="col-md-4">
-        <div class="mb-3">
-          <a class="btn btn-primary btn-lg w-100" href="">
-            <i class="bi bi-arrow-up-circle-fill me-2"></i>Placeholder
-          </a>
-        </div>
-    </div>
-    <!-- Upload Model Form -->
-    <div class="col-md-8">
-        <div class="p-3 rounded border">
-            <div class="card shadow-sm">
-                <div class="card-header bg-light">
-                    <strong>Upload Model</strong>
+        <div class="col-auto">
+        <div class="card border-0 mb-0">
+            <div class="card-body py-2">
+            <div class="row align-items-center">
+                <div class="col-auto">
+                <i class="bi bi-file-text display-6 text-primary"></i>
                 </div>
-                <div class="card-body">
-                    <form method="post" enctype="multipart/form-data" id="uploadModelForm">
-                        {% csrf_token %}
+                <div class="col">
+                <div class="small text-muted">Total Predictions</div>
+                <div class="fs-4 fw-bold">{{ num_predictions }}</div>
+                </div>
+            </div>
+            </div>
+        </div>
+        </div>
+    </div>
 
-                        <div class="mb-3">
-                          <label for="{{ form.model_name.id_for_label }}" class="form-label">Model Name</label>
-                          {{ form.model_name|add_class:"form-control" }}
-                          {% if form.model_name.errors %}
-                            <div class="text-danger small">{{ form.model_name.errors }}</div>
-                          {% endif %}
-                        </div>
+    <!-- Row: Buttons (Left) and Upload Model Form (Right) -->
+    <div class="row">
+        <!-- Buttons -->
+        <div class="col-md-4">
+            <div class="mb-3">
+            <a class="btn btn-primary btn-lg w-100" href="">
+                <i class="bi bi-arrow-up-circle-fill me-2"></i>Placeholder
+            </a>
+            </div>
+        </div>
 
-                        <div class="mb-3">
-                          <label for="{{ form.notes.id_for_label }}" class="form-label">Notes</label>
-                          {{ form.notes|add_class:"form-control" }}
-                          {% if form.notes.errors %}
-                            <div class="text-danger small">{{ form.notes.errors }}</div>
-                          {% endif %}
-                        </div>
+        <!-- Upload Model Form -->
+        <div class="col-md-8">
+            <div class="p-3 rounded border">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-light">
+                        <strong>Upload Model</strong>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" enctype="multipart/form-data" id="uploadModelForm">
+                            {% csrf_token %}
 
-                        {% if form.fields.data_processing_options.choices %}
                             <div class="mb-3">
-                                <label for="{{ form.data_processing_options.id_for_label }}" class="form-label">Select preprocessing steps</label>
-                                {{ form.data_processing_options|add_class:"form-select" }}
-                                {% if form.data_processing_options.errors %}
-                                    <div class="text-danger small">{{ form.data_processing_options.errors }}</div>
+                            <label for="{{ form.model_name.id_for_label }}" class="form-label">{{ form.model_name.label }}</label>
+                            {{ form.model_name|add_class:"form-control" }}
+                            {% if form.model_name.errors %}
+                                <div class="text-danger small">{{ form.model_name.errors }}</div>
+                            {% endif %}
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="{{ form.price_per_prediction.id_for_label }}" class="form-label">{{ form.price_per_prediction.label }}</label>
+                                {{ form.price_per_prediction|attr:"placeholder:£0.00"|add_class:"form-control" }}
+                                {% if form.price_per_prediction.errors %}
+                                    <div class="text-danger small">{{ form.price_per_prediction.errors }}</div>
                                 {% endif %}
                             </div>
-                        {% endif %}
 
-                        <div class="mb-3">
-                          <label for="{{ form.model_file.id_for_label }}" class="form-label">Model File (.pkl)</label>
-                          {{ form.model_file|add_class:"form-control" }}
-                          {% if form.model_file.errors %}
-                            <div class="text-danger small">{{ form.model_file.errors }}</div>
-                          {% endif %}
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="{{ form.price_per_prediction.id_for_label }}" class="form-label">Price Per Prediction</label>
-                            {{ form.price_per_prediction|add_class:"form-control" }}
-                            {% if form.price_per_prediction %}
+                            <div class="mb-3">
+                                <label for="{{ form.model_file.id_for_label }}" class="form-label">{{ form.model_file.label }}</label>
+                                {{ form.model_file|add_class:"form-control" }}
+                                {% if form.model_file.errors %}
                                 <div class="text-danger small">{{ form.model_file.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            {% if form.fields.data_processing_options.choices %}
+                                <div class="mb-3">
+                                    <label class="form-label">{{ form.data_processing_options.label }}</label>
+                                    {% for id, choice in form.data_processing_options.field.choices %}
+                                        <div class="form-check">
+                                            <input type="checkbox" name="{{ form.data_processing_options.html_name }}" id="id_{{ id }}" value="{{ id }}"{% if choice.0 in form.data_processing_options.value %} checked{% endif %} class="form-check-input">
+                                            <label class="form-check-label" for="id_{{ id }}">{{ choice }}</label>
+                                        </div>
+                                    {% endfor %}
+                                    {% if form.data_processing_options.errors %}
+                                        <div class="text-danger small">{{ form.data_processing_options.errors }}</div>
+                                    {% endif %}
+                                </div>
                             {% endif %}
-                        </div>
 
-                        {% if upload_success %}
-                          <div id="successMessage" class="alert alert-success" role="alert">{{ message }}</div>
-                        {% elif error %}
-                          <div id="errorMessage" class="alert alert-danger" role="alert">{{ message }}</div>
-                        {% endif %}
+                            <div class="mb-3">
+                                <label for="{{ form.notes.id_for_label }}" class="form-label">{{ form.notes.label }}</label>
+                                {{ form.notes|add_class:"form-control" }}
+                                {% if form.notes.errors %}
+                                <div class="text-danger small">{{ form.notes.errors }}</div>
+                                {% endif %}
+                            </div>
 
-                        <div class="text-end mt-4">
-                          <button type="submit" class="btn btn-success px-4">Upload Model</button>
-                        </div>
-                      </form>
+                            <div class="text-end mt-4">
+                            <button type="submit" class="btn btn-success px-4">Upload Model</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+        </div>
+        </div>
+    </div>
+
+    <div class="mt-5">
+        <div class="card shadow-sm">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <strong>Available Models</strong>
+            </div>
+            <div class="card-body table-responsive">
+                <div class="card-body table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light text-center">
+                            <tr>
+                                <th>Name</th>
+                                <th>Price Per Prediction</th>
+                                <th>Preprocessing Steps</th>
+                                <th>Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-center">
+                            {% for row in models %}
+                                <tr>
+                                    <td>{{ row.name }}</td>
+                                    <td>{{ row.price_per_prediction }}</td>
+                                    <td>{{ row.preprocessing_steps }}</td>
+                                    <td>{{ row.notes }}</td>
+                                </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center text-muted">No models found.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
             </div>
-      </div>
-    </div>
-</div>
-
-<div class="mt-5">
-    <div class="card shadow-sm">
-        <div class="card-header bg-light d-flex justify-content-between align-items-center">
-            <strong>Available Models</strong>
-        </div>
-        <div class="card-body table-responsive">
-            <div class="card-body table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead class="table-light text-center">
-                        <tr>
-                            <th>Name</th>
-                            <th>Notes</th>
-                            <th>Preprocessing Steps</th>
-                        </tr>
-                    </thead>
-                    <tbody class="text-center">
-                        {% for row in models %}
-                            <tr>
-                                <td>{{ row.name }}</td>
-                                <td>{{ row.notes }}</td>
-                                <td>{{ row.preprocessingSteps }}</td>
-                            </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="3" class="text-center text-muted">No models found.</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
         </div>
     </div>
-</div>
 {% endblock %}

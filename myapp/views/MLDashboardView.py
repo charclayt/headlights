@@ -1,4 +1,5 @@
 from django import forms
+from django.contrib import messages
 from django.shortcuts import render, redirect
 from django.views import View
 from django.http import HttpRequest, HttpResponse, JsonResponse
@@ -38,12 +39,10 @@ class UploadModelForm(forms.Form):
     )
 
     data_processing_options = forms.MultipleChoiceField(
-        label="Select preprocessing steps",
+        label="Select Preprocessing Steps",
         required=False,
-        widget=forms.SelectMultiple(attrs={
-            'id': 'preprocessingSteps',
-            'class': 'form-select',
-            'multiple': 'multiple',
+        widget=forms.CheckboxSelectMultiple(attrs={
+            'id': 'preprocessing_steps',
         })
     )
 
@@ -57,7 +56,7 @@ class UploadModelForm(forms.Form):
         })
     )
 
-    price_per_prediction = forms.IntegerField(
+    price_per_prediction = forms.FloatField(
         label="Price Per Prediction",
         required=True,
         widget=forms.NumberInput(attrs={
@@ -89,14 +88,25 @@ class MLDashboardView(View):
         """
         logger.info(f"{request.user} accessed the machine learning dashboard page.")
         try:
+            error = False
+            message = None
+
+            stored_messages = messages.get_messages(request)
+            for msg in stored_messages:
+                if msg.tags == 'success':
+                    message = str(msg)
+                elif msg.tags == 'error':
+                    error = True
+                    message = str(msg)
+
             # sends authenticated request to ML service, it just
             ml_service_url = getattr(settings, 'ML_SERVICE_URL', 'http://ml-service:8001')
             response = requests.get(f"{ml_service_url}/api/models/")
             response_data = response.json()
 
             for x in response_data['models']:
-                if isinstance(x['preprocessingSteps'], list):
-                    x['preprocessingSteps'] = ", ".join(x['preprocessingSteps'])
+                if isinstance(x['preprocessing_steps'], list):
+                    x['preprocessing_steps'] = ", ".join(x['preprocessing_steps'])
 
             num_predictions = UploadedRecord.objects.all().count()
             preprocessing_steps = PreprocessingStep.objects.all()
@@ -112,6 +122,8 @@ class MLDashboardView(View):
 
             context = {
                 'form': form,
+                'error': error,
+                'message': message,
                 'models': response_data.get('models', []),
                 'preprocessing_steps': preprocessing_data,
                 'num_predictions': num_predictions,
@@ -160,9 +172,9 @@ class MLDashboardView(View):
             )
             
             if response.status_code == 200:
-                self.request.session['ml_upload_message'] = 'success'
+                messages.success(request, 'Model uploaded successfully!')
             else:
-                self.request.session['ml_upload_message'] = 'failure'
+                messages.error(request, 'Failed to upload model. Please try again.')
 
             return redirect("engineer")
 
