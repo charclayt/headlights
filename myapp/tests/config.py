@@ -33,8 +33,7 @@ class Views:
 
 class Templates:
     HOME = "index.html"
-    MACHINE_LEARNING = "engineer.html"
-    ML_UPLOAD_MODEL = "ml/upload_model.html"
+    ENGINEER = "engineer.html"
     CUSTOMER = "customer.html"
     FINANCE = "finance.html"
     CONTACT_DETAILS = "contact_details.html"

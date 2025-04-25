@@ -8,6 +8,7 @@ from django.shortcuts import render, redirect
 from django.utils.decorators import method_decorator
 from django.views import View
 
+import traceback
 import logging
 import requests
 
@@ -196,7 +197,7 @@ class EngineerDashboardView(View):
             return redirect("engineer")
 
         except Exception as e:
-            logger.error(f"Error uploading model to ML service: {str(e)}")
+            logger.error(f"Error uploading model to ML service: {traceback.format_exc()}")
             return JsonResponse({
                 'status': 'error',
                 'message': f"Error communicating with ML service: {str(e)}"
