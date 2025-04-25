@@ -49,7 +49,7 @@ class ModelListTestCase(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual('test_model', data['models'][0]['name'])
-        self.assertEqual(['create_days_between_col'], data['models'][0]['preprocessingSteps'])
+        self.assertEqual(['create_days_between_col'], data['models'][0]['preprocessing_steps'])
 
     def test_no_models_found(self):
 
