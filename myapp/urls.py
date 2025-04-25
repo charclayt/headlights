@@ -5,14 +5,14 @@ from django.urls import path
 
 from myapp.views.CustomerDashBoardView import CustomerDashboardView, ClaimUploadView, PredictionFeedbackView, ProcessClaimsFileView
 from myapp.views.IndexView import IndexView
-from myapp.views.MLDashboardView import MLDashboardView
+from myapp.views.EngineerDashboardView import EngineerDashboardView
 from myapp.views.AccountManagementView import AccountCreationView, AccountContactDetailsView
 from myapp.views.FinanceDashboardViews import FinanceDashboardView, CompanyDetailsView, CompanyManageEmployeesView, download_invoice, load_entity_field
 
 
 urlpatterns = [
     path("", IndexView.as_view(), name="index"),
-    path("engineer/", MLDashboardView.as_view() , name="engineer"),
+    path("engineer/", EngineerDashboardView.as_view() , name="engineer"),
     
     # Customer dashboard URLs
     path("customer/", CustomerDashboardView.as_view(), name="customer_dashboard"),  

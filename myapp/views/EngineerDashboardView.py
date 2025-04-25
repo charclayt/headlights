@@ -11,7 +11,7 @@ from django.views import View
 import logging
 import requests
 
-from myapp.models import PreprocessingStep, UploadedRecord, PredictionModel
+from myapp.models import PreprocessingStep, UploadedRecord
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -74,7 +74,7 @@ class UploadModelForm(forms.Form):
 
 
 @method_decorator([login_required, permission_required("myapp.add_predictionmodel")], name="dispatch")
-class MLDashboardView(View):
+class EngineerDashboardView(View):
     """
     This class handles rendering the machine learning dashboard page.
     """
