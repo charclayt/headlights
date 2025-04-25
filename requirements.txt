@@ -14,3 +14,4 @@ reportlab==4.4.0
 requests==2.32.2
 ruff==0.9.8
 sqlparse==0.5.2
+WhiteNoise==6.9.0
