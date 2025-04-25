@@ -81,7 +81,5 @@ def log_delete(sender, instance, **kwargs):
                 operation_performed=OperationLookup.objects.get(pk=operation_id),
                 successful=True
             )
-    except Exception as e:
-        logger.info(f"Failed to save logging to DB: {e}")
     finally:
         set_in_signal(False)

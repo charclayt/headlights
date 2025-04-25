@@ -79,23 +79,6 @@ class LoggingSignalsTest(TransactionTestCase):
             affected_table_id=self.table_lookup,
             operation_performed=self.operation_delete
         ).exists())
-    
-    @override_settings(TESTING=False)
-    @patch("myapp.middleware.get_current_user")
-    def test_log_delete_signal_failure(self, mock_get_current_user):
-        logging.basicConfig(level=logging.INFO)
-
-        mock_get_current_user.return_value = self.user_profile.auth_id
-
-        TableLookup.objects.filter(table_name="Company").delete()
-
-        obj = Company.objects.create(name="test")
-
-        with self.assertLogs("myapp.signals", level="INFO") as log_context:
-            obj.delete()
-
-        self.assertTrue(any("Failed to save logging to DB" in msg for msg in log_context.output),
-                        msg="Expected log message not found.")
 
     @override_settings(TESTING=False)
     @patch("myapp.middleware.get_current_user")
