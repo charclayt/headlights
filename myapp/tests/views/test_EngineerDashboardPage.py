@@ -39,7 +39,8 @@ class EngineerDashboardPageTest(BaseViewTest, TestCase):
         logging.disable(logging.NOTSET)
 
     def test_get_view(self):
-        BaseViewTest.test_get_view(self)
+        response = self.client.get(reverse(self.URL))
+        self.assertEqual(response.status_code, 200)
 
     def test_unauthenticated_model_upload(self):
         self.URL = Views.API_UPLOAD_MODEL
