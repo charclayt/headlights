@@ -34,10 +34,13 @@
     <div class="row">
         <!-- Buttons -->
         <div class="col-md-4">
-            <div class="mb-3">
-            <a class="btn btn-primary btn-lg w-100" href="">
-                <i class="bi bi-arrow-up-circle-fill me-2"></i>Placeholder
-            </a>
+            <div class="mb-3 d-flex gap-2">
+                <button id="showModelsBtn" class="btn btn-primary btn-lg w-50" type="button">
+                    <i class="bi bi-box-seam me-2"></i>View Models
+                </button>
+                <button id="showRecordsBtn" class="btn btn-secondary btn-lg w-50" type="button">
+                    <i class="bi bi-box-seam me-2"></i>View Recent Uploaded Records
+                </button>
             </div>
         </div>
 
@@ -113,7 +116,7 @@
         </div>
     </div>
 
-    <div class="mt-5">
+    <div id="modelsTableContainer" class="mt-5">
         <div class="card shadow-sm">
             <div class="card-header bg-light d-flex justify-content-between align-items-center">
                 <strong>Available Models</strong>
@@ -138,47 +141,149 @@
                                     <td>{{ row.notes }}</td>
                                 </tr>
                             {% empty %}
-                            <tr>
-                                <td colspan="4" class="text-center text-muted">No models found.</td>
-                            </tr>
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted">No models found.</td>
+                                </tr>
                             {% endfor %}
                         </tbody>
                     </table>
                 </div>
             </div>
             {% if models.has_other_pages %}
-            <div class="card-footer py-3 d-flex justify-content-center">
-                <nav aria-label="Page navigation">
-                    <ul class="pagination mb-0">
-                        {% if models.has_previous %}
-                        <li class="page-item">
-                            <a class="page-link" href="?page={{ models.previous_page_number }}" aria-label="Previous">
-                                <span aria-hidden="true">&laquo;</span>
-                            </a>
-                        </li>
-                        {% endif %}
-                        {% for i in models.paginator.page_range %}
-                            {% if models.number == i %}
-                            <li class="page-item active" aria-current="page">
-                                <span class="page-link">{{ i }}</span>
-                            </li>
-                            {% else %}
-                            <li class="page-item">
-                                <a class="page-link" href="?page={{ i }}">{{ i }}</a>
-                            </li>
+                <div class="card-footer py-3 d-flex justify-content-center">
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination mb-0">
+                            {% if models.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page_models={{ models.previous_page_number }}" aria-label="Previous">
+                                        <span aria-hidden="true">&laquo;</span>
+                                    </a>
+                                </li>
                             {% endif %}
-                        {% endfor %}
-                        {% if models.has_next %}
-                        <li class="page-item">
-                            <a class="page-link" href="?page={{ models.next_page_number }}" aria-label="Next">
-                                <span aria-hidden="true">&raquo;</span>
-                            </a>
-                        </li>
-                        {% endif %}
-                    </ul>
-                </nav>
-            </div>
+                            {% for i in models.paginator.page_range %}
+                                {% if models.number == i %}
+                                    <li class="page-item active" aria-current="page">
+                                        <span class="page-link">{{ i }}</span>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page_models={{ i }}">{{ i }}</a>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                            {% if models.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page_models={{ models.next_page_number }}" aria-label="Next">
+                                        <span aria-hidden="true">&raquo;</span>
+                                    </a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
             {% endif %}
         </div>
     </div>
+
+    <div id="recordsTableContainer" class="mt-5" style="display: none;">
+        <div class="card shadow-sm">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <strong>Recent Uploaded Records</strong>
+            </div>
+
+            <div class="card-body table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light text-center">
+                        <tr>
+                            <th>Upload Date</th>
+                            <th>User ID</th>
+                            <th>Claim ID</th>
+                            <th>Feedback</th>
+                            <th>Model</th>
+                            <th>Predicted Settlement</th>
+                            <th>User Settlement</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-center">
+                        {% for record in uploaded_records %}
+                            <tr>
+                                <td>{{ record.upload_date }}</td>
+                                <td>{{ record.user_id.user_profile_id|default:"-" }}</td>
+                                <td>{{ record.claim_id.claim_id|default:"-" }}</td>
+                                <td>{{ record.feedback_id.notes|default:"-" }}</td>
+                                <td>{{ record.model_id.model_name|default:"-" }}</td>
+                                <td>{{ record.predicted_settlement|default:"-" }}</td>
+                                <td>{{ record.user_settlement|default:"-" }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="7" class="text-center text-muted">No uploaded records found.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% if uploaded_records.has_other_pages %}
+                <div class="card-footer py-3 d-flex justify-content-center">
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination mb-0">
+                            {% if uploaded_records.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page_records={{ uploaded_records.previous_page_number }}" aria-label="Previous">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                            {% endif %}
+                            {% for i in uploaded_records.paginator.page_range %}
+                                {% if uploaded_records.number == i %}
+                                <li class="page-item active" aria-current="page">
+                                    <span class="page-link">{{ i }}</span>
+                                </li>
+                                {% else %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page_records={{ i }}">{{ i }}</a>
+                                </li>
+                                {% endif %}
+                            {% endfor %}
+                            {% if uploaded_records.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page_records={{ uploaded_records.next_page_number }}" aria-label="Next">
+                                        <span aria-hidden="true">&raquo;</span>
+                                    </a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+    <script>
+        const modelsTableContainer = document.getElementById('modelsTableContainer');
+        const recordsTableContainer = document.getElementById('recordsTableContainer');
+        const showModelsBtn = document.getElementById('showModelsBtn');
+        const showRecordsBtn = document.getElementById('showRecordsBtn');
+
+        showModelsBtn.addEventListener('click', () => {
+            modelsTableContainer.style.display = 'block';
+            recordsTableContainer.style.display = 'none';
+            showModelsBtn.classList.add('btn-primary');
+            showModelsBtn.classList.remove('btn-secondary');
+            showRecordsBtn.classList.add('btn-secondary');
+            showRecordsBtn.classList.remove('btn-primary');
+        });
+
+        showRecordsBtn.addEventListener('click', () => {
+            modelsTableContainer.style.display = 'none';
+            recordsTableContainer.style.display = 'block';
+            showModelsBtn.classList.add('btn-secondary');
+            showModelsBtn.classList.remove('btn-primary');
+            showRecordsBtn.classList.add('btn-primary');
+            showRecordsBtn.classList.remove('btn-secondary');
+        });
+    </script>
 {% endblock %}

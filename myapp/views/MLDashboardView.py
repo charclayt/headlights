@@ -11,11 +11,10 @@ from django.views import View
 import logging
 import requests
 
-from myapp.models import PreprocessingStep, UploadedRecord
+from myapp.models import PreprocessingStep, UploadedRecord, PredictionModel
 
 # Configure logging
 logger = logging.getLogger(__name__)
-
 
 class UploadModelForm(forms.Form):
     model_name = forms.CharField(
@@ -112,15 +111,26 @@ class MLDashboardView(View):
 
             models_list = response_data.get('models', [])
             paginator = Paginator(models_list, 10)
-            page = request.GET.get('page')
+            page_models = request.GET.get('page_models')
 
             # Pagination for models table
             try:
-                models = paginator.page(page)
+                models = paginator.page(page_models)
             except PageNotAnInteger:
                 models = paginator.page(1)
             except EmptyPage:
                 models = paginator.page(paginator.num_pages)
+
+            uploaded_records_list = UploadedRecord.objects.all().order_by('-upload_date')
+            records_paginator = Paginator(uploaded_records_list, 10)
+            page_records = request.GET.get('page_records')
+
+            try:
+                uploaded_records = records_paginator.page(page_records)
+            except PageNotAnInteger:
+                uploaded_records = records_paginator.page(1)
+            except EmptyPage:
+                uploaded_records = records_paginator.page(records_paginator.num_pages)
 
             num_predictions = UploadedRecord.objects.all().count()
             preprocessing_steps = PreprocessingStep.objects.all()
@@ -131,6 +141,7 @@ class MLDashboardView(View):
                 'error': error,
                 'message': message,
                 'models': models,
+                'uploaded_records': uploaded_records,
                 'num_predictions': num_predictions,
             }
 
