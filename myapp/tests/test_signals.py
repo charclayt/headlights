@@ -91,9 +91,6 @@ class LoggingSignalsTest(TransactionTestCase):
 
         obj = Company.objects.create(name="test")
 
-        log_handler = logging.StreamHandler()
-        log_handler.setLevel(logging.INFO)
-
         with self.assertLogs("myapp.signals", level="INFO") as log_context:
             obj.delete()
 
