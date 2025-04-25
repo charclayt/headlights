@@ -8,3 +8,8 @@
 **/__pycache__/
 
 media/
+static/admin/
+static/js/bootstrap5.modal.forms.js
+static/js/bootstrap5.modal.forms.min.js
+static/js/jquery.bootstrap.modal.forms.js
+static/js/jquery.bootstrap.modal.forms.min.js
