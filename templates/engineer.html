@@ -155,7 +155,7 @@
                         <ul class="pagination mb-0">
                             {% if models.has_previous %}
                                 <li class="page-item">
-                                    <a class="page-link" href="?page_models={{ models.previous_page_number }}" aria-label="Previous">
+                                    <a class="page-link" href="?page_models={{ models.previous_page_number }}&view=models" aria-label="Previous">
                                         <span aria-hidden="true">&laquo;</span>
                                     </a>
                                 </li>
@@ -167,13 +167,13 @@
                                     </li>
                                 {% else %}
                                     <li class="page-item">
-                                        <a class="page-link" href="?page_models={{ i }}">{{ i }}</a>
+                                        <a class="page-link" href="?page_models={{ i }}&view=models">{{ i }}</a>
                                     </li>
                                 {% endif %}
                             {% endfor %}
                             {% if models.has_next %}
                                 <li class="page-item">
-                                    <a class="page-link" href="?page_models={{ models.next_page_number }}" aria-label="Next">
+                                    <a class="page-link" href="?page_models={{ models.next_page_number }}&view=models" aria-label="Next">
                                         <span aria-hidden="true">&raquo;</span>
                                     </a>
                                 </li>
@@ -230,7 +230,7 @@
                         <ul class="pagination mb-0">
                             {% if uploaded_records.has_previous %}
                             <li class="page-item">
-                                <a class="page-link" href="?page_records={{ uploaded_records.previous_page_number }}" aria-label="Previous">
+                                <a class="page-link" href="?page_records={{ uploaded_records.previous_page_number }}&view=records" aria-label="Previous">
                                     <span aria-hidden="true">&laquo;</span>
                                 </a>
                             </li>
@@ -242,13 +242,13 @@
                                 </li>
                                 {% else %}
                                 <li class="page-item">
-                                    <a class="page-link" href="?page_records={{ i }}">{{ i }}</a>
+                                    <a class="page-link" href="?page_records={{ i }}&view=records">{{ i }}</a>
                                 </li>
                                 {% endif %}
                             {% endfor %}
                             {% if uploaded_records.has_next %}
                                 <li class="page-item">
-                                    <a class="page-link" href="?page_records={{ uploaded_records.next_page_number }}" aria-label="Next">
+                                    <a class="page-link" href="?page_records={{ uploaded_records.next_page_number }}&view=records" aria-label="Next">
                                         <span aria-hidden="true">&raquo;</span>
                                     </a>
                                 </li>
@@ -268,22 +268,44 @@
         const showModelsBtn = document.getElementById('showModelsBtn');
         const showRecordsBtn = document.getElementById('showRecordsBtn');
 
+        function setView(activeView) {
+            if (activeView === 'records') {
+                modelsTableContainer.style.display = 'none';
+                recordsTableContainer.style.display = 'block';
+                showModelsBtn.classList.add('btn-secondary');
+                showModelsBtn.classList.remove('btn-primary');
+                showRecordsBtn.classList.add('btn-primary');
+                showRecordsBtn.classList.remove('btn-secondary');
+            } else {
+                modelsTableContainer.style.display = 'block';
+                recordsTableContainer.style.display = 'none';
+                showModelsBtn.classList.add('btn-primary');
+                showModelsBtn.classList.remove('btn-secondary');
+                showRecordsBtn.classList.add('btn-secondary');
+                showRecordsBtn.classList.remove('btn-primary');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const viewParam = urlParams.get('view');
+            const hasRecordsPage = urlParams.has('page_records');
+            const hasModelsPage = urlParams.has('page_models');
+
+            if (viewParam === 'records' || (hasRecordsPage && !hasModelsPage)) {
+                setView('records');
+            } else {
+                setView('models');
+            }
+        });
         showModelsBtn.addEventListener('click', () => {
-            modelsTableContainer.style.display = 'block';
-            recordsTableContainer.style.display = 'none';
-            showModelsBtn.classList.add('btn-primary');
-            showModelsBtn.classList.remove('btn-secondary');
-            showRecordsBtn.classList.add('btn-secondary');
-            showRecordsBtn.classList.remove('btn-primary');
+            setView('models');
+            history.pushState(null, '', '?view=models');
         });
 
         showRecordsBtn.addEventListener('click', () => {
-            modelsTableContainer.style.display = 'none';
-            recordsTableContainer.style.display = 'block';
-            showModelsBtn.classList.add('btn-secondary');
-            showModelsBtn.classList.remove('btn-primary');
-            showRecordsBtn.classList.add('btn-primary');
-            showRecordsBtn.classList.remove('btn-secondary');
+            setView('records');
+            history.pushState(null, '', '?view=records');
         });
     </script>
 {% endblock %}
