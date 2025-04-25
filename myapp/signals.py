@@ -10,7 +10,7 @@ from myapp.models import DatabaseLog, OperationLookup, TableLookup, UserProfile
 from threading import local
 import logging
 
-logging = logging.getLogger(__name__)
+logger = logging.getLogger("myapp.signals")
 local = local()
 
 def prevent_recursion():
@@ -49,12 +49,13 @@ def log_create_or_update(sender, instance, created, **kwargs):
                 successful=True
             )
     except Exception as e:
-        logging.info(f"Failed to save logging to DB: {e}")
+        logger.info(f"Failed to save logging to DB: {e}")
     finally:
         set_in_signal(False)
 
 @receiver(post_delete)
 def log_delete(sender, instance, **kwargs):
+    print("SIGNAL FIRED")
     """Logs delete operations for all models."""
 
     # Don't write logs in tests or if a log is already being written.
@@ -81,6 +82,6 @@ def log_delete(sender, instance, **kwargs):
                 successful=True
             )
     except Exception as e:
-        logging.info(f"Failed to save logging to DB: {e}")
+        logger.info(f"Failed to save logging to DB: {e}")
     finally:
         set_in_signal(False)

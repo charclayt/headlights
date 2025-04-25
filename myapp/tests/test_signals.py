@@ -41,6 +41,7 @@ class LoggingSignalsTest(TransactionTestCase):
         settings.TESTING = False
         super().setUp()
 
+    @override_settings(TESTING=False)
     @patch("myapp.middleware.get_current_user")
     def test_log_create_signal(self, mock_get_current_user):
         mock_get_current_user.return_value = self.user_profile.auth_id
@@ -52,6 +53,7 @@ class LoggingSignalsTest(TransactionTestCase):
             operation_performed=self.operation_create
         ).exists())
     
+    @override_settings(TESTING=False)
     @patch("myapp.middleware.get_current_user")
     def test_log_update_signal(self, mock_get_current_user):
         mock_get_current_user.return_value = self.user_profile.auth_id
@@ -65,6 +67,7 @@ class LoggingSignalsTest(TransactionTestCase):
             operation_performed=self.operation_update
         ).exists())
     
+    @override_settings(TESTING=False)
     @patch("myapp.middleware.get_current_user")
     def test_log_delete_signal(self, mock_get_current_user):
         mock_get_current_user.return_value = self.user_profile.auth_id
@@ -77,6 +80,7 @@ class LoggingSignalsTest(TransactionTestCase):
             operation_performed=self.operation_delete
         ).exists())
     
+    @override_settings(TESTING=False)
     @patch("myapp.middleware.get_current_user")
     def test_log_delete_signal_failure(self, mock_get_current_user):
         logging.basicConfig(level=logging.INFO)
@@ -96,6 +100,7 @@ class LoggingSignalsTest(TransactionTestCase):
         self.assertTrue(any("Failed to save logging to DB" in msg for msg in log_context.output),
                         msg="Expected log message not found.")
 
+    @override_settings(TESTING=False)
     @patch("myapp.middleware.get_current_user")
     def test_log_create_signal_without_user(self, mock_get_current_user):
         mock_get_current_user.return_value = None
