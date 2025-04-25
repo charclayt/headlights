@@ -46,6 +46,11 @@ class EngineerDashboardPageTest(BaseViewTest, TestCase):
 
     def test_get_view(self):
         response = self.client.get(reverse(self.URL))
+
+        if response.status_code != 200:
+            print(response.status_code)
+            print(response.content.decode())
+
         self.assertEqual(response.status_code, 200)
 
     def test_unauthenticated_model_upload(self):
