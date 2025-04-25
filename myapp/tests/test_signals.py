@@ -2,10 +2,9 @@ from django.conf import settings
 from django.db import models, connection
 from django.test import TransactionTestCase, override_settings
 
-import logging
 from unittest.mock import patch
 
-from myapp.models import Company, DatabaseLog, OperationLookup, TableLookup, User, UserProfile
+from myapp.models import DatabaseLog, OperationLookup, TableLookup, User, UserProfile
 
 class MockModel(models.Model):
     name = models.CharField(max_length=255)
