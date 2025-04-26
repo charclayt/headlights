@@ -23,11 +23,7 @@ class AccountCreationView(View):
 
     template_name = "registration/account_creation.html"
 
-    def get(self, request: HttpRequest) -> HttpResponse: 
-        # Kick out any user that is already logged in  
-        if request.user.is_authenticated:
-            return redirect("index")
-            
+    def get(self, request: HttpRequest) -> HttpResponse:       
         return self.__render_account_creation_page(request, None)
 
     def post(self, request: HttpRequest) -> HttpResponse:
