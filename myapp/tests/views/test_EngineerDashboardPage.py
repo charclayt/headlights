@@ -130,7 +130,7 @@ class EngineerDashboardPageTest(TestCase):
         self.assertEqual(response.status_code, 200)
 
     @patch('myapp.views.EngineerDashboardView.requests.get')
-    def test_bad_response_from_ml(self, mock_get):
+    def test_bad_response_from_ml_get(self, mock_get):
         mock_get.side_effect = RequestException("ML service down")
 
         response = self.client.get(reverse(self.URL))
@@ -174,6 +174,31 @@ class EngineerDashboardPageTest(TestCase):
         self.assertEqual(response.status_code, 302)
         mock_post.assert_called_once()
         self.assertIn("/api/upload-model/", mock_post.call_args[0][0])
+
+    @patch('myapp.views.EngineerDashboardView.requests.post')
+    def test_bad_response_from_ml_post(self, mock_post):
+        mock_post.side_effect = RequestException("ML service down")
+
+        file_data = SimpleUploadedFile(
+            "test_model.pkl",
+            b"File binary data",
+            content_type="application/octet-stream"
+        )
+
+        response = self.client.post(
+            reverse(self.URL),
+            data={'model_file': file_data},
+            format='multipart'
+        )
+
+        self.assertEqual(response.status_code, 500)
+        self.assertJSONEqual(
+        response.content.decode(),
+        {
+            'status': 'error',
+            'message': 'Error communicating with ML service: ML service down'
+        }
+    )
 
     def test_post_view_failure_no_model_file(self):
         response = self.client.post(reverse(self.URL))
