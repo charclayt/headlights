@@ -25,7 +25,6 @@ class EngineerDashboardPageTest(BaseViewTest, TestCase):
 
     def setUp(self):
         logging.disable(logging.ERROR)
-        BaseViewTest.setUp(self)
 
         User = get_user_model()
         auth_id = User.objects.create_user(
@@ -59,7 +58,7 @@ class EngineerDashboardPageTest(BaseViewTest, TestCase):
         logging.disable(logging.NOTSET)
 
     @patch('myapp.views.EngineerDashboardView.requests.get')
-    def test_get_view_with_messages(self, mock_get):
+    def test_messages(self, mock_get):
         mock_response_data = {
             'status': 'success',
             'models': [
@@ -133,7 +132,7 @@ class EngineerDashboardPageTest(BaseViewTest, TestCase):
         self.assertEqual(response.status_code, 200)
 
     @patch('myapp.views.EngineerDashboardView.requests.get')
-    def test_get_view_bad_response_from_ml(self, mock_get):
+    def test_bad_response_from_ml(self, mock_get):
         mock_get.side_effect = RequestException("ML service down")
 
         response = self.client.get(reverse(self.URL))
