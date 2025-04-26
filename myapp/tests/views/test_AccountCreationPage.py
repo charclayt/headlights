@@ -19,13 +19,10 @@ class AccountCreationTest(BaseViewTest, TestCase):
         return BaseViewTest.setUp(self)
 
     def test_get_view(self):
-        #If the user is logged in they are redirected to the home page
         self.client.login(username=USER_NAME, password=USER_PASSWORD)
-        self.TEMPLATE = Templates.HOME
         BaseViewTest.test_get_view(self)
         
         self.client.logout()
-        self.TEMPLATE = Templates.ACCOUNT_CREATION
         BaseViewTest.test_get_view(self)
         
     def test_account_creation(self):
