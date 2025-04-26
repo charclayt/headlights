@@ -161,12 +161,6 @@ class EngineerDashboardView(View):
         Proxies the request to the ML service.
         """
 
-        if not request.user.is_authenticated:
-            return JsonResponse(
-                {'status': 'error', 'message': 'Authentication required'},
-                status=401
-            )
-
         try:
             ml_service_url = getattr(settings, 'ML_SERVICE_URL', 'http://ml-service:8001')
             # Forward files and data to the ML service
