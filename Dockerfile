@@ -30,4 +30,5 @@ CMD [ \
     "python", "manage.py", "populate_table_lookup",  "&&", \
     "python", "manage.py", "loaddata", "myapp/migrations/data_dumps/auth_group_data.json", "&&", \
     "python", "manage.py", "loaddata", "myapp/migrations/data_dumps/auth_user_data.json", "&&", \
+    "python", "manage.py", "collectstatic", "--no-input", "&&", \
     "python", "manage.py", "runserver", "0.0.0.0:8000"]
