@@ -9,7 +9,6 @@ from django.test import TestCase
 from django.test.client import RequestFactory
 from django.urls import reverse
 
-from myapp.tests.test_BaseView import BaseViewTest
 from myapp.models import PredictionModel, UserProfile
 from myapp.tests.config import Views, Templates, TestData, ErrorCodes
 
@@ -17,7 +16,7 @@ import logging
 from requests.exceptions import RequestException
 from unittest.mock import patch
 
-class EngineerDashboardPageTest(BaseViewTest, TestCase):
+class EngineerDashboardPageTest(TestCase):
 
     URL = Views.MACHINE_LEARNING
     TEMPLATE = Templates.ENGINEER
@@ -178,4 +177,5 @@ class EngineerDashboardPageTest(BaseViewTest, TestCase):
         self.assertIn("/api/upload-model/", mock_post.call_args[0][0])
 
     def test_post_view_failure_no_model_file(self):
-        BaseViewTest._test_post_view_response(self, payload={}, status=400)
+        response = self.client.post(reverse(self.URL))
+        self.assertEqual(response.status_code, 400)
