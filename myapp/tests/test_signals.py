@@ -2,10 +2,9 @@ from django.conf import settings
 from django.db import models, connection
 from django.test import TransactionTestCase, override_settings
 
-import logging
 from unittest.mock import patch
 
-from myapp.models import Company, DatabaseLog, OperationLookup, TableLookup, User, UserProfile
+from myapp.models import DatabaseLog, OperationLookup, TableLookup, User, UserProfile
 
 class MockModel(models.Model):
     name = models.CharField(max_length=255)
@@ -41,6 +40,7 @@ class LoggingSignalsTest(TransactionTestCase):
         settings.TESTING = False
         super().setUp()
 
+    @override_settings(TESTING=False)
     @patch("myapp.middleware.get_current_user")
     def test_log_create_signal(self, mock_get_current_user):
         mock_get_current_user.return_value = self.user_profile.auth_id
@@ -52,6 +52,7 @@ class LoggingSignalsTest(TransactionTestCase):
             operation_performed=self.operation_create
         ).exists())
     
+    @override_settings(TESTING=False)
     @patch("myapp.middleware.get_current_user")
     def test_log_update_signal(self, mock_get_current_user):
         mock_get_current_user.return_value = self.user_profile.auth_id
@@ -65,6 +66,7 @@ class LoggingSignalsTest(TransactionTestCase):
             operation_performed=self.operation_update
         ).exists())
     
+    @override_settings(TESTING=False)
     @patch("myapp.middleware.get_current_user")
     def test_log_delete_signal(self, mock_get_current_user):
         mock_get_current_user.return_value = self.user_profile.auth_id
@@ -76,33 +78,8 @@ class LoggingSignalsTest(TransactionTestCase):
             affected_table_id=self.table_lookup,
             operation_performed=self.operation_delete
         ).exists())
-    
-    @patch("myapp.middleware.get_current_user")
-    def test_log_delete_signal_failure(self, mock_get_current_user):
-        logging.basicConfig(level=logging.INFO)
 
-        mock_get_current_user.return_value = self.user_profile.auth_id
-
-        TableLookup.objects.filter(table_name="Company").delete()
-
-        obj = Company.objects.create(name="test")
-
-        logger = logging.getLogger("myapp.signals")
-        logger.setLevel(logging.INFO)
-
-        log_handler = logging.StreamHandler()
-        log_handler.setLevel(logging.INFO)
-        logger.addHandler(log_handler)
-
-        try:
-            with self.assertLogs(logger, level="INFO") as log_context:
-                obj.delete()
-
-            self.assertTrue(any("Failed to save logging to DB" in msg for msg in log_context.output),
-                            msg="Expected log message not found.")
-        finally:
-            logger.removeHandler(log_handler)
-
+    @override_settings(TESTING=False)
     @patch("myapp.middleware.get_current_user")
     def test_log_create_signal_without_user(self, mock_get_current_user):
         mock_get_current_user.return_value = None

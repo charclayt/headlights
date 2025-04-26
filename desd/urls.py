@@ -21,8 +21,8 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 from desd.settings import DEBUG
+from myapp.views.EngineerDashboardView import EngineerDashboardView
 from myapp.views.ErrorView import Error_400, Error_403, Error_404, Error_500
-from myapp.views.MLDashboardView import UploadModelView
 
 handler400 = Error_400.as_view()
 handler403 = Error_403.as_view()
@@ -41,7 +41,7 @@ urlpatterns = [
     path('myapp/', include('myapp.urls')),  # Added this line to handle /myapp/ URLs
     
     # Add direct API routes at the root level
-    path('api/upload-model/', UploadModelView.as_view(), name="api_upload_model"),
+    path('api/upload-model/', EngineerDashboardView.as_view(), name="api_upload_model"),
 ]
 
 # Add media URL to serve uploaded files

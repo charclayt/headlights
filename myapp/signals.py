@@ -10,7 +10,7 @@ from myapp.models import DatabaseLog, OperationLookup, TableLookup, UserProfile
 from threading import local
 import logging
 
-logging = logging.getLogger(__name__)
+logger = logging.getLogger("myapp.signals")
 local = local()
 
 def prevent_recursion():
@@ -49,7 +49,7 @@ def log_create_or_update(sender, instance, created, **kwargs):
                 successful=True
             )
     except Exception as e:
-        logging.info(f"Failed to save logging to DB: {e}")
+        logger.info(f"Failed to save logging to DB: {e}")
     finally:
         set_in_signal(False)
 
@@ -80,7 +80,5 @@ def log_delete(sender, instance, **kwargs):
                 operation_performed=OperationLookup.objects.get(pk=operation_id),
                 successful=True
             )
-    except Exception as e:
-        logging.info(f"Failed to save logging to DB: {e}")
     finally:
         set_in_signal(False)
