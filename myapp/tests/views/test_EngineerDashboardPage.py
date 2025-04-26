@@ -2,11 +2,10 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.messages.middleware import MessageMiddleware
+from django.contrib.messages.storage.fallback import FallbackStorage
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import TestCase
-from django.test.client import RequestFactory
+from django.test import RequestFactory, TestCase
 from django.urls import reverse
 
 from myapp.models import PredictionModel, UserProfile
@@ -15,6 +14,8 @@ from myapp.tests.config import Views, Templates, TestData, ErrorCodes
 import logging
 from requests.exceptions import RequestException
 from unittest.mock import patch
+
+from myapp.views.EngineerDashboardView import EngineerDashboardView
 
 class EngineerDashboardPageTest(TestCase):
 
@@ -65,23 +66,22 @@ class EngineerDashboardPageTest(TestCase):
         mock_get.return_value.status_code = 200
         mock_get.return_value.json.return_value = mock_response_data
 
-        session = self.client.session
-        session['messages'] = [
-            {
-            'message': 'Model loaded successfully.',
-            'level': messages.constants.DEFAULT_LEVELS['SUCCESS'],
-            'tags': 'success'
-            },
-            {
-                'message': 'Failed to upload model. Please try again.',
-                'level': messages.constants.DEFAULT_LEVELS['ERROR'],
-                'tags': 'error'
-            }
-        ]
+        factory = RequestFactory()
+        request = factory.get(reverse(self.URL))
 
-        session.save()
+        User = get_user_model()
+        request.user = User.objects.get(username="engineer")
 
-        response = self.client.get(reverse(self.URL))
+        session_middleware = SessionMiddleware(lambda x: x)
+        session_middleware.process_request(request)
+        request.session.save()
+
+        setattr(request, '_messages', FallbackStorage(request))
+
+        messages.success(request, 'Model loaded successfully.')
+        messages.error(request, 'Failed to upload model. Please try again.')
+
+        response = EngineerDashboardView.as_view()(request)
 
         self.assertEqual(response.status_code, 200)
 
