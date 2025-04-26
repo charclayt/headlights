@@ -132,22 +132,21 @@ class ModelUploadTestCase(TestCase):
 
         logging.disable(logging.ERROR)
 
-    # def test_invalid_preprocessing_ids(self):
-         
-    #     data = {
-    #         'model_name': 'TestModel',
-    #         'notes': 'test notes',
-    #         'selected_steps': [10000, 20000]
-    #     }
+    def test_invalid_preprocessing_ids(self):
+        data = {
+            'model_name': 'TestModel',
+            'notes': 'test notes',
+            'data_processing_options': [10000, 20000]
+        }
 
-    #     response = self.client.post(self.url, data={
-    #         **data,
-    #         'model_file': self.test_file
-    #     })
+        response = self.client.post(self.url, data={
+            **data,
+            'model_file': self.test_file
+        })
 
-    #     self.assertEqual(response.status_code, 400)
-    #     self.assertEqual(response.json()['message'], 'Invalid preprocessing steps provided')
-    #     self.assertFalse(PredictionModel.objects.filter(model_name='TestModel').exists())
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()['message'], 'Invalid preprocessing steps provided')
+        self.assertFalse(PredictionModel.objects.filter(model_name='TestModel').exists())
 
     @patch('builtins.open', new_callable=mock_open)
     @patch('os.makedirs')
@@ -157,7 +156,7 @@ class ModelUploadTestCase(TestCase):
         data = {
             'model_name': 'TestModel',
             'notes': 'test notes',
-            'selected_steps': [self.preprocessingStep.preprocessing_step_id]
+            'data_processing_options': [self.preprocessingStep.preprocessing_step_id]
         }
 
         response = self.client.post(self.url, data={
@@ -181,7 +180,7 @@ class ModelUploadTestCase(TestCase):
         data = {
             'model_name': 'TestModel',
             'notes': 'test notes',
-            'selected_steps': [self.preprocessingStep.preprocessing_step_id]
+            'data_processing_options': [self.preprocessingStep.preprocessing_step_id]
         }
 
         response = self.client.post(self.url, data={
