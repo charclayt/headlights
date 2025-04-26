@@ -44,15 +44,6 @@ class EngineerDashboardPageTest(TestCase):
         self.client.login(username='engineer', password='password')
         self.TEMPLATE = Templates.ENGINEER
 
-    def add_middleware(self, request):
-        middleware = SessionMiddleware(get_response=lambda r: r)
-        middleware.process_request(request)
-        request.session.save()
-
-        message_middleware = MessageMiddleware(get_response=lambda r: r)
-        message_middleware.process_request(request)
-        request.session.save()
-
     def tearDown(self):
         logging.disable(logging.NOTSET)
 
@@ -74,13 +65,21 @@ class EngineerDashboardPageTest(TestCase):
         mock_get.return_value.status_code = 200
         mock_get.return_value.json.return_value = mock_response_data
 
-        factory = RequestFactory()
-        request = factory.get(reverse(self.URL))
-        request.user = self.client.session.get('auth_user_id')
-        self.add_middleware(request)
+        session = self.client.session
+        session['messages'] = [
+            {
+            'message': 'Model loaded successfully.',
+            'level': messages.constants.DEFAULT_LEVELS['SUCCESS'],
+            'tags': 'success'
+            },
+            {
+                'message': 'Failed to upload model. Please try again.',
+                'level': messages.constants.DEFAULT_LEVELS['ERROR'],
+                'tags': 'error'
+            }
+        ]
 
-        messages.success(request, 'Model loaded successfully.')
-        messages.error(request, 'Failed to upload model. Please try again.')
+        session.save()
 
         response = self.client.get(reverse(self.URL))
 
