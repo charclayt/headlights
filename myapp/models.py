@@ -336,6 +336,7 @@ class FinanceReport(models.Model):
     generated_invoice = models.CharField(db_column='GeneratedInvoice', max_length=255, blank=True, null=True)
     user_id = models.ForeignKey(UserProfile, models.PROTECT, db_column='CreatedBy', blank=True, null=True, related_name='reports_created') 
     created_at = models.DateTimeField(db_column='CreatedAt', blank=False, null=False)
+    paid = models.BooleanField(db_column='Paid', blank=False, null=False, default=False)
     
     class Meta:
         managed = True

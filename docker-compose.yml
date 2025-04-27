@@ -20,6 +20,18 @@ services:
       retries: 5
     networks:
       - app-network
+  ngrok:
+    image: ngrok/ngrok:latest
+    container_name: ngrok-tunnel
+    environment:
+      NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN}
+    command: http django-web:8000
+    ports:
+      - "4040:4040"
+    depends_on:
+      - django-web
+    networks:
+      - app-network
 
   django-web:
     build: .

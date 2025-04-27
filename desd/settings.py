@@ -11,7 +11,9 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+import logging
 import os
+import requests
 import sys
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -41,7 +43,8 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "myapp.apps.MyappConfig",
-    "widget_tweaks"
+    "widget_tweaks",
+    "paypal.standard.ipn",
 ]
 
 MIDDLEWARE = [
@@ -150,3 +153,32 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 ML_SERVICE_URL = os.environ.get("ML_SERVICE_URL", "http://ml-service:8001")
 
 TESTING = "test" in sys.argv
+
+# ngrok local development setup
+def get_ngrok_public_url():
+    if os.getenv('USE_NGROK', 'False') == 'True':
+        try:
+            response = requests.get('http://ngrok:4040/api/tunnels')
+            tunnels = response.json().get('tunnels')
+            if tunnels:
+                for tunnel in tunnels:
+                    if tunnel['public_url'].startswith('https'):
+                        return tunnel['public_url']
+        except Exception as e:
+            logging.error(f"Error fetching ngrok URL: {e}")
+    return None
+
+USE_NGROK = os.getenv('USE_NGROK', 'False') == 'True'
+NGROK_URL = get_ngrok_public_url() if USE_NGROK else None
+
+# Paypal settings
+PAYPAL_TEST = True
+PAYPAL_RECEIVER_EMAIL = 'business@headlights.com' # Business sandbox account
+
+CSRF_TRUSTED_ORIGINS = []
+
+if NGROK_URL:
+    PAYPAL_IPN_URL = f"{NGROK_URL}/paypal/"
+    NGROK = NGROK_URL.replace('https://', '')
+    ALLOWED_HOSTS += [NGROK]
+    CSRF_TRUSTED_ORIGINS += [NGROK_URL]

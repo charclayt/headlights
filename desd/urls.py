@@ -42,6 +42,8 @@ urlpatterns = [
     
     # Add direct API routes at the root level
     path('api/upload-model/', EngineerDashboardView.as_view(), name="api_upload_model"),
+
+    path('paypal/', include("paypal.standard.ipn.urls"))
 ]
 
 # Add media URL to serve uploaded files
