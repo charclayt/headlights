@@ -1,14 +1,16 @@
-from django.test import TestCase
-from django.urls import reverse
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, Permission
+from django.test import TestCase
+from django.urls import reverse
+from django.utils.timezone import now
+
 
 import logging
 from unittest.mock import patch
 
 from myapp.tests.test_BaseView import BaseViewTest
 from myapp.tests.config import Views, Templates, TestData
-from myapp.models import UserProfile, Company
+from myapp.models import UserProfile, Company, FinanceReport
 
 class FinanceDashboardTest(BaseViewTest, TestCase):
 
@@ -55,10 +57,30 @@ class FinanceDashboardTest(BaseViewTest, TestCase):
         
         # Create individual user to hit non-company user logic for viewing invoices.
         unique_name = TestData.NAME+"FINANCE_DASHBOARD_GET_VIEW_TEST"
-        UserProfile.create_account(unique_name, TestData.EMAIL, TestData.PASSWORD, UserProfile.GroupIDs.FINANCE_ID, company=None)
+        new_user = UserProfile.create_account(unique_name, TestData.EMAIL, TestData.PASSWORD, UserProfile.GroupIDs.FINANCE_ID, company=None).payload
+
+        time_now = now()
+
+        # Create invoice with zero value CostIncurred and one with proper CostIncurred to hit PayPal logic.
+        zero_invoice = FinanceReport.objects.create(
+            cost_incurred=0,
+            created_at=time_now,
+            user_profile_id=new_user,
+            paid=False
+        )
+
+        FinanceReport.objects.create(
+            cost_incurred=100,
+            created_at=time_now,
+            user_profile_id=new_user,
+            paid=False
+        )
         
         self.client.login(username=unique_name, password=TestData.PASSWORD)
         BaseViewTest.test_get_view(self)
+
+        zero_invoice.refresh_from_db()
+        self.assertTrue(zero_invoice.paid)
 
     def test_company_post_view_success(self):
         payload = {
