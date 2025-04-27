@@ -101,6 +101,11 @@ class FinanceDashboardView(View):
         if not request.user.is_superuser:
             for invoice in invoices:
                 if not invoice.paid:
+                    if invoice.cost_incurred == 0:
+                        invoice.paid = True
+                        invoice.save()
+                        continue
+
                     paypal_dict = {
                         "business": settings.PAYPAL_RECEIVER_EMAIL,
                         "amount": invoice.cost_incurred,
