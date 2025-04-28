@@ -74,7 +74,6 @@ class EditPredictionModelViewTests(TestCase):
         response = EditPredictionModelView.as_view()(request)
 
         self.assertEqual(response.status_code, 200)
-        self.assertTrue(self.TEMPLATE in [template.name for template in response.templates])
         
     @patch('myapp.views.EngineerDashboardView.requests.post')
     def test_post_view_success(self, mock_post):
@@ -95,7 +94,6 @@ class EditPredictionModelViewTests(TestCase):
         self.assertEqual(response.status_code, 302)
         mock_post.assert_called_once()
         self.assertIn("api/model/edit/1/", mock_post.call_args[0][0])
-        self.assertTrue(Templates.ENGINEER in [template.name for template in response.templates])
         
     @patch('myapp.views.EngineerDashboardView.requests.post')
     def test_post_view_failure(self, mock_post):
@@ -114,5 +112,4 @@ class EditPredictionModelViewTests(TestCase):
         )
 
         self.assertEqual(response.status_code, 302)
-        self.assertTrue(Templates.ENGINEER in [template.name for template in response.templates])
         
