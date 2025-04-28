@@ -22,6 +22,7 @@ class Views:
     FINANCE_DASHBOARD = "finance_dashboard"
     COMPANY_DETAILS = "company_details"
     COMPANY_MANAGE_EMPLOYEES = "company_manage_employees"
+    EDIT_MODEL = "edit_model"
 
     API_MODELS_LIST = "api_models_list"
     API_UPLOAD_MODEL = "api_upload_model"
@@ -41,6 +42,7 @@ class Templates:
     COMPANY_DETAILS = "company_details.html"
     COMPANY_USER_MANAGEMENT = "company_manage_users.html"
     CUSTOMER_PREPROCESSING = "claims_preprocessing.html"
+    ENGINEER_EDIT_MODEL = "edit_model.html"
     
     ACCOUNT_CREATION = "registration/account_creation.html"
     LOGGED_OUT = "registration/logged_out.html"

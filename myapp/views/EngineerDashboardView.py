@@ -7,6 +7,7 @@ from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 from django.utils.decorators import method_decorator
 from django.views import View
+from django.urls import reverse
 
 import traceback
 import logging
@@ -203,7 +204,7 @@ class EngineerDashboardView(View):
 class EditPredictionModelView(View):
     template_name = "edit_model.html"
 
-    def get(self, request: HttpRequest, model_id) -> HttpResponse: 
+    def get(self, request: HttpRequest, model_id=0) -> HttpResponse: 
             # sends authenticated request to ML service
             ml_service_url = getattr(settings, 'ML_SERVICE_URL', 'http://ml-service:8001')
             response = requests.get(f"{ml_service_url}/api/models/{model_id}/")
@@ -233,11 +234,10 @@ class EditPredictionModelView(View):
 
             return render(request, self.template_name, context=context)
         
-    def post(self, request: HttpRequest, model_id):
+    def post(self, request: HttpRequest, model_id=0):
         ml_service_url = getattr(settings, 'ML_SERVICE_URL', 'http://ml-service:8001')
         data = dict(request.POST.items())
         
-        # Send request to ML service
         response = requests.post(f"{ml_service_url}/api/model/edit/{model_id}/", data=data)
         
         if response.status_code == 200:
