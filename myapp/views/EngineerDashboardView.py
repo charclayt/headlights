@@ -66,13 +66,15 @@ class UploadModelForm(forms.Form):
         })
     )
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, edit_existing=False, *args, **kwargs):
         preprocessing_steps = kwargs.pop('preprocessing_steps', [])
         super().__init__(*args, **kwargs)
         self.fields['data_processing_options'].choices = [
             (step.preprocessing_step_id, step.preprocess_name) for step in preprocessing_steps
         ]
-
+        
+        if edit_existing:
+            self.fields["model_file"] = None
 
 @method_decorator([login_required, permission_required("myapp.add_predictionmodel")], name="dispatch")
 class EngineerDashboardView(View):
