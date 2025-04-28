@@ -66,13 +66,15 @@ class UploadModelForm(forms.Form):
         })
     )
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, edit_existing=False, *args, **kwargs):
         preprocessing_steps = kwargs.pop('preprocessing_steps', [])
         super().__init__(*args, **kwargs)
         self.fields['data_processing_options'].choices = [
             (step.preprocessing_step_id, step.preprocess_name) for step in preprocessing_steps
         ]
-
+        
+        if edit_existing:
+            self.fields["model_file"] = None
 
 @method_decorator([login_required, permission_required("myapp.add_predictionmodel")], name="dispatch")
 class EngineerDashboardView(View):
@@ -196,3 +198,50 @@ class EngineerDashboardView(View):
                 'status': 'error',
                 'message': f"Error communicating with ML service: {str(e)}"
             }, status=500)    
+
+@method_decorator([login_required, permission_required("myapp.add_predictionmodel")], name="dispatch")
+class EditPredictionModelView(View):
+    template_name = "edit_model.html"
+
+    def get(self, request: HttpRequest, model_id=0) -> HttpResponse: 
+            # sends authenticated request to ML service
+            ml_service_url = getattr(settings, 'ML_SERVICE_URL', 'http://ml-service:8001')
+            response = requests.get(f"{ml_service_url}/api/models/{model_id}/")
+            response_data = response.json()
+
+            # Build preprocessing data
+            for x in response_data['models']:
+                if isinstance(x['preprocessing_steps'], list):
+                    x['preprocessing_steps'] = ", ".join(x['preprocessing_steps'])
+
+            model = response_data.get('models')[0]
+
+            form_values = {
+                "model_name": model["name"],
+                "notes": model["notes"],
+                "price_per_prediction": model["price_per_prediction"],
+                "data_processing_options": model["preprocessing_steps"]
+            }
+            
+            preprocessing_steps = PreprocessingStep.objects.all()
+            form = UploadModelForm(preprocessing_steps=preprocessing_steps, edit_existing=True, initial=form_values)
+
+            context = {
+                'form': form,
+                'model': model
+            }
+
+            return render(request, self.template_name, context=context)
+        
+    def post(self, request: HttpRequest, model_id=0):
+        ml_service_url = getattr(settings, 'ML_SERVICE_URL', 'http://ml-service:8001')
+        data = dict(request.POST.items())
+        
+        response = requests.post(f"{ml_service_url}/api/model/edit/{model_id}/", data=data)
+        
+        if response.status_code == 200:
+            messages.success(request, 'Model successfully updated!')
+        else:
+            messages.error(request, 'Failed to update model. Try again later.')
+
+        return redirect("engineer")

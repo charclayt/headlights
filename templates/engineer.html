@@ -130,6 +130,7 @@
                                 <th>Price Per Prediction</th>
                                 <th>Preprocessing Steps</th>
                                 <th>Notes</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody class="text-center">
@@ -139,6 +140,9 @@
                                     <td>{{ row.price_per_prediction }}</td>
                                     <td>{{ row.preprocessing_steps }}</td>
                                     <td>{{ row.notes }}</td>
+                                    <td>
+                                        <a class="btn btn-primary mt-2" href="{% url 'edit_model' row.id %}">Edit</a>
+                                    </td>
                                 </tr>
                             {% empty %}
                                 <tr>
