@@ -147,6 +147,11 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 LOGIN_REDIRECT_URL = "/"
 
+AUTHENTICATION_BACKENDS = [
+    'myapp.auth_backends.AllowInactiveLoginBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
+
 # Temporary email redirect, this puts password reset emails into the console logs.
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
