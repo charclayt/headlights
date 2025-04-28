@@ -214,12 +214,17 @@ class EditModelTestCase(TestCase):
             filepath=filepath
         )
         
+        self.preprocessingStep = PreprocessingStep.objects.create(
+            preprocessing_step_id = 1,
+            preprocess_name = 'create_days_between_col'
+        )
+        
     def test_edit_model_success(self):
         data = {
             "model_name": "EditModel",
             "notes": "",
             "price_per_prediction": 1,
-            "data_processing_options": []
+            "data_processing_options": [1]
         }
         logging.warning(self.model_id)
         logging.warning(self.url)
@@ -229,5 +234,3 @@ class EditModelTestCase(TestCase):
         self.assertEqual(response.json()['status'], 'success')
         self.assertTrue(PredictionModel.objects.filter(model_name='EditModel').exists())
         
-        model = PredictionModel.objects.filter(model_name='EditModel').get()
-        model.delete()
