@@ -286,12 +286,23 @@ class UserProfile(models.Model):
                        ) -> SimpleResultWithPayload:   
         result = SimpleResultWithPayload()
         
+        groupID = int(groupID)
+
         result.add_messages_from_result_and_mark_unsuccessful_if_error_found(UserProfile.validate_unique_username(username))
         if not result.success:
             return result
         
         with transaction.atomic():
-            newUserAuth = User.objects.create_user(username=username, email=email, password=password)
+            user_kwargs = {
+                'username': username,
+                'email': email,
+                'password': password,
+            }
+
+            if groupID == UserProfile.GroupIDs.ENGINEER_ID:
+                user_kwargs['is_active'] = False
+
+            newUserAuth = User.objects.create_user(**user_kwargs)
             
             # All users should have end user/customer permissions
             endUserGroup = Group.objects.get(id=UserProfile.GroupIDs.END_USER_ID)
