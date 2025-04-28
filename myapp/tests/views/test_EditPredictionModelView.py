@@ -1,21 +1,16 @@
-from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.messages.storage.fallback import FallbackStorage
 from django.contrib.sessions.middleware import SessionMiddleware
-from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import RequestFactory, TestCase
 from django.urls import reverse
 
 from myapp.models import PredictionModel, UserProfile
-from myapp.tests.config import Views, Templates, TestData, ErrorCodes
+from myapp.tests.config import Views, Templates
 
-import logging
-from requests.exceptions import RequestException
 from unittest.mock import patch
 
-from myapp.views.EngineerDashboardView import EngineerDashboardView, EditPredictionModelView
+from myapp.views.EngineerDashboardView import EditPredictionModelView
 
 class EditPredictionModelViewTests(TestCase):
 

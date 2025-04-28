@@ -7,7 +7,6 @@ from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 from django.utils.decorators import method_decorator
 from django.views import View
-from django.urls import reverse
 
 import traceback
 import logging
