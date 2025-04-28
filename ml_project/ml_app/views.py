@@ -208,7 +208,7 @@ class EditModelView(View):
         return JsonResponse({
             'status': 'success',
             'message': 'PredictionModel edited successfully',
-        })
+        }, status=status.HTTP_200_OK)
 
             
 class ModelPredict(APIView):

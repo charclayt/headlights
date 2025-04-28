@@ -107,4 +107,3 @@ class EditPredictionModelViewTests(TestCase):
         )
 
         self.assertEqual(response.status_code, 302)
-        
