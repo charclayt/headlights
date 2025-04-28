@@ -182,6 +182,34 @@ class UploadModelView(View):
                 'status': 'error',
                 'message': f"An unexpected error occurred: {str(e)}"
             }, status=500)
+
+@method_decorator(csrf_exempt, name="dispatch")
+class EditModelView(View):
+    def post(self, request: HttpRequest, model_id) -> JsonResponse:
+        model_name = request.POST.get('model_name')
+        notes = request.POST.get('notes', '')
+        data_processing_options = request.POST.get('data_processing_options')
+        price_per_prediction = request.POST.get('price_per_prediction')
+        
+        model = PredictionModel.objects.get(model_id=model_id)
+        model.model_name = model_name or model.model_name
+        model.notes = notes
+        model.price_per_prediction = price_per_prediction or model.price_per_prediction
+        model.save()
+        
+        PreprocessingModelMap.objects.filter(model_id=model_id).delete()
+        objects = []
+        if data_processing_options:
+            for x in data_processing_options:
+                objects.append(PreprocessingModelMap(preprocessing_step_id_id = int(x), model_id_id = model.model_id))
+                
+            PreprocessingModelMap.objects.bulk_create(objects)
+
+        return JsonResponse({
+            'status': 'success',
+            'message': 'PredictionModel edited successfully',
+        })
+
             
 class ModelPredict(APIView):
     
