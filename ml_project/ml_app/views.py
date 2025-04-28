@@ -51,16 +51,21 @@ class ModelListView(View):
     """
     This class handles the listing of all available ML models directly from the Django database.
     """
-    def get(self, request: HttpRequest) -> JsonResponse:
+    def get(self, request: HttpRequest, model_id=None) -> JsonResponse:
         """
         Handles the GET request for listing all available ML models.
         """
         try:
             preprocessing_steps_queryset = PreprocessingModelMap.objects.select_related('preprocessing_step_id')
 
-            models = PredictionModel.objects.prefetch_related(
-                Prefetch('preprocessingmodelmap_set', queryset=preprocessing_steps_queryset, to_attr='preprocessing_steps')
-            ).all()
+            if model_id:
+                models = PredictionModel.objects.prefetch_related(
+                    Prefetch('preprocessingmodelmap_set', queryset=preprocessing_steps_queryset, to_attr='preprocessing_steps')
+                ).filter(model_id=model_id)
+            else:
+                models = PredictionModel.objects.prefetch_related(
+                    Prefetch('preprocessingmodelmap_set', queryset=preprocessing_steps_queryset, to_attr='preprocessing_steps')
+                ).all()
 
             models_list = [
                 {
